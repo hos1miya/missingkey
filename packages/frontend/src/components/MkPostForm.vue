@@ -364,12 +364,12 @@ function chooseFileFrom(ev) {
 	});
 }
 
-function detachFile(id, name) : void {
+function detachFile(id) : void {
 	files = files.filter(x => x.id !== id);
 	async() : Promise<void> => {
 		const { canceled } = await os.confirm({
-			type: 'info',
-			text: i18n.t('removeFileFromDriveToo', { x: name }),
+			type: 'question',
+			text: i18n.t('removeFileFromDriveToo'),
 		});
 
 		if (canceled) return;
