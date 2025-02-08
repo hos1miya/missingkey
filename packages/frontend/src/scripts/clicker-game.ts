@@ -5,6 +5,9 @@ type SaveData = {
 	gameVersion: number;
 	cookies: number;
 	totalCookies: number;
+	upgradeLevel: number;
+	upgradeCost: number;
+	cookiesPerClick: number;
 	totalHandmadeCookies: number;
 	clicked: number;
 	achievements: any[];
@@ -28,6 +31,9 @@ export async function load() {
 				gameVersion: 2,
 				cookies: 0,
 				totalCookies: 0,
+				upgradeLevel: 0,
+				upgradeCost: 50,
+				cookiesPerClick: 1,
 				totalHandmadeCookies: 0,
 				clicked: 0,
 				achievements: [],
@@ -45,6 +51,9 @@ export async function load() {
 			gameVersion: 2,
 			cookies: saveData.value.cookies,
 			totalCookies: saveData.value.cookies,
+			upgradeLevel: 0,
+			upgradeCost: 50,
+			cookiesPerClick: 1,
 			totalHandmadeCookies: saveData.value.cookies,
 			clicked: saveData.value.clicked,
 			achievements: [],
