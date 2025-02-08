@@ -373,7 +373,7 @@ async function detachFile(id) {
 
 	if (canceled) return;
 
-	os.api('drive/files/delete', {
+	os.apiWithDialog('drive/files/delete', {
 		fileId: id,
 	});
 }
