@@ -29,7 +29,7 @@ export function getNoteMenu(props: {
 
 	const appearNote = isRenote ? props.note.renote as misskey.entities.Note : props.note;
 
-	function del(): void {
+	function del() : void {
 		os.confirm({
 			type: 'warning',
 			text: i18n.ts.noteDeleteConfirm,
@@ -46,7 +46,7 @@ export function getNoteMenu(props: {
 		});
 	}
 
-	function delEdit(): void {
+	function delEdit() : void {
 		os.confirm({
 			type: 'warning',
 			text: i18n.ts.deleteAndEditConfirm,
@@ -65,20 +65,20 @@ export function getNoteMenu(props: {
 		});
 	}
 
-	function toggleFavorite(favorite: boolean): void {
+	function toggleFavorite(favorite: boolean) : void {
 		claimAchievement('noteFavorited1');
 		os.apiWithDialog(favorite ? 'notes/favorites/create' : 'notes/favorites/delete', {
 			noteId: appearNote.id,
 		});
 	}
 
-	function toggleThreadMute(mute: boolean): void {
+	function toggleThreadMute(mute: boolean) : void {
 		os.apiWithDialog(mute ? 'notes/thread-muting/create' : 'notes/thread-muting/delete', {
 			noteId: appearNote.id,
 		});
 	}
 
-	function toggleNoteMute(mute: boolean): void {
+	function toggleNoteMute(mute: boolean) : void {
 		// renoteへの処理
 		if (isRenote) {
 			// renote自体を処理
@@ -90,8 +90,9 @@ export function getNoteMenu(props: {
 				noteId: appearNote.id,
 			});
 			// originとrenoteの状態が同じならreturn
-			originNoteState.then(state => state.isMutedNote === mute ? {
-				action: () => {
+			originNoteState.then(state => state!.isMutedNote === mute ? {
+				action: () : void => {
+					if (mute) props.isDeleted.value = true;
 					os.success();
 					return;
 				},
@@ -99,22 +100,23 @@ export function getNoteMenu(props: {
 			});
 		}
 		// originへの処理
+		if (mute) props.isDeleted.value = true;
 		os.apiWithDialog(mute ? 'notes/mutes/create' : 'notes/mutes/delete', {
 			noteId: appearNote.id,
 		});
 	}
 
-	function copyContent(): void {
+	function copyContent() : void {
 		copyToClipboard(appearNote.text);
 		os.success();
 	}
 
-	function copyLink(): void {
+	function copyLink() : void {
 		copyToClipboard(`${url}/notes/${appearNote.id}`);
 		os.success();
 	}
 
-	function togglePin(pin: boolean): void {
+	function togglePin(pin: boolean) : void {
 		os.apiWithDialog(pin ? 'i/pin' : 'i/unpin', {
 			noteId: appearNote.id,
 		}, undefined, null, res => {
@@ -205,7 +207,7 @@ export function getNoteMenu(props: {
 		});
 	}
 
-	function share(): void {
+	function share() : void {
 		navigator.share({
 			title: i18n.t('noteOf', { user: appearNote.user.name }),
 			text: appearNote.text,
@@ -213,11 +215,11 @@ export function getNoteMenu(props: {
 		});
 	}
 
-	function openDetail(): void {
+	function openDetail() : void {
 		os.pageWindow(`/notes/${appearNote.id}`);
 	}
 
-	function showReactions(): void {
+	function showReactions() : void {
 		os.popup(defineAsyncComponent(() => import('@/components/MkReactedUsersDialog.vue')), {
 			noteId: appearNote.id,
 		}, {}, 'closed');

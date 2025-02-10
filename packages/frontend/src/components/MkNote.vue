@@ -129,7 +129,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, onMounted, onUnmounted, reactive, ref, shallowRef, Ref, defineAsyncComponent } from 'vue';
+import { computed, inject, onMounted, ref, shallowRef, Ref, defineAsyncComponent } from 'vue';
 import * as mfm from 'mfm-js';
 import * as misskey from 'misskey-js';
 import MkNoteSub from '@/components/MkNoteSub.vue';
@@ -210,7 +210,7 @@ const muted = ref(checkWordMute(appearNote, $i, defaultStore.state.mutedWords));
 const translation = ref<any>(null);
 const translating = ref(false);
 const showTicker = (defaultStore.state.instanceTicker === 'always') || (defaultStore.state.instanceTicker === 'remote' && appearNote.user.instance);
-const canRenote = computed(() => ['public', 'home'].includes(appearNote.visibility) || appearNote.userId === $i.id);
+const canRenote = computed(() => ['public', 'home'].includes(appearNote.visibility) || ($i && appearNote.userId === $i.id));
 let renoteCollapsed = $ref(defaultStore.state.collapseRenotes && isRenote && (($i && ($i.id === note.userId)) || shownNoteIds.has(appearNote.id)));
 
 shownNoteIds.add(appearNote.id);
@@ -250,7 +250,7 @@ useTooltip(renoteButton, async (showing) => {
 	}, {}, 'closed');
 });
 
-function renote(viaKeyboard = false) {
+function renote(viaKeyboard = false) : void {
 	pleaseLogin();
 
 	let items = [] as MenuItem[];
@@ -259,7 +259,7 @@ function renote(viaKeyboard = false) {
 		items = items.concat([{
 			text: i18n.ts.inChannelRenote,
 			icon: 'ti ti-repeat',
-			action: () => {
+			action: () : void => {
 				os.api('notes/create', {
 					renoteId: appearNote.id,
 					channelId: appearNote.channelId,
@@ -268,7 +268,7 @@ function renote(viaKeyboard = false) {
 		}, {
 			text: i18n.ts.inChannelQuote,
 			icon: 'ti ti-quote',
-			action: () => {
+			action: () : void => {
 				os.post({
 					renote: appearNote,
 					channel: appearNote.channel,
@@ -280,7 +280,7 @@ function renote(viaKeyboard = false) {
 	items = items.concat([{
 		text: i18n.ts.renote,
 		icon: 'ti ti-repeat',
-		action: () => {
+		action: () : void => {
 			os.api('notes/create', {
 				renoteId: appearNote.id,
 			});
@@ -288,7 +288,7 @@ function renote(viaKeyboard = false) {
 	}, {
 		text: i18n.ts.quote,
 		icon: 'ti ti-quote',
-		action: () => {
+		action: () :void => {
 			os.post({
 				renote: appearNote,
 			});
@@ -300,7 +300,7 @@ function renote(viaKeyboard = false) {
 	});
 }
 
-function reply(viaKeyboard = false): void {
+function reply(viaKeyboard = false) : void {
 	pleaseLogin();
 	os.post({
 		reply: appearNote,
@@ -310,7 +310,7 @@ function reply(viaKeyboard = false): void {
 	});
 }
 
-function react(viaKeyboard = false): void {
+function react(viaKeyboard = false) : void {
 	pleaseLogin();
 	blur();
 	reactionPicker.show(reactButton.value, reaction => {
@@ -326,7 +326,7 @@ function react(viaKeyboard = false): void {
 	});
 }
 
-function undoReact(note): void {
+function undoReact(note) : void {
 	const oldReaction = note.myReaction;
 	if (!oldReaction) return;
 	os.api('notes/reactions/delete', {
@@ -334,14 +334,14 @@ function undoReact(note): void {
 	});
 }
 
-function openRemote(note): void {
+function openRemote(note) : void {
 	window.open(note.uri, '_blank');
 }
 
 const currentClipPage = inject<Ref<misskey.entities.Clip> | null>('currentClipPage', null);
 
-function onContextmenu(ev: MouseEvent): void {
-	const isLink = (el: HTMLElement) => {
+function onContextmenu(ev: MouseEvent) : void {
+	const isLink = (el: HTMLElement) : void | boolean => {
 		if (el.tagName === 'A') return true;
 		if (el.parentElement) {
 			return isLink(el.parentElement);
@@ -358,19 +358,19 @@ function onContextmenu(ev: MouseEvent): void {
 	}
 }
 
-function menu(viaKeyboard = false): void {
+function menu(viaKeyboard = false) : void {
 	os.popupMenu(getNoteMenu({ note: note, translating, translation, menuButton, isDeleted, currentClipPage }), menuButton.value, {
 		viaKeyboard,
 	}).then(focus);
 }
 
-function showRenoteMenu(viaKeyboard = false): void {
+function showRenoteMenu(viaKeyboard = false) : void {
 	if (!isMyRenote) return;
 	os.popupMenu([{
 		text: i18n.ts.unrenote,
 		icon: 'ti ti-trash',
 		danger: true,
-		action: () => {
+		action: () : void => {
 			os.api('notes/delete', {
 				noteId: note.id,
 			});
@@ -381,30 +381,30 @@ function showRenoteMenu(viaKeyboard = false): void {
 	});
 }
 
-function focus() {
-	el.value.focus();
+function focus() : void {
+	el.value!.focus();
 }
 
-function blur() {
-	el.value.blur();
+function blur() : void {
+	el.value!.blur();
 }
 
-function focusBefore() {
-	focusPrev(el.value);
+function focusBefore() : void {
+	focusPrev(el.value ? el.value : null);
 }
 
-function focusAfter() {
-	focusNext(el.value);
+function focusAfter() : void {
+	focusNext(el.value ? el.value : null);
 }
 
-function readPromo() {
+function readPromo() : void {
 	os.api('promo/read', {
 		noteId: appearNote.id,
 	});
 	isDeleted.value = true;
 }
 
-function showReactions(): void {
+function showReactions() : void {
 	os.popup(defineAsyncComponent(() => import('@/components/MkReactedUsersDialog.vue')), {
 		noteId: appearNote.id,
 	}, {}, 'closed');
