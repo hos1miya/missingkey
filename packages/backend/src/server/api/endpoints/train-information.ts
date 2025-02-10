@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
+import * as cheerio from 'cheerio';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
@@ -73,23 +74,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const res = await this.httpRequestService.getHtml(url);
 
 			// アラート抜き出し
-			const parser = new DOMParser();
-			const doc = parser.parseFromString(res, 'text/html');
-			const rows = Array.from(doc.querySelectorAll('tr'));
-			const alertRows = rows.filter(row => row.querySelector('.icnAlert') !== null);
-
+			const $ = cheerio.load(res);
+			const rows = $('tr');
+			const alertRows = rows.filter((i, row) => $(row).find('.icnAlert').length > 0);
+			
 			// 配列に整形
-			const extractedData = alertRows.map(row => {
-				const cells = row.querySelectorAll('td');
+			const extractedData = alertRows.map((i, row) => {
+				// <td>のセルを取得
+				const cells = $(row).find('td');
 				// 路線
-				const line = cells[0].querySelector('a')?.textContent?.trim() ?? '';
+				const line = cells.eq(0).find('a').text().trim() ?? '';
 				// 状態
-				const status = cells[1].querySelector('.colTrouble')?.textContent?.trim() ?? '';
+				const status = cells.eq(1).find('.colTrouble').text().trim() ?? '';
 				// 詳細
-				const detail = cells[2].textContent?.trim() ?? '';
-
+				const detail = cells.eq(2).text().trim() ?? '';
 				return { line, status, detail };
-			});
+			}).get();
 
 			const time = Date.now();
 
