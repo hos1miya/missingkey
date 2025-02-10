@@ -339,6 +339,7 @@ import * as ep___users_stats from './endpoints/users/stats.js';
 import * as ep___users_achievements from './endpoints/users/achievements.js';
 import * as ep___fetchRss from './endpoints/fetch-rss.js';
 import * as ep___retention from './endpoints/retention.js';
+import * as ep___trainInformation from './endpoints/train-information.js';
 
 const eps = [
 	['admin/meta', ep___admin_meta],
@@ -680,6 +681,7 @@ const eps = [
 	['users/achievements', ep___users_achievements],
 	['fetch-rss', ep___fetchRss],
 	['retention', ep___retention],
+	['train-information', ep___trainInformation],
 ];
 
 export interface IEndpointMeta {
