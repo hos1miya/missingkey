@@ -1682,6 +1682,7 @@ _widgets:
   _userList:
     chooseList: "リストを選択"
   clicker: "クリッカー"
+  traininformation: "公共交通情報"
 
 _cw:
   hide: "隠す"
