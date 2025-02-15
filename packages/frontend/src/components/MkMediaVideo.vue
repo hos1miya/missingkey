@@ -16,6 +16,7 @@
 			<source
 				size="720"
 				:src="video.url" 
+				type="video/mp4"
 			/>
 		</video>
 	</VuePlyr>

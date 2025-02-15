@@ -10,6 +10,7 @@
 			<audio controls preload="metadata">
 				<source
 					:src="media.url"
+					:type="media.type"
 				/>
 			</audio>
 		</VuePlyr>
