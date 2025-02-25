@@ -25,7 +25,7 @@ export interface IObject {
 	sensitive?: boolean;
 	source?: any;
 	quoteUrl?: string;
-	application?: { name: string; website: string | null } | null;
+	application?: { name: string; website: string | null; } | null;
 	_misskey_content?: string;
 	_misskey_quote?: string;
 }

@@ -441,7 +441,7 @@ export class ApRendererService {
 			application: {
 				name: note.via ? note.via : '',
 				website: null,
-			}
+			},
 		};
 	}
 
