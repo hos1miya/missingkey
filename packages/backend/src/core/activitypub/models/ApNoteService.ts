@@ -300,7 +300,7 @@ export class ApNoteService {
 			}
 		}
 
-		this.logger.info(`DUMP: ${note}`);
+		this.logger.info(`DUMP: ${note.application.name}`);
 		const application = !note.application ? null : note.application.name;
 	
 		return await this.noteCreateService.create(actor, {
