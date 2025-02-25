@@ -135,6 +135,7 @@ type Option = {
 	uri?: string | null;
 	url?: string | null;
 	app?: App | null;
+	via?: string | null;
 };
 
 @Injectable()
@@ -349,6 +350,7 @@ export class NoteCreateService {
 				: [],
 
 			attachedFileTypes: data.files ? data.files.map(file => file.type) : [],
+			via: data.via == null ? null : data.via,
 
 			// 以下非正規化データ
 			replyUserId: data.reply ? data.reply.userId : null,

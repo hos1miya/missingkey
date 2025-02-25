@@ -191,6 +191,12 @@ export class Note {
 	@JoinColumn()
 	public channel: Channel | null;
 
+	@Index()
+	@Column('varchar', {
+		length: 256, nullable: true,
+	})
+	public via: string | null;
+
 	//#region Denormalized fields
 	@Index()
 	@Column('varchar', {

@@ -299,6 +299,9 @@ export class ApNoteService {
 				return null;
 			}
 		}
+
+		const application = !note.application ? null : note.application.name;
+		this.logger.info(`Application: ${application}`);
 	
 		return await this.noteCreateService.create(actor, {
 			createdAt: note.published ? new Date(note.published) : null,
@@ -317,6 +320,7 @@ export class ApNoteService {
 			poll,
 			uri: note.id,
 			url: url,
+			via: application,
 		}, silent);
 	}
 	

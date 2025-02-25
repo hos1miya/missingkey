@@ -87,7 +87,7 @@
 			<footer class="footer">
 				<div class="info">
 					<MkA class="created-at" :to="notePage(appearNote)">
-						<MkTime :time="appearNote.createdAt" mode="detail"/>
+						<MkTime :time="appearNote.createdAt" mode="detail"/><span v-if="appearNote.via"> {{ appearNote.via }} </span>
 					</MkA>
 				</div>
 				<MkReactionsViewer ref="reactionsViewer" :note="appearNote"/>

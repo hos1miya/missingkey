@@ -97,6 +97,7 @@ export const paramDef = {
 		noExtractEmojis: { type: 'boolean', default: false },
 		replyId: { type: 'string', format: 'misskey:id', nullable: true },
 		channelId: { type: 'string', format: 'misskey:id', nullable: true },
+		via: { type: 'string', nullable: true },
 	},
 	anyOf: [
 		{
@@ -292,6 +293,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				visibility: ps.visibility,
 				visibleUsers,
 				channel,
+				via: ps.via ? ps.via : null,
 				apMentions: ps.noExtractMentions ? [] : undefined,
 				apHashtags: ps.noExtractHashtags ? [] : undefined,
 				apEmojis: ps.noExtractEmojis ? [] : undefined,

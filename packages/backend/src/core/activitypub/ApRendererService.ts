@@ -438,6 +438,10 @@ export class ApRendererService {
 			tag,
 			...asPoll,
 			...asTalk,
+			application: {
+				name: note.via ? note.via : '',
+				website: null,
+			}
 		};
 	}
 

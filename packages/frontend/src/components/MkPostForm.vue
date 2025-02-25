@@ -615,6 +615,7 @@ async function post(ev?: MouseEvent) {
 		localOnly: localOnly,
 		visibility: visibility,
 		visibleUserIds: visibility === 'specified' ? visibleUsers.map(u => u.id) : undefined,
+		via: 'MissingKey Web App',
 	};
 
 	if (withHashtags && hashtags && hashtags.trim() !== '') {

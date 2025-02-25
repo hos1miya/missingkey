@@ -433,7 +433,7 @@ importers:
       json5: 2.2.3
       matter-js: 0.18.0
       mfm-js: 0.23.3
-      misskey-js: git+https://github.com/hos1miya/misskey-js#v0.0.25
+      misskey-js: git+https://github.com/hos1miya/misskey-js#v0.0.26
       photoswipe: 5.3.5
       prismjs: 1.29.0
       punycode: 2.3.0
@@ -497,7 +497,7 @@ importers:
       json5: 2.2.3
       matter-js: 0.18.0
       mfm-js: 0.23.3
-      misskey-js: github.com/hos1miya/misskey-js/d169807554202bf4c99cdc7aefa24e816081f30e
+      misskey-js: github.com/hos1miya/misskey-js/58c726f76f7012ea05d986b6e71a80dd07805419
       photoswipe: 5.3.5
       prismjs: 1.29.0
       punycode: 2.3.0
@@ -561,12 +561,12 @@ importers:
       eslint: 8.33.0
       eslint-plugin-import: 2.27.5
       idb-keyval: 6.2.0
-      misskey-js: git+https://github.com/hos1miya/misskey-js#v0.0.25
+      misskey-js: git+https://github.com/hos1miya/misskey-js#v0.0.26
       typescript: 4.9.5
     dependencies:
       esbuild: 0.14.42
       idb-keyval: 6.2.0
-      misskey-js: github.com/hos1miya/misskey-js/d169807554202bf4c99cdc7aefa24e816081f30e
+      misskey-js: github.com/hos1miya/misskey-js/58c726f76f7012ea05d986b6e71a80dd07805419
     devDependencies:
       '@typescript-eslint/parser': 5.51.0_4vsywjlpuriuw3tl5oq6zy5a64
       '@typescript/lib-webworker': /@types/serviceworker/0.0.62
@@ -14033,10 +14033,10 @@ packages:
       readable-stream: 3.6.0
     dev: false
 
-  github.com/hos1miya/misskey-js/d169807554202bf4c99cdc7aefa24e816081f30e:
-    resolution: {tarball: https://codeload.github.com/hos1miya/misskey-js/tar.gz/d169807554202bf4c99cdc7aefa24e816081f30e}
+  github.com/hos1miya/misskey-js/58c726f76f7012ea05d986b6e71a80dd07805419:
+    resolution: {tarball: https://codeload.github.com/hos1miya/misskey-js/tar.gz/58c726f76f7012ea05d986b6e71a80dd07805419}
     name: misskey-js
-    version: 0.0.25
+    version: 0.0.26
     dependencies:
       autobind-decorator: 2.4.0
       eventemitter3: 4.0.7

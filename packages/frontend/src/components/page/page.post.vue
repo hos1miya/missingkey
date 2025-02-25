@@ -78,6 +78,7 @@ export default defineComponent({
 			os.apiWithDialog('notes/create', {
 				text: this.text === '' ? null : this.text,
 				fileIds: file ? [file.id] : undefined,
+				via: 'MissingKey Web App',
 			}).then(() => {
 				this.posted = true;
 			});

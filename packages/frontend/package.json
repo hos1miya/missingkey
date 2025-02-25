@@ -38,7 +38,7 @@
 		"json5": "2.2.3",
 		"matter-js": "0.18.0",
 		"mfm-js": "0.23.3",
-		"misskey-js": "git+https://github.com/hos1miya/misskey-js#v0.0.25",
+		"misskey-js": "git+https://github.com/hos1miya/misskey-js#v0.0.26",
 		"photoswipe": "5.3.5",
 		"prismjs": "1.29.0",
 		"punycode": "2.3.0",
