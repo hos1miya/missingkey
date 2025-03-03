@@ -9,7 +9,6 @@ import { bindThis } from '@/decorators.js';
 import type { DbQueue, DeliverQueue, EndedPollNotificationQueue, InboxQueue, ObjectStorageQueue, SystemQueue, WebhookDeliverQueue } from './QueueModule.js';
 import type { ThinUser } from '../queue/types.js';
 import type httpSignature from '@peertube/http-signature';
-import keyDone from '@/server/api/endpoints/i/2fa/key-done.js';
 
 @Injectable()
 export class QueueService {
@@ -24,7 +23,43 @@ export class QueueService {
 		@Inject('queue:db') public dbQueue: DbQueue,
 		@Inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
 		@Inject('queue:webhookDeliver') public webhookDeliverQueue: WebhookDeliverQueue,
-	) {}
+	) {
+		this.systemQueue.add('tickCharts', {
+		}, {
+			repeat: { pattern: '55 * * * *' },
+			removeOnComplete: true,
+		});
+
+		this.systemQueue.add('resyncCharts', {
+		}, {
+			repeat: { pattern: '0 0 * * *' },
+			removeOnComplete: true,
+		});
+
+		this.systemQueue.add('cleanCharts', {
+		}, {
+			repeat: { pattern: '0 0 * * *' },
+			removeOnComplete: true,
+		});
+
+		this.systemQueue.add('aggregateRetention', {
+		}, {
+			repeat: { pattern: '0 0 * * *' },
+			removeOnComplete: true,
+		});
+
+		this.systemQueue.add('clean', {
+		}, {
+			repeat: { pattern: '0 0 * * *' },
+			removeOnComplete: true,
+		});
+
+		this.systemQueue.add('checkExpiredMutings', {
+		}, {
+			repeat: { pattern: '*/5 * * * *' },
+			removeOnComplete: true,
+		});
+	}
 
 	@bindThis
 	public deliver(user: ThinUser, content: IActivity | null, to: string | null) {
@@ -39,11 +74,10 @@ export class QueueService {
 			to,
 		};
 
-		return this.deliverQueue.add(data, {
+		return this.deliverQueue.add(to, data, {
 			attempts: this.config.deliverJobMaxAttempts ?? 12,
-			timeout: 1 * 60 * 1000,	// 1min
 			backoff: {
-				type: 'apBackoff',
+				type: 'custom',
 			},
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -57,11 +91,10 @@ export class QueueService {
 			signature,
 		};
 	
-		return this.inboxQueue.add(data, {
+		return this.inboxQueue.add('', data, {
 			attempts: this.config.inboxJobMaxAttempts ?? 8,
-			timeout: 5 * 60 * 1000,	// 5min
 			backoff: {
-				type: 'apBackoff',
+				type: 'custom',
 			},
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -249,11 +282,10 @@ export class QueueService {
 			eventId: uuid(),
 		};
 	
-		return this.webhookDeliverQueue.add(data, {
+		return this.webhookDeliverQueue.add(webhook.id, data, {
 			attempts: 4,
-			timeout: 1 * 60 * 1000,	// 1min
 			backoff: {
-				type: 'apBackoff',
+				type: 'custom',
 			},
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -265,11 +297,11 @@ export class QueueService {
 		this.deliverQueue.once('cleaned', (jobs, status) => {
 			//deliverLogger.succ(`Cleaned ${jobs.length} ${status} jobs`);
 		});
-		this.deliverQueue.clean(0, 'delayed');
+		this.deliverQueue.clean(0, Infinity, 'delayed');
 	
 		this.inboxQueue.once('cleaned', (jobs, status) => {
 			//inboxLogger.succ(`Cleaned ${jobs.length} ${status} jobs`);
 		});
-		this.inboxQueue.clean(0, 'delayed');
+		this.inboxQueue.clean(0, Infinity, 'delayed');
 	}
 }

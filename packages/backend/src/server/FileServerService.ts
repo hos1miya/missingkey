@@ -4,6 +4,7 @@ import { dirname } from 'node:path';
 import { Inject, Injectable } from '@nestjs/common';
 import fastifyStatic from '@fastify/static';
 import rename from 'rename';
+import { sharpBmp } from '@misskey-dev/sharp-read-bmp';
 import type { Config } from '@/config.js';
 import type { DriveFile, DriveFilesRepository } from '@/models/index.js';
 import { DI } from '@/di-symbols.js';
@@ -23,7 +24,6 @@ import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOption
 import { isMimeImage } from '@/misc/is-mime-image.js';
 import sharp from 'sharp';
 import { correctFilename } from '@/misc/correct-filename.js';
-import { sharpBmp } from 'sharp-read-bmp';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);

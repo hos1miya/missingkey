@@ -1,6 +1,6 @@
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import Redis from 'ioredis';
+import * as Redis from 'ioredis';
 import { IdService } from '@/core/IdService.js';
 import type { CacheableUser, User } from '@/models/entities/User.js';
 import type { Blocking } from '@/models/entities/Blocking.js';

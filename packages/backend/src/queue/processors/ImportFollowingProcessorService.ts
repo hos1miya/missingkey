@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IsNull, MoreThan } from 'typeorm';
+import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository, DriveFilesRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
@@ -9,10 +9,10 @@ import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { UserFollowingService } from '@/core/UserFollowingService.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
-import type { DbUserImportJobData } from '../types.js';
 import { bindThis } from '@/decorators.js';
+import { QueueLoggerService } from '../QueueLoggerService.js';
+import type * as Bull from 'bullmq';
+import type { DbUserImportJobData } from '../types.js';
 
 @Injectable()
 export class ImportFollowingProcessorService {
@@ -38,12 +38,11 @@ export class ImportFollowingProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbUserImportJobData>, done: () => void): Promise<void> {
+	public async process(job: Bull.Job<DbUserImportJobData>): Promise<void> {
 		this.logger.info(`Importing following of ${job.data.user.id} ...`);
 
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
-			done();
 			return;
 		}
 
@@ -51,7 +50,6 @@ export class ImportFollowingProcessorService {
 			id: job.data.fileId,
 		});
 		if (file == null) {
-			done();
 			return;
 		}
 
@@ -81,7 +79,7 @@ export class ImportFollowingProcessorService {
 				}
 
 				if (target == null) {
-					throw `cannot resolve user: @${username}@${host}`;
+					throw new Error(`cannot resolve user: @${username}@${host}`);
 				}
 
 				// skip myself
@@ -96,6 +94,5 @@ export class ImportFollowingProcessorService {
 		}
 
 		this.logger.succ('Imported');
-		done();
 	}
 }

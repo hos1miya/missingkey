@@ -1,4 +1,4 @@
-ARG NODE_VERSION=18.13.0-bullseye
+ARG NODE_VERSION=22.11.0-bullseye
 
 FROM node:${NODE_VERSION} AS builder
 
@@ -18,14 +18,14 @@ COPY ["packages/backend/package.json", "./packages/backend/"]
 COPY ["packages/frontend/package.json", "./packages/frontend/"]
 COPY ["packages/sw/package.json", "./packages/sw/"]
 
+RUN npm install -g pnpm@8.15.5
+
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
 	pnpm i --aggregate-output
 
 COPY . ./
 
 ARG NODE_ENV=production
-
-RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
 
 RUN git submodule update --init
 RUN pnpm build
@@ -43,7 +43,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 	ffmpeg tini curl \
-	&& corepack enable \
+	&& npm install -g pnpm@8.15.5 \
 	&& groupadd -g "${GID}" misskey \
 	&& useradd -l -u "${UID}" -g "${GID}" -m -d /misskey misskey \
 	&& find / -type f -perm /u+s -ignore_readdir_race -exec chmod u-s {} \; \

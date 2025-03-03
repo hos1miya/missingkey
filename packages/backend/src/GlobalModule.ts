@@ -1,7 +1,12 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { Global, Inject, Module } from '@nestjs/common';
-import Redis from 'ioredis';
+import * as Redis from 'ioredis';
 import { DataSource } from 'typeorm';
-import { createRedisConnection } from '@/redis.js';
+import { allSettled } from '@/misc/promise-tracker.js';
 import { DI } from './di-symbols.js';
 import { loadConfig } from './config.js';
 import { createPostgresDataSource } from './postgres.js';
@@ -27,8 +32,7 @@ const $db: Provider = {
 const $redis: Provider = {
 	provide: DI.redis,
 	useFactory: (config) => {
-		const redisClient = createRedisConnection(config);
-		return redisClient;
+		return new Redis.Redis(config.redis);
 	},
 	inject: [DI.config],
 };
@@ -36,7 +40,7 @@ const $redis: Provider = {
 const $redisSubscriber: Provider = {
 	provide: DI.redisSubscriber,
 	useFactory: (config) => {
-		const redisSubscriber = createRedisConnection(config);
+		const redisSubscriber = new Redis.Redis(config.redisForSub);
 		redisSubscriber.subscribe(config.host);
 		return redisSubscriber;
 	},
@@ -54,13 +58,20 @@ export class GlobalModule implements OnApplicationShutdown {
 		@Inject(DI.db) private db: DataSource,
 		@Inject(DI.redis) private redisClient: Redis.Redis,
 		@Inject(DI.redisSubscriber) private redisSubscriber: Redis.Redis,
-	) {}
+	) { }
 
-	async onApplicationShutdown(signal: string): Promise<void> {
+	public async dispose(): Promise<void> {
+		// Wait for all potential DB queries
+		await allSettled();
+		// And then disconnect from DB
 		await Promise.all([
 			this.db.destroy(),
 			this.redisClient.disconnect(),
 			this.redisSubscriber.disconnect(),
 		]);
+	}
+
+	async onApplicationShutdown(signal: string): Promise<void> {
+		await this.dispose();
 	}
 }

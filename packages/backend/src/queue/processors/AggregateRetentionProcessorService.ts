@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { In, IsNull, MoreThan } from 'typeorm';
+import { IsNull, MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
@@ -8,7 +8,6 @@ import type { RetentionAggregationsRepository, UsersRepository } from '@/models/
 import { deepClone } from '@/misc/clone.js';
 import { IdService } from '@/core/IdService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
 
 @Injectable()
 export class AggregateRetentionProcessorService {
@@ -31,7 +30,7 @@ export class AggregateRetentionProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<Record<string, unknown>>, done: () => void): Promise<void> {
+	public async process(): Promise<void> {
 		this.logger.info('Aggregating retention...');
 
 		const now = new Date();
@@ -77,6 +76,5 @@ export class AggregateRetentionProcessorService {
 		}
 
 		this.logger.succ('Retention aggregated.');
-		done();
 	}
 }

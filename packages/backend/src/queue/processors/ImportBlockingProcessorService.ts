@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IsNull, MoreThan } from 'typeorm';
+import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { UsersRepository, BlockingsRepository, DriveFilesRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
@@ -9,10 +9,10 @@ import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
-import type { DbUserImportJobData } from '../types.js';
 import { bindThis } from '@/decorators.js';
+import { QueueLoggerService } from '../QueueLoggerService.js';
+import type * as Bull from 'bullmq';
+import type { DbUserImportJobData } from '../types.js';
 
 @Injectable()
 export class ImportBlockingProcessorService {
@@ -41,12 +41,11 @@ export class ImportBlockingProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbUserImportJobData>, done: () => void): Promise<void> {
+	public async process(job: Bull.Job<DbUserImportJobData>): Promise<void> {
 		this.logger.info(`Importing blocking of ${job.data.user.id} ...`);
 
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
-			done();
 			return;
 		}
 
@@ -54,7 +53,6 @@ export class ImportBlockingProcessorService {
 			id: job.data.fileId,
 		});
 		if (file == null) {
-			done();
 			return;
 		}
 
@@ -84,7 +82,7 @@ export class ImportBlockingProcessorService {
 				}
 
 				if (target == null) {
-					throw `cannot resolve user: @${username}@${host}`;
+					throw new Error(`cannot resolve user: @${username}@${host}`);
 				}
 
 				// skip myself
@@ -99,6 +97,5 @@ export class ImportBlockingProcessorService {
 		}
 
 		this.logger.succ('Imported');
-		done();
 	}
 }

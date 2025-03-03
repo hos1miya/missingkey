@@ -1,6 +1,7 @@
 import { URL } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
 import httpSignature from '@peertube/http-signature';
+import * as Bull from 'bullmq';
 import { DI } from '@/di-symbols.js';
 import type { InstancesRepository, DriveFilesRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
@@ -23,7 +24,6 @@ import { LdSignatureService } from '@/core/activitypub/LdSignatureService.js';
 import { ApInboxService } from '@/core/activitypub/ApInboxService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
 import type { InboxJobData } from '../types.js';
 
 // ユーザーのinboxにアクティビティが届いた時の処理
@@ -105,21 +105,21 @@ export class InboxProcessorService {
 				// 対象が4xxならスキップ
 				if (err instanceof StatusError) {
 					if (err.isClientError) {
-						return `skip: Ignored deleted actors on both ends ${activity.actor} - ${err.statusCode}`;
+						throw new Bull.UnrecoverableError(`skip: Ignored deleted actors on both ends ${activity.actor} - ${err.statusCode}`);
 					}
-					throw `Error in actor ${activity.actor} - ${err.statusCode ?? err}`;
+					throw new Error(`Error in actor ${activity.actor} - ${err.statusCode ?? err}`);
 				}
 			}
 		}
 
 		// それでもわからなければ終了
 		if (authUser == null) {
-			return 'skip: failed to resolve user';
+			throw new Bull.UnrecoverableError('skip: failed to resolve user');
 		}
 
 		// publicKey がなくても終了
 		if (authUser.key == null) {
-			return 'skip: failed to resolve user publicKey';
+			throw new Bull.UnrecoverableError('skip: failed to resolve user publicKey');
 		}
 
 		// HTTP-Signatureの検証
@@ -130,7 +130,7 @@ export class InboxProcessorService {
 			// 一致しなくても、でもLD-Signatureがありそうならそっちも見る
 			if (activity.signature) {
 				if (activity.signature.type !== 'RsaSignature2017') {
-					return `skip: unsupported LD-signature type ${activity.signature.type}`;
+					throw new Bull.UnrecoverableError(`skip: unsupported LD-signature type ${activity.signature.type}`);
 				}
 
 				// activity.signature.creator: https://example.oom/users/user#main-key
@@ -143,25 +143,25 @@ export class InboxProcessorService {
 				// keyIdからLD-Signatureのユーザーを取得
 				authUser = await this.apDbResolverService.getAuthUserFromKeyId(activity.signature.creator);
 				if (authUser == null) {
-					return 'skip: LD-Signatureのユーザーが取得できませんでした';
+					throw new Bull.UnrecoverableError('skip: LD-Signatureのユーザーが取得できませんでした');
 				}
 
 				if (authUser.key == null) {
-					return 'skip: LD-SignatureのユーザーはpublicKeyを持っていませんでした';
+					throw new Bull.UnrecoverableError('skip: LD-SignatureのユーザーはpublicKeyを持っていませんでした');
 				}
 
 				// LD-Signature検証
 				const ldSignature = this.ldSignatureService.use();
 				const verified = await ldSignature.verifyRsaSignature2017(activity, authUser.key.keyPem).catch(() => false);
 				if (!verified) {
-					return 'skip: LD-Signatureの検証に失敗しました';
+					throw new Bull.UnrecoverableError('skip: LD-Signatureの検証に失敗しました');
 				}
 
 				activity = await ldSignature.compactToWellKnown(activity);
 
 				// もう一度actorチェック
 				if (authUser.user.uri !== activity.actor) {
-					return `skip: LD-Signature user(${authUser.user.uri}) !== activity.actor(${activity.actor})`;
+					throw new Bull.UnrecoverableError(`skip: LD-Signature user(${authUser.user.uri}) !== activity.actor(${activity.actor})`);
 				}
 
 				// ブロックしてたら中断
@@ -170,7 +170,7 @@ export class InboxProcessorService {
 					return `Blocked request: ${ldHost}`;
 				}
 			} else {
-				return `skip: http-signature verification failed and no LD-Signature. keyId=${signature.keyId}`;
+				throw new Bull.UnrecoverableError(`skip: http-signature verification failed and no LD-Signature. keyId=${signature.keyId}`);
 			}
 		}
 
@@ -179,7 +179,7 @@ export class InboxProcessorService {
 			const signerHost = this.utilityService.extractDbHost(authUser.user.uri!);
 			const activityIdHost = this.utilityService.extractDbHost(activity.id);
 			if (signerHost !== activityIdHost) {
-				return `skip: signerHost(${signerHost}) !== activity.id host(${activityIdHost}`;
+				throw new Bull.UnrecoverableError(`skip: signerHost(${signerHost}) !== activity.id host(${activityIdHost}`);
 			}
 		}
 

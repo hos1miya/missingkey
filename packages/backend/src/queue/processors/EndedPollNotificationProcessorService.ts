@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { MoreThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { PollVotesRepository, NotesRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
 import { CreateNotificationService } from '@/core/CreateNotificationService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
+import type * as Bull from 'bullmq';
 import type { EndedPollNotificationJobData } from '../types.js';
 import { bindThis } from '@/decorators.js';
 
@@ -31,10 +30,9 @@ export class EndedPollNotificationProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<EndedPollNotificationJobData>, done: () => void): Promise<void> {
+	public async process(job: Bull.Job<EndedPollNotificationJobData>): Promise<void> {
 		const note = await this.notesRepository.findOneBy({ id: job.data.noteId });
 		if (note == null || !note.hasPoll) {
-			done();
 			return;
 		}
 
@@ -52,7 +50,5 @@ export class EndedPollNotificationProcessorService {
 				noteId: note.id,
 			});
 		}
-
-		done();
 	}
 }

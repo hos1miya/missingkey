@@ -9,7 +9,7 @@ import * as fileType from 'file-type';
 import FFmpeg from 'fluent-ffmpeg';
 import isSvg from 'is-svg';
 import probeImageSize from 'probe-image-size';
-import { type predictionType } from 'nsfwjs';
+import { type PredictionType } from 'nsfwjs';
 import sharp from 'sharp';
 import { encode } from 'blurhash';
 import { createTempDir } from '@/misc/create-temp.js';
@@ -162,7 +162,7 @@ export class FileInfoService {
 		let sensitive = false;
 		let porn = false;
 	
-		function judgePrediction(result: readonly predictionType[]): [sensitive: boolean, porn: boolean] {
+		function judgePrediction(result: readonly PredictionType[]): [sensitive: boolean, porn: boolean] {
 			let sensitive = false;
 			let porn = false;
 	

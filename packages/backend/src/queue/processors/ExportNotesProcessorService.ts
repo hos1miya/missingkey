@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import { Inject, Injectable } from '@nestjs/common';
-import { IsNull, MoreThan } from 'typeorm';
+import { MoreThan } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository, PollsRepository, UsersRepository } from '@/models/index.js';
@@ -10,10 +10,10 @@ import { DriveService } from '@/core/DriveService.js';
 import { createTemp } from '@/misc/create-temp.js';
 import type { Poll } from '@/models/entities/Poll.js';
 import type { Note } from '@/models/entities/Note.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
-import type { DbUserJobData } from '../types.js';
 import { bindThis } from '@/decorators.js';
+import { QueueLoggerService } from '../QueueLoggerService.js';
+import type * as Bull from 'bullmq';
+import type { DbUserJobData } from '../types.js';
 
 @Injectable()
 export class ExportNotesProcessorService {
@@ -39,12 +39,11 @@ export class ExportNotesProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbUserJobData>, done: () => void): Promise<void> {
+	public async process(job: Bull.Job<DbUserJobData>): Promise<void> {
 		this.logger.info(`Exporting notes of ${job.data.user.id} ...`);
 
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
-			done();
 			return;
 		}
 
@@ -87,7 +86,7 @@ export class ExportNotesProcessorService {
 				}) as Note[];
 
 				if (notes.length === 0) {
-					job.progress(100);
+					job.updateProgress(100);
 					break;
 				}
 
@@ -108,7 +107,7 @@ export class ExportNotesProcessorService {
 					userId: user.id,
 				});
 
-				job.progress(exportedNotesCount / total);
+				job.updateProgress(exportedNotesCount / total);
 			}
 
 			await write(']');
@@ -123,8 +122,6 @@ export class ExportNotesProcessorService {
 		} finally {
 			cleanup();
 		}
-
-		done();
 	}
 }
 

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 /**
  * Config loader
  */
@@ -6,6 +11,16 @@ import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import * as yaml from 'js-yaml';
+import type { RedisOptions } from 'ioredis';
+
+type RedisOptionsSource = Partial<RedisOptions> & {
+	host: string;
+	port: number;
+	family?: number;
+	pass: string;
+	db?: number;
+	prefix?: string;
+};
 
 /**
  * ユーザーが設定する必要のある情報
@@ -25,14 +40,9 @@ export type Source = {
 		disableCache?: boolean;
 		extra?: { [x: string]: string };
 	};
-	redis: {
-		host: string;
-		port: number;
-		family?: number;
-		pass: string;
-		db?: number;
-		prefix?: string;
-	};
+	redis: RedisOptionsSource;
+	redisForSub?: RedisOptionsSource;
+	redisForJobQueue?: RedisOptionsSource;
 	elasticsearch: {
 		host: string;
 		port: number;
@@ -91,6 +101,9 @@ export type Mixin = {
 	mediaProxy: string;
 	externalMediaProxyEnabled: boolean;
 	videoThumbnailGenerator: string | null;
+	redis: RedisOptions & RedisOptionsSource;
+	redisForSub: RedisOptions & RedisOptionsSource;
+	redisForJobQueue: RedisOptions & RedisOptionsSource;
 };
 
 export type Config = Source & Mixin;
@@ -150,7 +163,9 @@ export function loadConfig() {
 		config.videoThumbnailGenerator.endsWith('/') ? config.videoThumbnailGenerator.substring(0, config.videoThumbnailGenerator.length - 1) : config.videoThumbnailGenerator
 		: null;
 
-	if (!config.redis.prefix) config.redis.prefix = mixin.host;
+	mixin.redis = convertRedisOptions(config.redis, mixin.host);
+	mixin.redisForSub = config.redisForSub ? convertRedisOptions(config.redisForSub, mixin.host) : mixin.redis;
+	mixin.redisForJobQueue = config.redisForJobQueue ? convertRedisOptions(config.redisForJobQueue, mixin.host) : mixin.redis;
 
 	return Object.assign(config, mixin);
 }
@@ -159,6 +174,17 @@ function tryCreateUrl(url: string) {
 	try {
 		return new URL(url);
 	} catch (e) {
-		throw `url="${url}" is not a valid URL.`;
+		throw new Error(`url="${url}" is not a valid URL.`);
 	}
+}
+
+function convertRedisOptions(options: RedisOptionsSource, host: string): RedisOptions & RedisOptionsSource {
+	return {
+		...options,
+		password: options.pass,
+		prefix: options.prefix ?? host,
+		family: options.family ?? 0,
+		keyPrefix: `${options.prefix ?? host}:`,
+		db: options.db ?? 0,
+	};
 }

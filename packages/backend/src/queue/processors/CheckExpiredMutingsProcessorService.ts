@@ -1,13 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { In, MoreThan } from 'typeorm';
+import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MutingsRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
 import { bindThis } from '@/decorators.js';
+import { QueueLoggerService } from '../QueueLoggerService.js';
 
 @Injectable()
 export class CheckExpiredMutingsProcessorService {
@@ -27,7 +26,7 @@ export class CheckExpiredMutingsProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<Record<string, unknown>>, done: () => void): Promise<void> {
+	public async process(): Promise<void> {
 		this.logger.info('Checking expired mutings...');
 
 		const expired = await this.mutingsRepository.createQueryBuilder('muting')
@@ -47,6 +46,5 @@ export class CheckExpiredMutingsProcessorService {
 		}
 
 		this.logger.succ('All expired mutings checked.');
-		done();
 	}
 }

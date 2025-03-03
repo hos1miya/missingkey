@@ -1,8 +1,7 @@
 import * as fs from 'node:fs';
 import { Inject, Injectable } from '@nestjs/common';
-import { IsNull, MoreThan } from 'typeorm';
+import { IsNull } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
-import { ulid } from 'ulid';
 import mime from 'mime-types';
 import archiver from 'archiver';
 import { DI } from '@/di-symbols.js';
@@ -14,7 +13,7 @@ import { createTemp, createTempDir } from '@/misc/create-temp.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
+import type * as Bull from 'bullmq';
 
 @Injectable()
 export class ExportCustomEmojisProcessorService {
@@ -38,12 +37,11 @@ export class ExportCustomEmojisProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job, done: () => void): Promise<void> {
+	public async process(job: Bull.Job): Promise<void> {
 		this.logger.info('Exporting custom emojis ...');
 
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
-			done();
 			return;
 		}
 
@@ -132,7 +130,6 @@ export class ExportCustomEmojisProcessorService {
 			this.logger.succ(`Exported to: ${driveFile.id}`);
 			cleanup();
 			archiveCleanup();
-			done();
 		});
 		archive.pipe(archiveStream);
 		archive.directory(path, false);

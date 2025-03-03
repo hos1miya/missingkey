@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { In, LessThan, MoreThan } from 'typeorm';
+import { LessThan } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { AntennaNotesRepository, MutedNotesRepository, NotificationsRepository, UserIpsRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
@@ -7,7 +7,6 @@ import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
 
 @Injectable()
 export class CleanProcessorService {
@@ -36,7 +35,7 @@ export class CleanProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<Record<string, unknown>>, done: () => void): Promise<void> {
+	public async process(): Promise<void> {
 		this.logger.info('Cleaning...');
 
 		this.userIpsRepository.delete({
@@ -57,6 +56,5 @@ export class CleanProcessorService {
 		});
 
 		this.logger.succ('Cleaned.');
-		done();
 	}
 }

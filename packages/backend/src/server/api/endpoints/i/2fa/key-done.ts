@@ -1,6 +1,5 @@
-import { promisify } from 'node:util';
 import bcrypt from 'bcryptjs';
-import * as cbor from 'cbor';
+import cbor from 'cbor';
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
@@ -9,8 +8,6 @@ import { DI } from '@/di-symbols.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { TwoFactorAuthenticationService } from '@/core/TwoFactorAuthenticationService.js';
 import type { AttestationChallengesRepository, UserProfilesRepository, UserSecurityKeysRepository } from '@/models/index.js';
-
-const cborDecodeFirst = promisify(cbor.decodeFirst) as any;
 
 export const meta = {
 	requireCredential: true,
@@ -77,7 +74,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			const clientDataJSONHash = this.twoFactorAuthenticationService.hash(Buffer.from(ps.clientDataJSON, 'utf-8'));
 
-			const attestation = await cborDecodeFirst(ps.attestationObject);
+			const attestation = await cbor.decodeFirst(ps.attestationObject);
 
 			const rpIdHash = attestation.authData.slice(0, 32);
 			if (!rpIdHashReal.equals(rpIdHash)) {
@@ -95,7 +92,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			const credentialIdLength = authData.readUInt16BE(53);
 			const credentialId = authData.slice(55, 55 + credentialIdLength);
 			const publicKeyData = authData.slice(55 + credentialIdLength);
-			const publicKey: Map<number, any> = await cborDecodeFirst(publicKeyData);
+			const publicKey: Map<number, any> = await cbor.decodeFirst(publicKeyData);
 			if (publicKey.get(3) !== -7) {
 				throw new Error('alg mismatch');
 			}
