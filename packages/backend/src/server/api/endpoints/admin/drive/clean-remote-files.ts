@@ -11,7 +11,9 @@ export const meta = {
 
 export const paramDef = {
 	type: 'object',
-	properties: {},
+	properties: {
+		untilId: { type: 'string', format: 'misskey:id' },
+	},
 	required: [],
 } as const;
 
@@ -22,7 +24,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private queueService: QueueService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			this.queueService.createCleanRemoteFilesJob();
+			this.queueService.createCleanRemoteFilesJob(ps.untilId);
 		});
 	}
 }

@@ -9,6 +9,7 @@ import { bindThis } from '@/decorators.js';
 import type { DbQueue, DeliverQueue, EndedPollNotificationQueue, InboxQueue, ObjectStorageQueue, SystemQueue, WebhookDeliverQueue } from './QueueModule.js';
 import type { ThinUser } from '../queue/types.js';
 import type httpSignature from '@peertube/http-signature';
+import keyDone from '@/server/api/endpoints/i/2fa/key-done.js';
 
 @Injectable()
 export class QueueService {
@@ -226,8 +227,10 @@ export class QueueService {
 	}
 
 	@bindThis
-	public createCleanRemoteFilesJob() {
-		return this.objectStorageQueue.add('cleanRemoteFiles', {}, {
+	public createCleanRemoteFilesJob(key?: string) {
+		return this.objectStorageQueue.add('cleanRemoteFiles', key ? {
+			key: key,
+		} : {}, {
 			removeOnComplete: true,
 			removeOnFail: true,
 		});

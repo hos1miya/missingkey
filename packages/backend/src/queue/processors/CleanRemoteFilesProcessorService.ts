@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IsNull, MoreThan, Not } from 'typeorm';
+import { IsNull, MoreThan, LessThan, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
@@ -7,6 +7,7 @@ import type Logger from '@/logger.js';
 import { DriveService } from '@/core/DriveService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type Bull from 'bull';
+import type { ObjectStorageFileJobData } from '../types.js';
 import { bindThis } from '@/decorators.js';
 
 @Injectable()
@@ -27,11 +28,12 @@ export class CleanRemoteFilesProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<Record<string, unknown>>, done: () => void): Promise<void> {
+	public async process(job: Bull.Job<ObjectStorageFileJobData>, done: () => void): Promise<void> {
 		this.logger.info('Deleting cached remote files...');
 
 		let deletedCount = 0;
 		let cursor: any = null;
+		const until: string | null = job.data.key ? job.data.key : null;
 
 		while (true) {
 			const files = await this.driveFilesRepository.find({
@@ -39,6 +41,7 @@ export class CleanRemoteFilesProcessorService {
 					userHost: Not(IsNull()),
 					isLink: false,
 					...(cursor ? { id: MoreThan(cursor) } : {}),
+					...(until ? { id: LessThan(until) } : {}),
 				},
 				take: 8,
 				order: {
@@ -65,7 +68,8 @@ export class CleanRemoteFilesProcessorService {
 			job.progress(deletedCount / total);
 		}
 
-		this.logger.succ('All cached remote files has been deleted.');
+		if (!until) this.logger.succ('All cached remote files has been deleted.');
+		else this.logger.succ(`Cached remote files (before ${until}) has been deleted.`);
 		done();
 	}
 }
