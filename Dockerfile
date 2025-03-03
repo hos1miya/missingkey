@@ -10,8 +10,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 	&& apt-get install -yqq --no-install-recommends \
 	build-essential
 
-RUN corepack enable
-
 WORKDIR /misskey
 
 COPY ["pnpm-lock.yaml", "pnpm-workspace.yaml", "package.json", "./"]
@@ -26,6 +24,8 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
 COPY . ./
 
 ARG NODE_ENV=production
+
+RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
 
 RUN git submodule update --init
 RUN pnpm build

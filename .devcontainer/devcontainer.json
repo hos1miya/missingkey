@@ -2,10 +2,15 @@
 	"name": "Misskey",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"workspaceFolder": "/workspace",
 	"features": {
-		"ghcr.io/devcontainers-contrib/features/pnpm:2": {}
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "22.11.0"
+		},
+		"ghcr.io/devcontainers-extra/features/pnpm:2": {
+			"version": "10.5.2"
+		}
 	},
 	"forwardPorts": [3000],
-	"postCreateCommand": ".devcontainer/init.sh"
+	"postCreateCommand": "/bin/bash .devcontainer/init.sh"
 }
