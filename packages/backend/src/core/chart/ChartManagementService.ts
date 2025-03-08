@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { bindThis } from '@/decorators.js';
 import FederationChart from './charts/federation.js';
@@ -18,7 +18,7 @@ import type { OnApplicationShutdown } from '@nestjs/common';
 @Injectable()
 export class ChartManagementService implements OnApplicationShutdown {
 	private charts;
-	private saveIntervalId: NodeJS.Timer;
+	private saveIntervalId: NodeJS.Timeout;
 
 	constructor(
 		private federationChart: FederationChart,
@@ -51,7 +51,7 @@ export class ChartManagementService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async start() {
+	public async start(): Promise<void> {
 		// 20分おきにメモリ情報をDBに書き込み
 		this.saveIntervalId = setInterval(() => {
 			for (const chart of this.charts) {

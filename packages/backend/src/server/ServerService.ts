@@ -9,7 +9,6 @@ import type { Config } from '@/config.js';
 import type { EmojisRepository, UserProfilesRepository, UsersRepository } from '@/models/index.js';
 import { DI } from '@/di-symbols.js';
 import type Logger from '@/logger.js';
-import { envOption } from '@/env.js';
 import * as Acct from '@/misc/acct.js';
 import { genIdenticon } from '@/misc/gen-identicon.js';
 import { createTemp } from '@/misc/create-temp.js';
@@ -94,12 +93,20 @@ export class ServerService {
 				return;
 			}
 
-			const name = path.split('@')[0].replace('.webp', '');
-			const host = path.split('@')[1]?.replace('.webp', '');
+			const emojiPath = path.replace(/\.webp$/i, '');
+			const pathChunks = emojiPath.split('@');
+
+			if (pathChunks.length > 2) {
+				reply.code(400);
+				return;
+			}
+
+ 			const name = pathChunks.shift();
+			const host = pathChunks.pop();
 
 			const emoji = await this.emojisRepository.findOneBy({
 				// `@.` is the spec of ReactionService.decodeReaction
-				host: (host == null || host === '.') ? IsNull() : host,
+				host: (host === undefined || host === '.') ? IsNull() : host,
 				name: name,
 			});
 
@@ -121,8 +128,8 @@ export class ServerService {
 			if ('static' in request.query) url.searchParams.set('static', '1');
 
 			return await reply.redirect(
-				301,
 				url.toString(),
+				301,
 			);
 		});
 

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { UserListJoiningsRepository, UserListsRepository, NotesRepository } from '@/models/index.js';
+import type { UserListJoiningsRepository, UserListsRepository } from '@/models/index.js';
 import type { User } from '@/models/entities/User.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import type { Packed } from '@/misc/schema.js';
@@ -14,7 +14,7 @@ class UserListChannel extends Channel {
 	public static requireCredential = false;
 	private listId: string;
 	public listUsers: User['id'][] = [];
-	private listUsersClock: NodeJS.Timer;
+	private listUsersClock: NodeJS.Timeout;
 
 	constructor(
 		private userListsRepository: UserListsRepository,

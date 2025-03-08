@@ -75,7 +75,7 @@ export class ApiCallService implements OnApplicationShutdown {
 				}
 				this.send(reply, res);
 			}).catch((err: ApiError) => {
-				this.send(reply, err.httpStatusCode ? err.httpStatusCode : err.kind === 'client' ? 400 : 500, err);
+				this.send(reply, err.httpStatusCode ?? err.kind === 'client' ? 400 : 500, err);
 			});
 
 			if (user) {
@@ -126,7 +126,7 @@ export class ApiCallService implements OnApplicationShutdown {
 			}, request).then((res) => {
 				this.send(reply, res);
 			}).catch((err: ApiError) => {
-				this.send(reply, err.httpStatusCode ? err.httpStatusCode : err.kind === 'client' ? 400 : 500, err);
+				this.send(reply, err.httpStatusCode ?? err.kind === 'client' ? 400 : 500, err);
 			});
 
 			if (user) {
