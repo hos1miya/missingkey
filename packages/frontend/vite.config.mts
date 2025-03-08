@@ -1,10 +1,11 @@
 import path from 'path';
 import pluginVue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vite';
-
+import ReactivityTransform from '@vue-macros/reactivity-transform/vite';
 import locales from '../../locales';
 import meta from '../../package.json';
 import pluginJson5 from './vite.json5';
+import pluginUnwindCssModuleClassName from '@/lib/rollup-plugin-unwind-css-module-class-name';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue'];
 
@@ -42,10 +43,10 @@ export default defineConfig(({ command, mode }) => {
 		base: '/vite/',
 
 		plugins: [
-			pluginVue({
-				reactivityTransform: true,
-			}),
+			pluginVue(),
+			pluginUnwindCssModuleClassName(),
 			pluginJson5(),
+			ReactivityTransform(),
 		],
 
 		resolve: {
