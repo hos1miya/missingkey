@@ -29,7 +29,7 @@
 		<template #label>Errored instances</template>
 		<template #suffix>({{ number(jobs.reduce((a, b) => a + b[1], 0)) }} jobs)</template>
 		
-		<div :class="$style.jobs">
+		<div>
 			<div v-if="jobs.length > 0">
 				<div v-for="job in jobs" :key="job[0]">
 					<MkA :to="`/instance-info/${job[0]}`" behavior="window">{{ job[0] }}</MkA>
@@ -155,8 +155,5 @@ onUnmounted(() => {
 			}
 		}
 	}
-}
-
-.jobs {
 }
 </style>

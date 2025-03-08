@@ -1,6 +1,7 @@
 {
 	"name": "frontend",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"watch": "vite",
 		"build": "vite build",
@@ -18,8 +19,8 @@
 		"@types/estree": "^1.0.6",
 		"@vitejs/plugin-vue": "5.2.1",
 		"@vue/compiler-sfc": "3.5.13",
-		"acorn": "^8.14.1",
 		"astring": "1.9.0",
+		"autobind-decorator": "^2.4.0",
 		"autosize": "6.0.1",
 		"blurhash": "2.0.5",
 		"broadcast-channel": "7.0.0",
@@ -75,8 +76,6 @@
 	"devDependencies": {
 		"@types/escape-regexp": "0.0.3",
 		"@types/glob": "8.1.0",
-		"@types/gulp": "4.0.17",
-		"@types/gulp-rename": "2.0.6",
 		"@types/matter-js": "0.19.8",
 		"@types/node": "22.13.8",
 		"@types/punycode": "2.1.4",
@@ -91,6 +90,7 @@
 		"@typescript-eslint/parser": "8.25.0",
 		"@vue-macros/reactivity-transform": "3.0.0-beta.3",
 		"@vue/runtime-core": "3.5.13",
+		"acorn": "^8.14.1",
 		"cross-env": "7.0.3",
 		"cypress": "14.1.0",
 		"eslint": "9.21.0",
@@ -98,6 +98,7 @@
 		"eslint-plugin-vue": "9.32.0",
 		"globals": "^16.0.0",
 		"start-server-and-test": "2.0.10",
+		"vitest": "^3.0.8",
 		"vue-eslint-parser": "9.4.3",
 		"vue-tsc": "2.2.8"
 	}

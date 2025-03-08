@@ -14,7 +14,13 @@ const fs = require('fs');
 		stderr: process.stderr,
 	});
 
-	execa('pnpm', ['exec', 'gulp', 'watch'], {
+	await execa('pnpm', ['build-assets'], {
+		cwd: _dirname + '/../',
+		stdout: process.stdout,
+		stderr: process.stderr,
+	}); 
+	 
+	execa('pnpm', ['build-assets', '--watch'], {
 		cwd: __dirname + '/../',
 		stdout: process.stdout,
 		stderr: process.stderr,

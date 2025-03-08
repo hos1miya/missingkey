@@ -42,7 +42,6 @@
 	"compileOnSave": false,
 	"include": [
 		".eslintrc.js",
-		"vite.config.mts",
 		"./**/*.ts",
 		"./**/*.vue"
 	]

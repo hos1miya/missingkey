@@ -6,7 +6,7 @@
 			<MkUserName :user="$i"/>
 		</div>
 		<div>
-			<div :class="$style.content">
+			<div>
 				<Mfm :text="text.trim()" :author="$i" :i="$i"/>
 			</div>
 		</div>

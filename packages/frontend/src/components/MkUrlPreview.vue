@@ -4,10 +4,10 @@
 	<iframe v-if="player.url.startsWith('http://') || player.url.startsWith('https://')" :class="$style.playerIframe" :src="player.url + (player.url.match(/\?/) ? '&autoplay=1&auto_play=1' : '?autoplay=1&auto_play=1')" :width="player.width || '100%'" :heigth="player.height || 250" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen/>
 	<span v-else>invalid url</span>
 </div>
-<div v-else-if="tweetId && tweetExpanded" ref="twitter" :class="$style.twitter">
+<div v-else-if="tweetId && tweetExpanded" ref="twitter">
 	<iframe ref="tweet" scrolling="no" frameborder="no" :style="{ position: 'relative', width: '100%', height: `${tweetHeight}px` }" :src="`https://platform.twitter.com/embed/index.html?embedId=${embedId}&amp;hideCard=false&amp;hideThread=false&amp;lang=en&amp;theme=${$store.state.darkMode ? 'dark' : 'light'}&amp;id=${tweetId}`"></iframe>
 </div>
-<div v-else :class="$style.urlPreview">
+<div v-else>
 	<component :is="self ? 'MkA' : 'a'" :class="[$style.link, { [$style.compact]: compact }]" :[attr]="self ? url.substr(local.length) : url" rel="nofollow noopener" :target="target" :title="url">
 		<div v-if="thumbnail" :class="$style.thumbnail" :style="`background-image: url('${thumbnail}')`">
 		</div>
@@ -168,13 +168,6 @@ onUnmounted(() => {
 	position: absolute;
 	top: 0;
 	width: 100%;
-}
-
-.twitter {
-
-}
-
-.urlPreview {
 }
 
 .link {

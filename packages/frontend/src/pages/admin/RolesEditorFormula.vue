@@ -1,5 +1,5 @@
 <template>
-<div :class="$style.root" class="_gaps">
+<div class="_gaps">
 	<div :class="$style.header">
 		<MkSelect v-model="type" :class="$style.typeSelect">
 			<option value="isLocal">{{ i18n.ts._role._condition.isLocal }}</option>
@@ -22,7 +22,7 @@
 		</button>
 	</div>
 
-	<div v-if="type === 'and' || type === 'or'" :class="$style.values" class="_gaps">
+	<div v-if="type === 'and' || type === 'or'" class="_gaps">
 		<Sortable v-model="v.values" tag="div" class="_gaps" item-key="id" handle=".drag-handle" :group="{ name: 'roleFormula' }" :animation="150" :swap-threshold="0.5">
 			<template #item="{element}">
 				<div :class="$style.item">
@@ -119,10 +119,6 @@ function removeSelf() {
 </script>
 
 <style lang="scss" module>
-.root {
-
-}
-
 .header {
 	display: flex;
 }
@@ -148,9 +144,5 @@ function removeSelf() {
 	&:hover {
 		border-color: var(--accent);
 	}
-}
-
-.values {
-
 }
 </style>

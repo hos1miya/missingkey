@@ -12,7 +12,7 @@
 			<MkAvatar :user="postAccount ?? $i" :class="$style.avatar"/>
 		</button>
 		<div :class="$style.headerRight">
-			<span :class="[$style.textCount, { [$style.textOver]: textLength > maxTextLength }]">{{ maxTextLength - textLength }}</span>
+			<span :class="$style.textCount">{{ maxTextLength - textLength }}</span>
 			<span v-if="localOnly" :class="$style.localOnly"><i class="ti ti-world-off"></i></span>
 			<button ref="visibilityButton" v-tooltip="i18n.ts.visibility" class="_button" :class="$style.visibility" :disabled="channel != null" @click="setVisibility">
 				<span v-if="visibility === 'public'"><i class="ti ti-world"></i></span>
@@ -21,7 +21,7 @@
 				<span v-if="visibility === 'specified'"><i class="ti ti-mail"></i></span>
 			</button>
 			<button v-tooltip="i18n.ts.previewNoteText" class="_button" :class="[$style.previewButton, { [$style.previewButtonActive]: showPreview }]" @click="showPreview = !showPreview"><i class="ti ti-eye"></i></button>
-			<button v-click-anime class="_button" :class="[$style.submit, { [$style.submitPosting]: posting }]" :disabled="!canPost" data-cy-open-post-form-submit @click="post">
+			<button v-click-anime class="_button" :class="$style.submit" :disabled="!canPost" data-cy-open-post-form-submit @click="post">
 				<div :class="$style.submitInner">
 					<template v-if="posted"></template>
 					<template v-else-if="posting"><MkEllipsis/></template>
@@ -31,7 +31,7 @@
 			</button>
 		</div>
 	</header>
-	<div :class="[$style.form]">
+	<div>
 		<MkNoteSimple v-if="reply" :class="$style.targetNote" :note="reply"/>
 		<MkNoteSimple v-if="renote" :class="$style.targetNote" :note="renote"/>
 		<div v-if="quoteId" :class="$style.withQuote"><i class="ti ti-quote"></i> {{ i18n.ts.quoteAttached }}<button @click="quoteId = null"><i class="ti ti-x"></i></button></div>
@@ -48,7 +48,7 @@
 		<input v-show="useCw" ref="cwInputEl" v-model="cw" :class="$style.cw" :placeholder="i18n.ts.annotation" @keydown="onKeydown">
 		<textarea ref="textareaEl" v-model="text" :class="[$style.text, { [$style.withCw]: useCw }]" :disabled="posting || posted" :placeholder="placeholder" data-cy-post-form-text @keydown="onKeydown" @paste="onPaste" @compositionupdate="onCompositionUpdate" @compositionend="onCompositionEnd"/>
 		<input v-show="withHashtags" ref="hashtagsInputEl" v-model="hashtags" :class="$style.hashtags" :placeholder="i18n.ts.hashtags" list="hashtags">
-		<XPostFormAttaches v-model="files" :class="$style.attaches" @detach="detachFile" @change-sensitive="updateFileSensitive" @change-name="updateFileName"/>
+		<XPostFormAttaches v-model="files" @detach="detachFile" @change-sensitive="updateFileSensitive" @change-name="updateFileName"/>
 		<MkPollEditor v-if="poll" v-model="poll" @destroyed="poll = null"/>
 		<XNotePreview v-if="showPreview" :class="$style.preview" :text="text"/>
 		<footer :class="$style.footer">
@@ -910,9 +910,6 @@ defineExpose({
 	box-sizing: border-box;
 	color: var(--fgOnAccent);
 	background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
-}
-
-.form {
 }
 
 .preview {

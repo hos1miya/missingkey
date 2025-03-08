@@ -2,8 +2,13 @@
  * Languages Loader
  */
 
-const fs = require('fs');
-const yaml = require('js-yaml');
+import * as fs from 'fs';
+import * as yaml from 'js-yaml';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const merge = (...args) => args.reduce((a, c) => ({
 	...a,
@@ -53,7 +58,7 @@ const clean = (text) => text.replace(new RegExp(String.fromCodePoint(0x08), 'g')
 
 const locales = languages.reduce((a, c) => (a[c] = yaml.load(clean(fs.readFileSync(`${__dirname}/${c}.yml`, 'utf-8'))) || {}, a), {});
 
-module.exports = Object.entries(locales)
+const processedLocales = Object.entries(locales)
 	.reduce((a, [k ,v]) => (a[k] = (() => {
 		const [lang] = k.split('-');
 		switch (k) {
@@ -68,3 +73,5 @@ module.exports = Object.entries(locales)
 			);
 		}
 	})(), a), {});
+
+export default processedLocales;

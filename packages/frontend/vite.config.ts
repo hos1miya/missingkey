@@ -5,7 +5,6 @@ import ReactivityTransform from '@vue-macros/reactivity-transform/vite';
 import locales from '../../locales';
 import meta from '../../package.json';
 import pluginJson5 from './vite.json5';
-import pluginUnwindCssModuleClassName from '@/lib/rollup-plugin-unwind-css-module-class-name';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue'];
 
@@ -44,7 +43,6 @@ export default defineConfig(({ command, mode }) => {
 
 		plugins: [
 			pluginVue(),
-			pluginUnwindCssModuleClassName(),
 			pluginJson5(),
 			ReactivityTransform(),
 		],
@@ -62,13 +60,18 @@ export default defineConfig(({ command, mode }) => {
 
 		css: {
 			modules: {
-				generateScopedName: (name, filename, css) => {
+				generateScopedName: (name, filename, css): string => {
 					const id = (path.relative(__dirname, filename.split('?')[0]) + '-' + name).replace(/[\\\/\.\?&=]/g, '-').replace(/(src-|vue-)/g, '');
 					if (process.env.NODE_ENV === 'production') {
 						return 'x' + toBase62(hash(id)).substring(0, 4);
 					} else {
 						return id;
 					}
+				},
+			},
+			preprocessorOptions: {
+				scss: {
+					api: 'modern-compiler',
 				},
 			},
 		},
@@ -88,8 +91,8 @@ export default defineConfig(({ command, mode }) => {
 
 		build: {
 			target: [
-				'chrome108',
-				'firefox109',
+				'chrome116',
+				'firefox116',
 				'safari16',
 			],
 			manifest: 'manifest.json',
@@ -110,6 +113,9 @@ export default defineConfig(({ command, mode }) => {
 			emptyOutDir: false,
 			sourcemap: process.env.NODE_ENV === 'development',
 			reportCompressedSize: false,
+			commonjsOptions: {
+				include: [/node_modules/],
+			},
 		},
 	};
 });
