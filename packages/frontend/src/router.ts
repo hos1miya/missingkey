@@ -310,7 +310,7 @@ export const routes = [{
 	path: '/custom-emojis-manager',
 	component: page(() => import('./pages/custom-emojis-manager.vue')),
 }, {
-	path: '/avatar-decorations',
+	path: '/avatar-decorations-manager',
 	component: page(() => import('./pages/avatar-decorations.vue')),
 }, {
 	path: '/registry/keys/system/:path(*)?',
@@ -363,10 +363,6 @@ export const routes = [{
 		path: '/ads',
 		name: 'ads',
 		component: page(() => import('./pages/admin/ads.vue')),
-	}, {
-		path: '/avatar-decorations',
-		name: 'avatar-decorations',
-		component: page(() => import('./pages/avatar-decorations.vue')),
 	}, {
 		path: '/roles/:id/edit',
 		name: 'roles',

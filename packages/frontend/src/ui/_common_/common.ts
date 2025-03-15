@@ -70,7 +70,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 			icon: 'ti ti-icons',
 		} : undefined, ($i && ($i.isAdmin || $i.policies.canManageAvatarDecorations)) ? {
 			type: 'link',
-			to: '/avatar-decorations',
+			to: '/avatar-decorations-manager',
 			text: i18n.ts.manageAvatarDecorations,
 			icon: 'ti ti-sparkles',
 		} : undefined],
