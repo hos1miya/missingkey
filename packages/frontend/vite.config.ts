@@ -2,7 +2,7 @@ import path from 'path';
 import pluginVue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vite';
 import ReactivityTransform from '@vue-macros/reactivity-transform/vite';
-import locales from '../../locales';
+import locales from '../../locales/index.mjs';
 import meta from '../../package.json';
 import pluginJson5 from './vite.json5';
 

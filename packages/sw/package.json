@@ -2,8 +2,8 @@
 	"name": "sw",
 	"private": true,
 	"scripts": {
-		"watch": "node build.js watch",
-		"build": "node build.js",
+		"watch": "node build.mjs watch",
+		"build": "node build.mjs",
 		"lint": "tsc --noEmit && eslint --quiet src/**/*.ts"
 	},
 	"dependencies": {

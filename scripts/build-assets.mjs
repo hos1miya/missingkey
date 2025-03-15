@@ -9,7 +9,7 @@ import cssnano from 'cssnano';
 import postcss from 'postcss';
 import * as terser from 'terser';
 
-import locales from '../locales/index.js';
+import locales from '../locales/index.mjs';
 import meta from '../package.json' with { type: "json" };
 
 async function copyFrontendFonts() {

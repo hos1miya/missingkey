@@ -7,7 +7,7 @@
 
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
-import locales from '../../locales/index.js';
+import locales from '../../locales/index.mjs';
 import meta from '../../package.json' with { type: 'json' };
 const watch = process.argv[2]?.includes('watch');
 
