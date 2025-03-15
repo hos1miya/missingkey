@@ -655,8 +655,8 @@ importers:
         specifier: 0.24.0
         version: 0.24.0
       misskey-js:
-        specifier: github:hos1miya/misskey-js#v0.0.26
-        version: github.com/hos1miya/misskey-js/58c726f76f7012ea05d986b6e71a80dd07805419
+        specifier: github:hos1miya/misskey-js#v0.0.27
+        version: github.com/hos1miya/misskey-js/de22ecbfb3febebdb55348cf644df213352a440a
       photoswipe:
         specifier: 5.4.4
         version: 5.4.4
@@ -824,8 +824,8 @@ importers:
         specifier: 6.2.1
         version: 6.2.1
       misskey-js:
-        specifier: github:hos1miya/misskey-js#v0.0.26
-        version: github.com/hos1miya/misskey-js/58c726f76f7012ea05d986b6e71a80dd07805419
+        specifier: github:hos1miya/misskey-js#v0.0.27
+        version: github.com/hos1miya/misskey-js/de22ecbfb3febebdb55348cf644df213352a440a
     devDependencies:
       '@typescript-eslint/parser':
         specifier: ^8.26.1
@@ -13654,10 +13654,10 @@ packages:
       readable-stream: 4.7.0
     dev: false
 
-  github.com/hos1miya/misskey-js/58c726f76f7012ea05d986b6e71a80dd07805419:
-    resolution: {tarball: https://codeload.github.com/hos1miya/misskey-js/tar.gz/58c726f76f7012ea05d986b6e71a80dd07805419}
+  github.com/hos1miya/misskey-js/de22ecbfb3febebdb55348cf644df213352a440a:
+    resolution: {tarball: https://codeload.github.com/hos1miya/misskey-js/tar.gz/de22ecbfb3febebdb55348cf644df213352a440a}
     name: misskey-js
-    version: 0.0.26
+    version: 0.0.27
     dependencies:
       autobind-decorator: 2.4.0
       eventemitter3: 4.0.7

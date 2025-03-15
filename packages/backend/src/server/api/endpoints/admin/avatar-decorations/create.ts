@@ -19,7 +19,7 @@ export const paramDef = {
 		roleIdsThatCanBeUsedThisDecoration: {
 			type: 'array', items: {
 				type: 'string',
-			}
+			},
 		},
 	},
 	required: ['name', 'description', 'url'],

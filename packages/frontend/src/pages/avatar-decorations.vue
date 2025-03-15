@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <MkStickyContainer>
 	<template #header><MkPageHeader v-model:tab="tab" :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :contentMax="900">
+	<MkSpacer :content-max="900">
 		<div class="_gaps">
 			<MkFolder v-for="avatarDecoration in avatarDecorations" :key="avatarDecoration.id ?? avatarDecoration._id" :defaultOpen="avatarDecoration.id == null">
 				<template #label>{{ avatarDecoration.name }}</template>
@@ -57,7 +57,7 @@ import copyToClipboard from '@/scripts/copy-to-clipboard';
 
 let avatarDecorations: any[] = $ref([]);
 
-function add() {
+function add(): void {
 	avatarDecorations.unshift({
 		_id: Math.random().toString(36),
 		id: null,
@@ -67,7 +67,7 @@ function add() {
 	});
 }
 
-function del(avatarDecoration) {
+function del(avatarDecoration): void {
 	os.confirm({
 		type: 'warning',
 		text: i18n.t('deleteAreYouSure', { x: avatarDecoration.name }),
@@ -78,7 +78,7 @@ function del(avatarDecoration) {
 	});
 }
 
-async function save(avatarDecoration) {
+async function save(avatarDecoration): Promise<void> {
 	if (avatarDecoration.id == null) {
 		await os.apiWithDialog('admin/avatar-decorations/create', avatarDecoration);
 		load();
@@ -87,13 +87,13 @@ async function save(avatarDecoration) {
 	}
 }
 
-function load() {
+function load(): void {
 	os.api('admin/avatar-decorations/list').then(_avatarDecorations => {
 		avatarDecorations = _avatarDecorations;
 	});
 }
 
-const addFile = async (ev: MouseEvent) => {
+const addFile = async (ev: MouseEvent): Promise<void> => {
 	const file = await selectFile(ev.currentTarget ?? ev.target);
 	copyToClipboard(file.url);
 	os.toast(i18n.ts.urlCopiedToClipboard);
