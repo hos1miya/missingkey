@@ -212,7 +212,7 @@ export function getNoteMenu(props: {
 	function share() : void {
 		navigator.share({
 			title: i18n.t('noteOf', { user: appearNote.user.name }),
-			text: appearNote.text!,
+			text: appearNote.text ?? '',
 			url: `${url}/notes/${appearNote.id}`,
 		});
 	}

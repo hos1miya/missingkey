@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: syuilo and misskey-project
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 <div ref="rootEl">
 	<MkLoading v-if="fetching"/>
@@ -8,14 +13,11 @@
 </template>
 
 <script lang="ts" setup>
-import { markRaw, version as vueVersion, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { onMounted, nextTick } from 'vue';
 import { Chart } from 'chart.js';
-import tinycolor from 'tinycolor2';
-import { MatrixController, MatrixElement } from 'chartjs-chart-matrix';
 import * as os from '@/os';
 import { defaultStore } from '@/store';
 import { useChartTooltip } from '@/scripts/use-chart-tooltip';
-import { chartVLine } from '@/scripts/chart-vline';
 import { alpha } from '@/scripts/color';
 import { initChart } from '@/scripts/init-chart';
 
@@ -23,15 +25,14 @@ initChart();
 
 const rootEl = $shallowRef<HTMLDivElement>(null);
 const chartEl = $shallowRef<HTMLCanvasElement>(null);
-const now = new Date();
-let chartInstance: Chart = null;
+let chartInstance: Chart | null = null;
 let fetching = $ref(true);
 
 const { handler: externalTooltipHandler } = useChartTooltip({
 	position: 'middle',
 });
 
-async function renderChart() {
+async function renderChart(): Promise<void> {
 	if (chartInstance) {
 		chartInstance.destroy();
 	}
@@ -39,13 +40,26 @@ async function renderChart() {
 	const wide = rootEl.offsetWidth > 600;
 	const narrow = rootEl.offsetWidth < 400;
 
-	const maxDays = wide ? 15 : narrow ? 5 : 10;
+	const maxDays = wide ? 10 : narrow ? 5 : 7;
 
-	const raw = await os.api('retention', { });
+	let raw = await os.api('retention', { });
 
-	const data = [];
+	raw = raw.slice(0, maxDays + 1);
+
+	const data: {
+		x: number;
+		y: string;
+		v: number;
+	}[] = [];
+
 	for (const record of raw) {
-		let i = 0;
+		data.push({
+			x: 0,
+			y: record.createdAt,
+			v: record.users,
+		});
+
+		let i = 1;
 		for (const date of Object.keys(record.data).sort((a, b) => new Date(a).getTime() - new Date(b).getTime())) {
 			data.push({
 				x: i,
@@ -62,28 +76,38 @@ async function renderChart() {
 
 	const color = defaultStore.state.darkMode ? '#b4e900' : '#86b300';
 
+	const getYYYYMMDD = (date: Date) => {
+		const y = date.getFullYear().toString().padStart(2, '0');
+		const m = (date.getMonth() + 1).toString().padStart(2, '0');
+		const d = date.getDate().toString().padStart(2, '0');
+		return `${y}/${m}/${d}`;
+	};
+
 	// 視覚上の分かりやすさのため上から最も大きい3つの値の平均を最大値とする
 	//const max = raw.readWrite.slice().sort((a, b) => b - a).slice(0, 3).reduce((a, b) => a + b, 0) / 3;
-	const max = 4;
+	const max = (createdAt: string) => raw.find(x => x.createdAt === createdAt)!.users;
 
-	const marginEachCell = 6;
+	const marginEachCell = 12;
 
 	chartInstance = new Chart(chartEl, {
 		type: 'matrix',
 		data: {
 			datasets: [{
 				label: 'Active',
-				data: data,
-				pointRadius: 0,
+				data: data as any,
 				borderWidth: 0,
-				borderJoinStyle: 'round',
 				borderRadius: 3,
 				backgroundColor(c) {
-					const value = c.dataset.data[c.dataIndex].v;
-					const a = value / max;
-					return alpha(color, a);
+					const v = c.dataset.data[c.dataIndex] as unknown as typeof data[0];
+					const value = v.v;
+					const m = max(v.y);
+					if (m === 0) {
+						return alpha(color, 0);
+					} else {
+						const a = value / m;
+						return alpha(color, a);
+					}
 				},
-				fill: true,
 				width(c) {
 					const a = c.chart.chartArea ?? {};
 					return (a.right - a.left) / maxDays - marginEachCell;
@@ -117,12 +141,11 @@ async function renderChart() {
 						maxRotation: 0,
 						autoSkipPadding: 0,
 						autoSkip: false,
-						callback: (value, index, values) => value + 1,
+						callback: (value, index, values) => value,
 					},
 				},
 				y: {
 					type: 'time',
-					min: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - maxDays),
 					offset: true,
 					reverse: true,
 					position: 'left',
@@ -152,11 +175,16 @@ async function renderChart() {
 					callbacks: {
 						title(context) {
 							const v = context[0].dataset.data[context[0].dataIndex];
-							return v.d;
+							return getYYYYMMDD(new Date(new Date(v.y).getTime() + (v.x * 86400000)));
 						},
 						label(context) {
-							const v = context.dataset.data[context.dataIndex];
-							return ['Active: ' + v.v];
+							const v = context.dataset.data[context.dataIndex] as unknown as typeof data[0];
+							const m = max(v.y);
+							if (m === 0) {
+								return [`Active: ${v.v} (-%)`];
+							} else {
+								return [`Active: ${v.v} (${Math.round((v.v / m) * 100)}%)`];
+							}
 						},
 					},
 					//mode: 'index',
