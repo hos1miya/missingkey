@@ -6,19 +6,19 @@
 			<div class="reports">
 				<div class="">
 					<div class="inputs" style="display: flex;">
-						<MkSelect v-model="state" style="margin: 0; flex: 1;">
+						<MkSelect v-model="state" style="margin: 0 4px; flex: 1;">
 							<template #label>{{ i18n.ts.state }}</template>
 							<option value="all">{{ i18n.ts.all }}</option>
 							<option value="unresolved">{{ i18n.ts.unresolved }}</option>
 							<option value="resolved">{{ i18n.ts.resolved }}</option>
 						</MkSelect>
-						<MkSelect v-model="targetUserOrigin" style="margin: 0; flex: 1;">
+						<MkSelect v-model="targetUserOrigin" style="margin: 0 4px; flex: 1;">
 							<template #label>{{ i18n.ts.reporteeOrigin }}</template>
 							<option value="combined">{{ i18n.ts.all }}</option>
 							<option value="local">{{ i18n.ts.local }}</option>
 							<option value="remote">{{ i18n.ts.remote }}</option>
 						</MkSelect>
-						<MkSelect v-model="reporterOrigin" style="margin: 0; flex: 1;">
+						<MkSelect v-model="reporterOrigin" style="margin: 0 4px; flex: 1;">
 							<template #label>{{ i18n.ts.reporterOrigin }}</template>
 							<option value="combined">{{ i18n.ts.all }}</option>
 							<option value="local">{{ i18n.ts.local }}</option>

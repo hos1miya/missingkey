@@ -2,9 +2,10 @@
 <MkStickyContainer>
 	<template #header><XHeader :actions="headerActions" :tabs="headerTabs"/></template>
 	<MkSpacer :content-max="700" :margin-min="16" :margin-max="32">
-		<FormSuspense :p="init">
-			none
-		</FormSuspense>
+		<div :class="$style.root">
+			<img :class="$style.img" :src="infoImageUrl" class="_ghost"/>
+			<div>{{ i18n.ts.nothing }}</div>
+		</div>
 	</MkSpacer>
 </MkStickyContainer>
 </template>
@@ -12,28 +13,11 @@
 <script lang="ts" setup>
 import { } from 'vue';
 import XHeader from './_header_.vue';
-import FormSuspense from '@/components/form/suspense.vue';
-import * as os from '@/os';
-import { fetchInstance } from '@/instance';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
+import { infoImageUrl } from '@/instance';
 
-async function init() {
-	await os.api('admin/meta');
-}
-
-function save() {
-	os.apiWithDialog('admin/update-meta').then(() => {
-		fetchInstance();
-	});
-}
-
-const headerActions = $computed(() => [{
-	asFullButton: true,
-	icon: 'ti ti-check',
-	text: i18n.ts.save,
-	handler: save,
-}]);
+const headerActions = $computed(() => []);
 
 const headerTabs = $computed(() => []);
 
@@ -42,3 +26,19 @@ definePageMetadata({
 	icon: 'ti ti-adjustments',
 });
 </script>
+<style lang="scss" module>
+.root {
+	padding: 32px;
+	text-align: center;
+  align-items: center;
+}
+
+.img {
+	vertical-align: bottom;
+  width: 128px;
+	height: 128px;
+	margin-bottom: 16px;
+	border-radius: 16px;
+}
+</style>
+
