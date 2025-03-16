@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 type Keys =
 	'v' |
 	'lastVersion' |
@@ -34,4 +39,14 @@ export const miLocalStorage = {
 	getItem: (key: Keys) => window.localStorage.getItem(key),
 	setItem: (key: Keys, value: string) => window.localStorage.setItem(key, value),
 	removeItem: (key: Keys) => window.localStorage.removeItem(key),
+	getItemAsJson: (key: Keys): any | undefined => {
+		const item = miLocalStorage.getItem(key);
+		if (item === null) {
+			return undefined;
+		}
+		return JSON.parse(item);
+	},
+	setItemAsJson: (key: Keys, value: any): void => {
+		miLocalStorage.setItem(key, JSON.stringify(value));
+	},
 };

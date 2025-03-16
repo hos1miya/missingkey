@@ -1,6 +1,5 @@
 import { Interpreter, Parser, utils, values } from '@syuilo/aiscript';
 import { aiScriptReadline, createAiScriptEnv } from '@/scripts/aiscript/api';
-import { inputText } from '@/os';
 import { noteActions, notePostInterruptors, noteViewInterruptors, postFormActions, userActions } from '@/store';
 
 const parser = new Parser();
