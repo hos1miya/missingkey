@@ -317,7 +317,7 @@ export function inputDate(props: {
 			},
 		}, {
 			done: result => {
-				resolve(result ? { result: new Date(result.result), canceled: false } : { canceled: true });
+				resolve(result ? { result: new Date(result.result), canceled: false } : { result: undefined, canceled: true });
 			},
 		}, 'closed');
 	});
@@ -361,7 +361,7 @@ export function select<C = any>(props: {
 }
 
 export function success() {
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		const showing = ref(true);
 		window.setTimeout(() => {
 			showing.value = false;
@@ -376,7 +376,7 @@ export function success() {
 }
 
 export function waiting() {
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		const showing = ref(true);
 		popup(MkWaitingDialog, {
 			success: false,
@@ -473,7 +473,7 @@ type AwaitType<T> =
 	T;
 let openingEmojiPicker: AwaitType<ReturnType<typeof popup>> | null = null;
 let activeTextarea: HTMLTextAreaElement | HTMLInputElement | null = null;
-export async function openEmojiPicker(src?: HTMLElement, opts, initialTextarea: typeof activeTextarea) {
+export async function openEmojiPicker(opts, initialTextarea: typeof activeTextarea, src?: HTMLElement) {
 	if (openingEmojiPicker) return;
 
 	activeTextarea = initialTextarea;
@@ -481,7 +481,7 @@ export async function openEmojiPicker(src?: HTMLElement, opts, initialTextarea: 
 	const textareas = document.querySelectorAll('textarea, input');
 	for (const textarea of Array.from(textareas)) {
 		textarea.addEventListener('focus', () => {
-			activeTextarea = textarea;
+			activeTextarea = textarea as HTMLTextAreaElement;
 		});
 	}
 
@@ -527,7 +527,7 @@ export function popupMenu(items: MenuItem[] | Ref<MenuItem[]>, src?: HTMLElement
 	viaKeyboard?: boolean;
 	onClosing?: () => void;
 }) {
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		let dispose;
 		popup(MkPopupMenu, {
 			items,
@@ -551,7 +551,7 @@ export function popupMenu(items: MenuItem[] | Ref<MenuItem[]>, src?: HTMLElement
 
 export function contextMenu(items: MenuItem[] | Ref<MenuItem[]>, ev: MouseEvent) {
 	ev.preventDefault();
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		let dispose;
 		popup(MkContextMenu, {
 			items,
@@ -568,7 +568,7 @@ export function contextMenu(items: MenuItem[] | Ref<MenuItem[]>, ev: MouseEvent)
 }
 
 export function post(props: Record<string, any> = {}) {
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		// NOTE: MkPostFormDialogをdynamic importするとiOSでテキストエリアに自動フォーカスできない
 		// NOTE: ただ、dynamic importしない場合、MkPostFormDialogインスタンスが使いまわされ、
 		//       Vueが渡されたコンポーネントに内部的に__propsというプロパティを生やす影響で、

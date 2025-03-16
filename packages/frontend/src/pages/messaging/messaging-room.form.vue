@@ -214,7 +214,7 @@ function deleteDraft() {
 }
 
 async function insertEmoji(ev: MouseEvent) {
-	os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textEl);
+	os.openEmojiPicker({}, textEl, ev.currentTarget ?? ev.target);
 }
 
 onMounted(() => {

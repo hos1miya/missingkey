@@ -703,7 +703,7 @@ function insertMention() {
 }
 
 async function insertEmoji(ev: MouseEvent) {
-	os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textareaEl);
+	os.openEmojiPicker({}, textareaEl, ev.currentTarget ?? ev.target);
 }
 
 function showActions(ev) {
