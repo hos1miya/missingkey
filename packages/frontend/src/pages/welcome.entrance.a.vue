@@ -7,11 +7,11 @@
 		<div class="shape2"></div>
 		<img src="/client-assets/missingkey.svg" class="missingkey"/>
 		<div class="emojis">
-			<MkEmoji :normal="true" :no-style="true" emoji="👍"/>
-			<MkEmoji :normal="true" :no-style="true" emoji="❤"/>
-			<MkEmoji :normal="true" :no-style="true" emoji="😆"/>
+			<MkEmoji :normal="true" :no-style="true" emoji="👏"/>
+			<MkEmoji :normal="true" :no-style="true" emoji="🌟"/>
+			<MkEmoji :normal="true" :no-style="true" emoji="😇"/>
 			<MkEmoji :normal="true" :no-style="true" emoji="🎉"/>
-			<MkEmoji :normal="true" :no-style="true" emoji="🍮"/>
+			<MkEmoji :normal="true" :no-style="true" emoji="🍙"/>
 		</div>
 		<div class="main">
 			<img :src="$instance.iconUrl || $instance.faviconUrl || '/favicon.ico'" alt="" class="icon"/>

@@ -4,11 +4,11 @@
 		<MkFeaturedPhotos class="bg"/>
 		<div class="fade"></div>
 		<div class="emojis">
-			<MkEmoji :normal="true" :no-style="true" emoji="👍"/>
-			<MkEmoji :normal="true" :no-style="true" emoji="❤"/>
-			<MkEmoji :normal="true" :no-style="true" emoji="😆"/>
+			<MkEmoji :normal="true" :no-style="true" emoji="👏"/>
+			<MkEmoji :normal="true" :no-style="true" emoji="🌟"/>
+			<MkEmoji :normal="true" :no-style="true" emoji="😇"/>
 			<MkEmoji :normal="true" :no-style="true" emoji="🎉"/>
-			<MkEmoji :normal="true" :no-style="true" emoji="🍮"/>
+			<MkEmoji :normal="true" :no-style="true" emoji="🍙"/>
 		</div>
 		<div class="main">
 			<img src="/client-assets/missingkey.svg" class="missingkey"/>
