@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: syuilo and misskey-project
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 <div class="mvcprjjd" :class="{ iconOnly }">
 	<div class="body">
@@ -29,7 +34,7 @@
 				</component>
 			</template>
 			<div class="divider"></div>
-			<MkA v-if="$i.isAdmin || $i.isModerator" v-click-anime v-tooltip.noDelay.right="i18n.ts.controlPanel" class="item" active-class="active" to="/admin">
+			<MkA v-if="$i != null && ($i.isAdmin || $i.isModerator)" v-click-anime v-tooltip.noDelay.right="i18n.ts.controlPanel" class="item" active-class="active" to="/admin">
 				<i class="icon ti ti-dashboard ti-fw"></i><span class="text">{{ i18n.ts.controlPanel }}</span>
 			</MkA>
 			<button v-click-anime class="item _button" @click="more">
@@ -41,12 +46,41 @@
 			</MkA>
 		</div>
 		<div class="bottom">
-			<button v-tooltip.noDelay.right="i18n.ts.note" class="item _button post" data-cy-open-post-form @click="os.post">
+			<button v-tooltip.noDelay.right="i18n.ts.note" class="item _button post" data-cy-open-post-form @click="() => { os.post(); }">
 				<i class="icon ti ti-pencil ti-fw"></i><span class="text">{{ i18n.ts.note }}</span>
 			</button>
-			<button v-click-anime v-tooltip.noDelay.right="`${i18n.ts.account}: @${$i.username}`" class="item _button account" @click="openAccountMenu">
+			<button v-if="$i != null" v-click-anime v-tooltip.noDelay.right="`${i18n.ts.account}: @${$i.username}`" class="item _button account" @click="openAccountMenu">
 				<MkAvatar :user="$i" class="avatar"/><MkAcct class="text _nowrap" :user="$i"/>
 			</button>
+		</div>
+	</div>
+	
+	<!--
+	<svg viewBox="0 0 16 48" :class="$style.subButtonShape">
+		<g transform="matrix(0.333333,0,0,0.222222,0.000895785,13.3333)">
+			<path d="M23.935,-24C37.223,-24 47.995,-7.842 47.995,12.09C47.995,34.077 47.995,62.07 47.995,84.034C47.995,93.573 45.469,102.721 40.972,109.466C36.475,116.211 30.377,120 24.018,120L23.997,120C10.743,120 -0.003,136.118 -0.003,156C-0.003,156 -0.003,156 -0.003,156L-0.003,-60L-0.003,-59.901C-0.003,-50.379 2.519,-41.248 7.007,-34.515C11.496,-27.782 17.584,-24 23.931,-24C23.932,-24 23.934,-24 23.935,-24Z" style="fill:var(--MI_THEME-navBg);"/>
+		</g>
+	</svg>
+	-->
+
+	<div class="subButtons">
+		<div class="subButton menuEditButton">
+			<svg viewBox="0 0 16 64" class="subButtonShape">
+				<g transform="matrix(0.333333,0,0,0.222222,0.000895785,21.3333)">
+					<path d="M47.488,7.995C47.79,10.11 47.943,12.266 47.943,14.429C47.997,26.989 47.997,84 47.997,84C47.997,84 44.018,118.246 23.997,133.5C-0.374,152.07 -0.003,192 -0.003,192L-0.003,-96C-0.003,-96 0.151,-56.216 23.997,-37.5C40.861,-24.265 46.043,-1.243 47.488,7.995Z" style="fill:var(--navBg);"/>
+				</g>
+			</svg>
+			<button class="_button subButtonClickable" @click="menuEdit"><i class="ti ti-settings-2 subButtonIcon"></i></button>
+		</div>
+		<div v-if="!forceIconOnly" class="subButtonGapFill"></div>
+		<div v-if="!forceIconOnly" class="subButtonGapFillDivider"></div>
+		<div v-if="!forceIconOnly" class="subButton toggleButton">
+			<svg viewBox="0 0 16 64" class="subButtonShape">
+				<g transform="matrix(0.333333,0,0,0.222222,0.000895785,21.3333)">
+					<path d="M47.488,7.995C47.79,10.11 47.943,12.266 47.943,14.429C47.997,26.989 47.997,84 47.997,84C47.997,84 44.018,118.246 23.997,133.5C-0.374,152.07 -0.003,192 -0.003,192L-0.003,-96C-0.003,-96 0.151,-56.216 23.997,-37.5C40.861,-24.265 46.043,-1.243 47.488,7.995Z" style="fill:var(--navBg);"/>
+				</g>
+			</svg>
+			<button class="_button subButtonClickable" @click="toggleIconOnly"><i v-if="iconOnly" class="ti ti-chevron-right subButtonIcon"></i><i v-else class="ti ti-chevron-left subButtonIcon"></i></button>
 		</div>
 	</div>
 </div>
@@ -60,8 +94,15 @@ import { navbarItemDef } from '@/navbar';
 import { $i, openAccountMenu as openAccountMenu_ } from '@/account';
 import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';
+import { getHTMLElementOrNull } from '@/scripts/get-dom-node-or-null';
+import { useRouter } from '@/router';
 
-const iconOnly = ref(false);
+const router = useRouter();
+
+const forceIconOnly = ref(window.innerWidth <= 1279);
+const iconOnly = computed(() => {
+	return forceIconOnly.value || (defaultStore.reactiveState.menuDisplay.value === 'sideIcon');
+});
 
 const menu = computed(() => defaultStore.state.menu);
 const otherMenuItemIndicated = computed(() => {
@@ -72,17 +113,19 @@ const otherMenuItemIndicated = computed(() => {
 	return false;
 });
 
-const calcViewState = () => {
-	iconOnly.value = (window.innerWidth <= 1279) || (defaultStore.state.menuDisplay === 'sideIcon');
-};
-
-calcViewState();
+function calcViewState() {
+	forceIconOnly.value = window.innerWidth <= 1279;
+}
 
 window.addEventListener('resize', calcViewState);
 
 watch(defaultStore.reactiveState.menuDisplay, () => {
 	calcViewState();
 });
+
+function toggleIconOnly() {
+	defaultStore.set('menuDisplay', iconOnly.value ? 'sideFull' : 'sideIcon');
+}
 
 function openAccountMenu(ev: MouseEvent) {
 	openAccountMenu_({
@@ -91,10 +134,16 @@ function openAccountMenu(ev: MouseEvent) {
 }
 
 function more(ev: MouseEvent) {
+	const target = getHTMLElementOrNull(ev.currentTarget ?? ev.target);
+	if (!target) return;
 	os.popup(defineAsyncComponent(() => import('@/components/MkLaunchPad.vue')), {
-		src: ev.currentTarget ?? ev.target,
+		src: target,
 	}, {
 	}, 'closed');
+}
+
+function menuEdit() {
+	router.push('/settings/navbar')
 }
 </script>
 
@@ -102,6 +151,7 @@ function more(ev: MouseEvent) {
 .mvcprjjd {
 	$nav-width: 250px;
 	$nav-icon-only-width: 80px;
+	$sub-button-width: 20px;
 
 	flex: 0 0 $nav-width;
 	width: $nav-width;
@@ -121,6 +171,95 @@ function more(ev: MouseEvent) {
 		contain: strict;
 		display: flex;
 		flex-direction: column;
+		direction: rtl; // スクロールバーを左に表示したいため
+	}
+
+	.top {
+		direction: ltr;
+	}
+
+	.middle {
+		direction: ltr;
+	}
+
+	.bottom {
+		direction: ltr;
+	}
+
+	.subButtons {
+		position: fixed;
+		left: $nav-width;
+		bottom: 80px;
+		z-index: 1001;
+		box-sizing: border-box;
+	}
+
+	.subButton {
+		display: block;
+		position: relative;
+		z-index: 1002;
+		width: $sub-button-width;
+		height: 50px;
+		box-sizing: border-box;
+		align-content: center;
+	}
+
+	.subButtonShape {
+		position: absolute;
+		z-index: -1;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		margin: auto;
+		width: $sub-button-width;
+		height: calc($sub-button-width * 4);
+	}
+
+	.subButtonClickable {
+		position: absolute;
+		display: block;
+		max-width: unset;
+		width: 24px;
+		height: 42px;
+		top: 0;
+		bottom: 0;
+		left: -4px;
+		margin: auto;
+		font-size: 10px;
+
+		&:hover {
+			color: var(--fgHighlighted);
+
+			.subButtonIcon {
+				opacity: 1;
+			}
+		}
+	}
+
+	.subButtonIcon {
+		margin-left: -4px;
+		opacity: 0.7;
+	}
+
+	.subButtonGapFill {
+		position: relative;
+		z-index: 1001;
+		width: $sub-button-width;
+		height: 64px;
+		margin-top: -32px;
+		margin-bottom: -32px;
+		pointer-events: none;
+		background: var(--navBg);
+	}
+
+	.subButtonGapFillDivider {
+		position: relative;
+		z-index: 1010;
+		margin-left: -2px;
+		width: 14px;
+		height: 1px;
+		background: var(--divider);
+		pointer-events: none;
 	}
 
 	&:not(.iconOnly) {
@@ -310,6 +449,10 @@ function more(ev: MouseEvent) {
 				}
 			}
 		}
+		
+		> .subButtons {
+			left: $nav-width;
+		}
 	}
 
 	&.iconOnly {
@@ -465,6 +608,10 @@ function more(ev: MouseEvent) {
 					}
 				}
 			}
+		}
+
+		> .subButtons {
+			left: $nav-icon-only-width;
 		}
 	}
 }

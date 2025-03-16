@@ -72,10 +72,6 @@ watch(items, async () => {
 	await save();
 });
 
-watch(menuDisplay, async () => {
-	await reloadAsk();
-});
-
 const headerActions = $computed(() => []);
 
 const headerTabs = $computed(() => []);
