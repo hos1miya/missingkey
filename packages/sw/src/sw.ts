@@ -130,6 +130,9 @@ self.addEventListener('notificationclick', <K extends keyof pushNotificationData
 					case 'renote':
 						if ('note' in data.body) await swos.api('notes/create', loginId, { renoteId: data.body.note.id });
 						break;
+					case 'favorite':
+						if ('note' in data.body) await swos.api('notes/reactions/create', loginId, { noteId: data.body.note.id, reaction: '⭐' });
+						break;
 					case 'accept':
 						switch (data.body.type) {
 							case 'receiveFollowRequest':

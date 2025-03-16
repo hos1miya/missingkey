@@ -1910,7 +1910,8 @@ _notification:
   _actions:
     followBack: "フォローバック"
     reply: "返信"
-    renote: "Renote"
+    renote: "リノート"
+    favorite: "ふぁぼる"
 
 _deck:
   alwaysShowMainColumn: "常にメインカラムを表示"

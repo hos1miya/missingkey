@@ -75,6 +75,10 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(data
 								action: 'reply',
 								title: t('_notification._actions.reply'),
 							},
+							{
+								action: 'favorite',
+								title: t('_notification._actions.favorite'),
+							},
 						],
 					}];
 
@@ -88,6 +92,10 @@ async function composeNotification<K extends keyof pushNotificationDataMap>(data
 							{
 								action: 'reply',
 								title: t('_notification._actions.reply'),
+							},
+							{
+								action: 'favorite',
+								title: t('_notification._actions.favorite'),
 							},
 						],
 					}];
