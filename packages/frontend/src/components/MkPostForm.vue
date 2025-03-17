@@ -14,7 +14,7 @@
 		<div :class="$style.headerRight">
 			<span :class="$style.textCount">{{ maxTextLength - textLength }}</span>
 			<span v-if="localOnly" :class="$style.localOnly"><i class="ti ti-world-off"></i></span>
-			<button ref="visibilityButton" v-tooltip="i18n.ts.visibility" class="_button" :class="$style.visibility" :disabled="channel != null" @click="setVisibility">
+			<button ref="visibilityButton" v-tooltip="i18n.ts.visibility" class="_button" :class="$style.visibility" @click="setVisibility">
 				<span v-if="visibility === 'public'"><i class="ti ti-world"></i></span>
 				<span v-if="visibility === 'home'"><i class="ti ti-home"></i></span>
 				<span v-if="visibility === 'followers'"><i class="ti ti-lock"></i></span>
@@ -104,7 +104,6 @@ const modal = inject('modal');
 const props = withDefaults(defineProps<{
 	reply?: misskey.entities.Note;
 	renote?: misskey.entities.Note;
-	channel?: any; // TODO
 	mention?: misskey.entities.User;
 	specified?: misskey.entities.User;
 	initialText?: string;
@@ -159,21 +158,16 @@ let hasNotSpecifiedMentions = $ref(false);
 let recentHashtags = $ref(JSON.parse(miLocalStorage.getItem('hashtags') || '[]'));
 let imeText = $ref('');
 
-const typing = throttle(3000, () => {
-	if (props.channel) {
-		stream.send('typingOnChannel', { channel: props.channel.id });
-	}
-});
 
 const draftKey = $computed((): string => {
-	let key = props.channel ? `channel:${props.channel.id}` : '';
+	let key;
 
 	if (props.renote) {
-		key += `renote:${props.renote.id}`;
+		key = `renote:${props.renote.id}`;
 	} else if (props.reply) {
-		key += `reply:${props.reply.id}`;
+		key = `reply:${props.reply.id}`;
 	} else {
-		key += 'note';
+		key = 'note';
 	}
 
 	return key;
@@ -184,8 +178,6 @@ const placeholder = $computed((): string => {
 		return i18n.ts._postForm.quotePlaceholder;
 	} else if (props.reply) {
 		return i18n.ts._postForm.replyPlaceholder;
-	} else if (props.channel) {
-		return i18n.ts._postForm.channelPlaceholder;
 	} else {
 		const xs = [
 			i18n.ts._postForm._placeholders.a,
@@ -263,11 +255,6 @@ if (props.reply && props.reply.text != null) {
 
 		text += `${mention} `;
 	}
-}
-
-if (props.channel) {
-	visibility = 'public';
-	localOnly = true; // TODO: チャンネルが連合するようになった折には消す
 }
 
 // 公開以外へのリプライ時は元の公開範囲を引き継ぐ
@@ -394,11 +381,6 @@ function upload(file: File, name?: string) {
 }
 
 function setVisibility() {
-	if (props.channel) {
-		// TODO: information dialog
-		return;
-	}
-
 	os.popup(defineAsyncComponent(() => import('@/components/MkVisibilityPicker.vue')), {
 		currentVisibility: visibility,
 		currentLocalOnly: localOnly,
@@ -609,7 +591,6 @@ async function post(ev?: MouseEvent) {
 		fileIds: files.length > 0 ? files.map(f => f.id) : undefined,
 		replyId: props.reply ? props.reply.id : undefined,
 		renoteId: props.renote ? props.renote.id : quoteId ? quoteId : undefined,
-		channelId: props.channel ? props.channel.id : undefined,
 		poll: poll,
 		cw: useCw ? cw ?? '' : undefined,
 		localOnly: localOnly,

@@ -20,7 +20,6 @@ const router = useRouter();
 
 const props = defineProps<{
 	query: string;
-	channel?: string;
 }>();
 
 const query = props.query;
@@ -51,7 +50,6 @@ const pagination = {
 	limit: 10,
 	params: computed(() => ({
 		query: props.query,
-		channelId: props.channel,
 	})),
 };
 

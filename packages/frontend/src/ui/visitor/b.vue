@@ -36,7 +36,6 @@
 			<MkA v-if="isTimelineAvailable" to="/timeline" class="link" active-class="active"><i class="ti ti-message icon"></i>{{ $ts.timeline }}</MkA>
 			<MkA to="/explore" class="link" active-class="active"><i class="ti ti-hash icon"></i>{{ $ts.explore }}</MkA>
 			<MkA to="/announcements" class="link" active-class="active"><i class="ti ti-speakerphone icon"></i>{{ $ts.announcements }}</MkA>
-			<MkA to="/channels" class="link" active-class="active"><i class="ti ti-device-tv icon"></i>{{ $ts.channel }}</MkA>
 			<div class="divider"></div>
 			<MkA to="/pages" class="link" active-class="active"><i class="ti ti-news icon"></i>{{ $ts.pages }}</MkA>
 			<MkA to="/play" class="link" active-class="active"><i class="ti ti-player-play icon"></i>Play</MkA>

@@ -74,7 +74,6 @@
 						<span :class="$style.showLessLabel">{{ i18n.ts.showLess }}</span>
 					</button>
 				</div>
-				<MkA v-if="appearNote.channel && !inChannel" :class="$style.channel" :to="`/channels/${appearNote.channel.id}`"><i class="ti ti-device-tv"></i> {{ appearNote.channel.name }}</MkA>
 			</div>
 			<footer :class="$style.footer">
 				<MkReactionsViewer :note="appearNote" :max-number="16">
@@ -166,8 +165,6 @@ const props = defineProps<{
 	pinned?: boolean;
 }>();
 
-const inChannel = inject('inChannel', null);
-
 let note = $ref(deepClone(props.note));
 
 // plugin
@@ -254,28 +251,6 @@ function renote(viaKeyboard = false) : void {
 	pleaseLogin();
 
 	let items = [] as MenuItem[];
-
-	if (appearNote.channel) {
-		items = items.concat([{
-			text: i18n.ts.inChannelRenote,
-			icon: 'ti ti-repeat',
-			action: () : void => {
-				os.api('notes/create', {
-					renoteId: appearNote.id,
-					channelId: appearNote.channelId,
-				});
-			},
-		}, {
-			text: i18n.ts.inChannelQuote,
-			icon: 'ti ti-quote',
-			action: () : void => {
-				os.post({
-					renote: appearNote,
-					channel: appearNote.channel,
-				});
-			},
-		}, null]);
-	}
 
 	items = items.concat([{
 		text: i18n.ts.renote,
@@ -661,11 +636,6 @@ function showReactions() : void {
 	border: dashed 1px var(--renote);
 	border-radius: 8px;
 	overflow: clip;
-}
-
-.channel {
-	opacity: 0.7;
-	font-size: 80%;
 }
 
 .footerButton {

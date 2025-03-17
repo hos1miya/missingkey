@@ -14,7 +14,6 @@ const props = defineProps<{
 	src: string;
 	list?: string;
 	antenna?: string;
-	channel?: string;
 	sound?: boolean;
 }>();
 
@@ -22,8 +21,6 @@ const emit = defineEmits<{
 	(ev: 'note'): void;
 	(ev: 'queue', count: number): void;
 }>();
-
-provide('inChannel', computed(() => props.src === 'channel'));
 
 const tlComponent: InstanceType<typeof XNotes> = $ref();
 
@@ -112,15 +109,6 @@ if (props.src === 'antenna') {
 	connection.on('note', prepend);
 	connection.on('userAdded', onUserAdded);
 	connection.on('userRemoved', onUserRemoved);
-} else if (props.src === 'channel') {
-	endpoint = 'channels/timeline';
-	query = {
-		channelId: props.channel,
-	};
-	connection = stream.useChannel('channel', {
-		channelId: props.channel,
-	});
-	connection.on('note', prepend);
 }
 
 const pagination = {

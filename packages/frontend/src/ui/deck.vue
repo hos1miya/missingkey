@@ -146,7 +146,6 @@ const addColumn = async (ev) => {
 		'tl',
 		'antenna',
 		'list',
-		'channel',
 		'mentions',
 		'direct',
 	];

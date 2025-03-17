@@ -5,7 +5,6 @@
 			<MkA to="/" class="link" active-class="active"><i class="ti ti-home icon"></i>{{ $ts.home }}</MkA>
 			<MkA v-if="isTimelineAvailable" to="/timeline" class="link" active-class="active"><i class="ti ti-message icon"></i>{{ $ts.timeline }}</MkA>
 			<MkA to="/explore" class="link" active-class="active"><i class="ti ti-hash icon"></i>{{ $ts.explore }}</MkA>
-			<MkA to="/channels" class="link" active-class="active"><i class="ti ti-device-tv icon"></i>{{ $ts.channel }}</MkA>
 			<div class="right">
 				<button class="_button search" @click="search()"><i class="ti ti-search icon"></i><span>{{ $ts.search }}</span></button>
 				<button class="_buttonPrimary signup" @click="signup()">{{ $ts.signup }}</button>

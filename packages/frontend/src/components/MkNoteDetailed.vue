@@ -82,7 +82,6 @@
 					<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="true" class="url-preview"/>
 					<div v-if="appearNote.renote" class="renote"><MkNoteSimple :note="appearNote.renote" class="note"/></div>
 				</div>
-				<MkA v-if="appearNote.channel && !inChannel" class="channel" :to="`/channels/${appearNote.channel.id}`"><i class="ti ti-device-tv"></i> {{ appearNote.channel.name }}</MkA>
 			</div>
 			<footer class="footer">
 				<div class="info">
@@ -168,8 +167,6 @@ const props = defineProps<{
 	pinned?: boolean;
 }>();
 
-const inChannel = inject('inChannel', null);
-
 let note = $ref(deepClone(props.note));
 
 // plugin
@@ -245,28 +242,6 @@ function renote(viaKeyboard = false) {
 	pleaseLogin();
 
 	let items = [] as MenuItem[];
-
-	if (appearNote.channel) {
-		items = items.concat([{
-			text: i18n.ts.inChannelRenote,
-			icon: 'ti ti-repeat',
-			action: () => {
-				os.api('notes/create', {
-					renoteId: appearNote.id,
-					channelId: appearNote.channelId,
-				});
-			},
-		}, {
-			text: i18n.ts.inChannelQuote,
-			icon: 'ti ti-quote',
-			action: () => {
-				os.post({
-					renote: appearNote,
-					channel: appearNote.channel,
-				});
-			},
-		}, null]);
-	}
 
 	items = items.concat([{
 		text: i18n.ts.renote,
@@ -594,11 +569,6 @@ if (appearNote.replyId) {
 							overflow: clip;
 						}
 					}
-				}
-
-				> .channel {
-					opacity: 0.7;
-					font-size: 80%;
 				}
 			}
 

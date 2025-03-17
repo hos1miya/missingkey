@@ -99,7 +99,6 @@ const coldDeviceStorageSaveKeys: (keyof typeof ColdDeviceStorage.default)[] = [
 	'sound_chat',
 	'sound_chatBg',
 	'sound_antenna',
-	'sound_channel',
 ];
 
 const scope = ['clientPreferencesProfiles'];
