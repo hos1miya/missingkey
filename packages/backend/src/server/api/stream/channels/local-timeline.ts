@@ -38,7 +38,6 @@ class LocalTimelineChannel extends Channel {
 	private async onNote(note: Packed<'Note'>) {
 		if (note.user.host !== null) return;
 		if (note.visibility !== 'public') return;
-		if (note.channelId != null && !this.followingChannels.has(note.channelId)) return;
 
 		// replyをpack
 		if (note.replyId != null) {

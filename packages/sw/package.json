@@ -9,7 +9,7 @@
 	"dependencies": {
 		"esbuild": "^0.25.1",
 		"idb-keyval": "6.2.1",
-		"misskey-js": "github:hos1miya/misskey-js#v0.0.27"
+		"misskey-js": "github:hos1miya/misskey-js#v0.0.28"
 	},
 	"devDependencies": {
 		"@typescript-eslint/parser": "^8.26.1",
