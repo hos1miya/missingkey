@@ -7,7 +7,7 @@ import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mf
 import { extractHashtags } from '@/misc/extract-hashtags.js';
 import type { IMentionedRemoteUsers } from '@/models/entities/Note.js';
 import { Note } from '@/models/entities/Note.js';
-import type { ChannelFollowingsRepository, ChannelsRepository, InstancesRepository, MutedNotesRepository, MutingsRepository, NotesRepository, NoteThreadMutingsRepository, UserProfilesRepository, UsersRepository } from '@/models/index.js';
+import type { InstancesRepository, MutedNotesRepository, MutingsRepository, NotesRepository, NoteThreadMutingsRepository, UserProfilesRepository, UsersRepository } from '@/models/index.js';
 import type { DriveFile } from '@/models/entities/DriveFile.js';
 import type { App } from '@/models/entities/App.js';
 import { concat } from '@/misc/prelude/array.js';
@@ -17,7 +17,6 @@ import type { IPoll } from '@/models/entities/Poll.js';
 import { Poll } from '@/models/entities/Poll.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
 import { checkWordMute } from '@/misc/check-word-mute.js';
-import type { Channel } from '@/models/entities/Channel.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import { Cache } from '@/misc/cache.js';
 import type { UserProfile } from '@/models/entities/UserProfile.js';
@@ -128,7 +127,6 @@ type Option = {
 	cw?: string | null;
 	visibility?: string;
 	visibleUsers?: MinimumUser[] | null;
-	channel?: Channel | null;
 	apMentions?: MinimumUser[] | null;
 	apHashtags?: string[] | null;
 	apEmojis?: string[] | null;
@@ -165,12 +163,6 @@ export class NoteCreateService {
 		@Inject(DI.mutedNotesRepository)
 		private mutedNotesRepository: MutedNotesRepository,
 
-		@Inject(DI.channelsRepository)
-		private channelsRepository: ChannelsRepository,
-
-		@Inject(DI.channelFollowingsRepository)
-		private channelFollowingsRepository: ChannelFollowingsRepository,
-
 		@Inject(DI.noteThreadMutingsRepository)
 		private noteThreadMutingsRepository: NoteThreadMutingsRepository,
 
@@ -204,30 +196,11 @@ export class NoteCreateService {
 		createdAt: User['createdAt'];
 		isBot: User['isBot'];
 	}, data: Option, silent = false): Promise<Note> {
-		// チャンネル外にリプライしたら対象のスコープに合わせる
-		// (クライアントサイドでやっても良い処理だと思うけどとりあえずサーバーサイドで)
-		if (data.reply && data.channel && data.reply.channelId !== data.channel.id) {
-			if (data.reply.channelId) {
-				data.channel = await this.channelsRepository.findOneBy({ id: data.reply.channelId });
-			} else {
-				data.channel = null;
-			}
-		}
-
-		// チャンネル内にリプライしたら対象のスコープに合わせる
-		// (クライアントサイドでやっても良い処理だと思うけどとりあえずサーバーサイドで)
-		if (data.reply && (data.channel == null) && data.reply.channelId) {
-			data.channel = await this.channelsRepository.findOneBy({ id: data.reply.channelId });
-		}
-
 		if (data.createdAt == null) data.createdAt = new Date();
 		if (data.visibility == null) data.visibility = 'public';
 		if (data.localOnly == null) data.localOnly = false;
-		if (data.channel != null) data.visibility = 'public';
-		if (data.channel != null) data.visibleUsers = [];
-		if (data.channel != null) data.localOnly = true;
 
-		if (data.visibility === 'public' && data.channel == null) {
+		if (data.visibility === 'public') {
 			if ((await this.roleService.getUserPolicies(user.id)).canPublicNote === false) {
 				data.visibility = 'home';
 			}
@@ -254,12 +227,12 @@ export class NoteCreateService {
 		}
 
 		// ローカルのみをRenoteしたらローカルのみにする
-		if (data.renote && data.renote.localOnly && data.channel == null) {
+		if (data.renote && data.renote.localOnly) {
 			data.localOnly = true;
 		}
 
 		// ローカルのみにリプライしたらローカルのみにする
-		if (data.reply && data.reply.localOnly && data.channel == null) {
+		if (data.reply && data.reply.localOnly) {
 			data.localOnly = true;
 		}
 
@@ -328,16 +301,13 @@ export class NoteCreateService {
 			fileIds: data.files ? data.files.map(file => file.id) : [],
 			replyId: data.reply ? data.reply.id : null,
 			renoteId: data.renote ? data.renote.id : null,
-			channelId: data.channel ? data.channel.id : null,
 			threadId: data.reply
-				? data.reply.threadId
-					? data.reply.threadId
-					: data.reply.id
+				? data.reply.threadId ?? data.reply.id
 				: null,
 			name: data.name,
 			text: data.text,
 			hasPoll: data.poll != null,
-			cw: data.cw == null ? null : data.cw,
+			cw: data.cw ?? null,
 			tags: tags.map(tag => normalizeForSearch(tag)),
 			emojis,
 			userId: user.id,
@@ -350,7 +320,7 @@ export class NoteCreateService {
 				: [],
 
 			attachedFileTypes: data.files ? data.files.map(file => file.type) : [],
-			via: data.via == null ? null : data.via,
+			via: data.via ?? null,
 
 			// 以下非正規化データ
 			replyUserId: data.reply ? data.reply.userId : null,
@@ -372,7 +342,7 @@ export class NoteCreateService {
 				const url = profile != null ? profile.url : null;
 				return {
 					uri: u.uri,
-					url: url == null ? undefined : url,
+					url: url ?? undefined,
 					username: u.username,
 					host: u.host,
 				} as IMentionedRemoteUsers[0];
@@ -457,7 +427,7 @@ export class NoteCreateService {
 				// Renoteの場合
 				if (data.renote !== null && data.renote !== undefined) {
 					// 元ノートが既に手動ミュートされていればミュート
-					if(await this.mutedNotesRepository.findOneBy({ noteId: data.renote.id, userId: u.userId, reason: 'manual' })) {
+					if (await this.mutedNotesRepository.findOneBy({ noteId: data.renote.id, userId: u.userId, reason: 'manual' })) {
 						this.mutedNotesRepository.insert({
 							id: this.idService.genId(),
 							userId: u.userId,
@@ -481,7 +451,7 @@ export class NoteCreateService {
 				// Replyの場合
 				if (data.reply !== null && data.reply !== undefined) {
 					// 元ノートが既に手動ミュートされていればミュート
-					if(await this.mutedNotesRepository.findOneBy({ noteId: data.reply.id, userId: u.userId, reason: 'manual' })) {
+					if (await this.mutedNotesRepository.findOneBy({ noteId: data.reply.id, userId: u.userId, reason: 'manual' })) {
 						this.mutedNotesRepository.insert({
 							id: this.idService.genId(),
 							userId: u.userId,
@@ -522,18 +492,6 @@ export class NoteCreateService {
 			this.antennaService.checkHitAntenna(antenna, note, user).then(hit => {
 				if (hit) {
 					this.antennaService.addNoteToAntenna(antenna, note, user);
-				}
-			});
-		}
-
-		// Channel
-		if (note.channelId) {
-			this.channelFollowingsRepository.findBy({ followeeId: note.channelId }).then(followings => {
-				for (const following of followings) {
-					this.noteReadService.insertNoteUnread(following.followerId, note, {
-						isSpecified: false,
-						isMentioned: false,
-					});
 				}
 			});
 		}
@@ -688,24 +646,6 @@ export class NoteCreateService {
 			//#endregion
 		}
 
-		if (data.channel) {
-			this.channelsRepository.increment({ id: data.channel.id }, 'notesCount', 1);
-			this.channelsRepository.update(data.channel.id, {
-				lastNotedAt: new Date(),
-			});
-
-			this.notesRepository.countBy({
-				userId: user.id,
-				channelId: data.channel.id,
-			}).then(count => {
-				// この処理が行われるのはノート作成後なので、ノートが一つしかなかったら最初の投稿だと判断できる
-				// TODO: とはいえノートを削除して何回も投稿すればその分だけインクリメントされる雑さもあるのでどうにかしたい
-				if (count === 1) {
-					this.channelsRepository.increment({ id: data.channel!.id }, 'usersCount', 1);
-				}
-			});
-		}
-
 		// Register to search database
 		this.index(note);
 	}
@@ -761,7 +701,7 @@ export class NoteCreateService {
 		if (data.localOnly) return null;
 
 		const content = data.renote && data.text == null && data.poll == null && (data.files == null || data.files.length === 0)
-			? this.apRendererService.renderAnnounce(data.renote.uri ? data.renote.uri : `${this.config.url}/notes/${data.renote.id}`, note)
+			? this.apRendererService.renderAnnounce(data.renote.uri ?? `${this.config.url}/notes/${data.renote.id}`, note)
 			: this.apRendererService.renderCreate(await this.apRendererService.renderNote(note, false), note);
 
 		return this.apRendererService.renderActivity(content);

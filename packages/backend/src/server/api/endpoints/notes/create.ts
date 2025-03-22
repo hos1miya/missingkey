@@ -2,16 +2,14 @@ import ms from 'ms';
 import { In } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import type { User } from '@/models/entities/User.js';
-import type { UsersRepository, NotesRepository, BlockingsRepository, DriveFilesRepository, ChannelsRepository } from '@/models/index.js';
+import type { UsersRepository, NotesRepository, BlockingsRepository, DriveFilesRepository } from '@/models/index.js';
 import type { DriveFile } from '@/models/entities/DriveFile.js';
 import type { Note } from '@/models/entities/Note.js';
-import type { Channel } from '@/models/entities/Channel.js';
 import { MAX_NOTE_TEXT_LENGTH } from '@/const.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
 import { DI } from '@/di-symbols.js';
-import { noteVisibilities } from '../../../../types.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -69,12 +67,6 @@ export const meta = {
 			id: '04da457d-b083-4055-9082-955525eda5a5',
 		},
 
-		noSuchChannel: {
-			message: 'No such channel.',
-			code: 'NO_SUCH_CHANNEL',
-			id: 'b1653923-5453-4edc-b786-7c4f39bb0bbb',
-		},
-
 		youHaveBeenBlocked: {
 			message: 'You have been blocked by this user.',
 			code: 'YOU_HAVE_BEEN_BLOCKED',
@@ -96,7 +88,6 @@ export const paramDef = {
 		noExtractHashtags: { type: 'boolean', default: false },
 		noExtractEmojis: { type: 'boolean', default: false },
 		replyId: { type: 'string', format: 'misskey:id', nullable: true },
-		channelId: { type: 'string', format: 'misskey:id', nullable: true },
 		via: { type: 'string', nullable: true },
 	},
 	anyOf: [
@@ -184,9 +175,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
-		@Inject(DI.channelsRepository)
-		private channelsRepository: ChannelsRepository,
-
 		private noteEntityService: NoteEntityService,
 		private noteCreateService: NoteCreateService,
 	) {
@@ -199,7 +187,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			}
 
 			let files: DriveFile[] = [];
-			const fileIds = ps.fileIds != null ? ps.fileIds : ps.mediaIds != null ? ps.mediaIds : null;
+			const fileIds = ps.fileIds ?? ps.mediaIds ?? null;
 			if (fileIds != null) {
 				files = await this.driveFilesRepository.createQueryBuilder('file')
 					.where('file.userId = :userId AND file.id IN (:...fileIds)', {
@@ -267,15 +255,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				}
 			}
 
-			let channel: Channel | null = null;
-			if (ps.channelId != null) {
-				channel = await this.channelsRepository.findOneBy({ id: ps.channelId });
-
-				if (channel == null) {
-					throw new ApiError(meta.errors.noSuchChannel);
-				}
-			}
-
 			// 投稿を作成
 			const note = await this.noteCreateService.create(me, {
 				createdAt: new Date(),
@@ -292,8 +271,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				localOnly: ps.localOnly,
 				visibility: ps.visibility,
 				visibleUsers,
-				channel,
-				via: ps.via ? ps.via : null,
+				via: ps.via ?? null,
 				apMentions: ps.noExtractMentions ? [] : undefined,
 				apHashtags: ps.noExtractHashtags ? [] : undefined,
 				apEmojis: ps.noExtractEmojis ? [] : undefined,

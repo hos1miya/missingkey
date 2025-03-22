@@ -18,8 +18,6 @@ import { AvatarDecoration } from '@/models/entities/AvatarDecoration.js';
 import { AttestationChallenge } from '@/models/entities/AttestationChallenge.js';
 import { AuthSession } from '@/models/entities/AuthSession.js';
 import { Blocking } from '@/models/entities/Blocking.js';
-import { ChannelFollowing } from '@/models/entities/ChannelFollowing.js';
-import { ChannelNotePining } from '@/models/entities/ChannelNotePining.js';
 import { Clip } from '@/models/entities/Clip.js';
 import { ClipNote } from '@/models/entities/ClipNote.js';
 import { DriveFile } from '@/models/entities/DriveFile.js';
@@ -69,7 +67,6 @@ import { UserProfile } from '@/models/entities/UserProfile.js';
 import { UserPublickey } from '@/models/entities/UserPublickey.js';
 import { UserSecurityKey } from '@/models/entities/UserSecurityKey.js';
 import { Webhook } from '@/models/entities/Webhook.js';
-import { Channel } from '@/models/entities/Channel.js';
 import { RetentionAggregation } from '@/models/entities/RetentionAggregation.js';
 import { Role } from '@/models/entities/Role.js';
 import { RoleAssignment } from '@/models/entities/RoleAssignment.js';
@@ -79,7 +76,6 @@ import { FlashLike } from '@/models/entities/FlashLike.js';
 import { Config } from '@/config.js';
 import MisskeyLogger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
-import { envOption } from './env.js';
 
 export const dbLogger = new MisskeyLogger('db');
 
@@ -180,9 +176,6 @@ export const entities = [
 	PromoRead,
 	Relay,
 	MutedNote,
-	Channel,
-	ChannelFollowing,
-	ChannelNotePining,
 	RegistryItem,
 	Ad,
 	PasswordResetRequest,

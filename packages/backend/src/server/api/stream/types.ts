@@ -1,4 +1,3 @@
-import type { Channel } from '@/models/entities/Channel.js';
 import type { User } from '@/models/entities/User.js';
 import type { UserProfile } from '@/models/entities/UserProfile.js';
 import type { Note } from '@/models/entities/Note.js';
@@ -63,8 +62,6 @@ export interface BroadcastTypes {
 
 export interface UserStreamTypes {
 	terminate: Record<string, unknown>;
-	followChannel: Channel;
-	unfollowChannel: Channel;
 	updateUserProfile: UserProfile;
 	mute: User;
 	unmute: User;
@@ -245,10 +242,6 @@ export type StreamMessages = {
 	note: {
 		name: `noteStream:${Note['id']}`;
 		payload: EventUnionFromDictionary<SerializedAll<NoteStreamEventTypes>>;
-	};
-	channel: {
-		name: `channelStream:${Channel['id']}`;
-		payload: EventUnionFromDictionary<SerializedAll<ChannelStreamTypes>>;
 	};
 	userList: {
 		name: `userListStream:${UserList['id']}`;

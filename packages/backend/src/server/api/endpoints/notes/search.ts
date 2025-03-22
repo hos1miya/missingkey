@@ -1,4 +1,3 @@
-import { In } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import type { NotesRepository } from '@/models/index.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -41,7 +40,6 @@ export const paramDef = {
 			description: 'The local host is represented with `null`.',
 		},
 		userId: { type: 'string', format: 'misskey:id', nullable: true, default: null },
-		channelId: { type: 'string', format: 'misskey:id', nullable: true, default: null },
 	},
 	required: ['query'],
 } as const;
@@ -66,8 +64,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (ps.userId) {
 				query.andWhere('note.userId = :userId', { userId: ps.userId });
-			} else if (ps.channelId) {
-				query.andWhere('note.channelId = :channelId', { channelId: ps.channelId });
 			}
 
 			query

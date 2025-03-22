@@ -10,8 +10,6 @@ import { AvatarDecoration } from '@/models/entities/AvatarDecoration.js';
 import { AttestationChallenge } from '@/models/entities/AttestationChallenge.js';
 import { AuthSession } from '@/models/entities/AuthSession.js';
 import { Blocking } from '@/models/entities/Blocking.js';
-import { ChannelFollowing } from '@/models/entities/ChannelFollowing.js';
-import { ChannelNotePining } from '@/models/entities/ChannelNotePining.js';
 import { Clip } from '@/models/entities/Clip.js';
 import { ClipNote } from '@/models/entities/ClipNote.js';
 import { DriveFile } from '@/models/entities/DriveFile.js';
@@ -61,7 +59,6 @@ import { UserProfile } from '@/models/entities/UserProfile.js';
 import { UserPublickey } from '@/models/entities/UserPublickey.js';
 import { UserSecurityKey } from '@/models/entities/UserSecurityKey.js';
 import { Webhook } from '@/models/entities/Webhook.js';
-import { Channel } from '@/models/entities/Channel.js';
 import { RetentionAggregation } from '@/models/entities/RetentionAggregation.js';
 import { Role } from '@/models/entities/Role.js';
 import { RoleAssignment } from '@/models/entities/RoleAssignment.js';
@@ -82,8 +79,6 @@ export {
 	AttestationChallenge,
 	AuthSession,
 	Blocking,
-	ChannelFollowing,
-	ChannelNotePining,
 	Clip,
 	ClipNote,
 	DriveFile,
@@ -133,7 +128,6 @@ export {
 	UserPublickey,
 	UserSecurityKey,
 	Webhook,
-	Channel,
 	RetentionAggregation,
 	Role,
 	RoleAssignment,
@@ -153,8 +147,6 @@ export type AvatarDecorationsRepository = Repository<AvatarDecoration>;
 export type AttestationChallengesRepository = Repository<AttestationChallenge>;
 export type AuthSessionsRepository = Repository<AuthSession>;
 export type BlockingsRepository = Repository<Blocking>;
-export type ChannelFollowingsRepository = Repository<ChannelFollowing>;
-export type ChannelNotePiningsRepository = Repository<ChannelNotePining>;
 export type ClipsRepository = Repository<Clip>;
 export type ClipNotesRepository = Repository<ClipNote>;
 export type DriveFilesRepository = Repository<DriveFile>;
@@ -204,7 +196,6 @@ export type UserProfilesRepository = Repository<UserProfile>;
 export type UserPublickeysRepository = Repository<UserPublickey>;
 export type UserSecurityKeysRepository = Repository<UserSecurityKey>;
 export type WebhooksRepository = Repository<Webhook>;
-export type ChannelsRepository = Repository<Channel>;
 export type RetentionAggregationsRepository = Repository<RetentionAggregation>;
 export type RolesRepository = Repository<Role>;
 export type RoleAssignmentsRepository = Repository<RoleAssignment>;

@@ -73,7 +73,7 @@ export class Meta {
 	public blockedSoftwares: string[];
 
 	@Column('varchar', {
-		length: 512, array: true, default: '{/featured,/channels,/explore,/pages,/about-missingkey}',
+		length: 512, array: true, default: '{/featured,/explore,/pages,/about-missingkey}',
 	})
 	public pinnedPages: string[];
 

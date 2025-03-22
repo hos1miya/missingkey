@@ -1,6 +1,5 @@
 import type { User } from '@/models/entities/User.js';
-import type { Channel as ChannelModel } from '@/models/entities/Channel.js';
-import type { FollowingsRepository, MutingsRepository, UserProfilesRepository, ChannelFollowingsRepository, BlockingsRepository } from '@/models/index.js';
+import type { FollowingsRepository, MutingsRepository, UserProfilesRepository, BlockingsRepository } from '@/models/index.js';
 import type { AccessToken } from '@/models/entities/AccessToken.js';
 import type { UserProfile } from '@/models/entities/UserProfile.js';
 import type { UserGroup } from '@/models/entities/UserGroup.js';
@@ -24,7 +23,6 @@ export default class Connection {
 	public following: Set<User['id']> = new Set();
 	public muting: Set<User['id']> = new Set();
 	public blocking: Set<User['id']> = new Set(); // "被"blocking
-	public followingChannels: Set<ChannelModel['id']> = new Set();
 	public token?: AccessToken;
 	private wsConnection: websocket.connection;
 	public subscriber: StreamEventEmitter;
@@ -36,7 +34,6 @@ export default class Connection {
 		private followingsRepository: FollowingsRepository,
 		private mutingsRepository: MutingsRepository,
 		private blockingsRepository: BlockingsRepository,
-		private channelFollowingsRepository: ChannelFollowingsRepository,
 		private userProfilesRepository: UserProfilesRepository,
 		private channelsService: ChannelsService,
 		private globalEventService: GlobalEventService,
@@ -68,7 +65,6 @@ export default class Connection {
 			this.updateFollowing();
 			this.updateMuting();
 			this.updateBlocking();
-			this.updateFollowingChannels();
 			this.updateUserProfile();
 
 			this.subscriber.on(`user:${this.user.id}`, this.onUserEvent);
@@ -95,14 +91,6 @@ export default class Connection {
 				break;
 
 				// TODO: block events
-
-			case 'followChannel':
-				this.followingChannels.add(data.body.id);
-				break;
-
-			case 'unfollowChannel':
-				this.followingChannels.delete(data.body.id);
-				break;
 
 			case 'updateUserProfile':
 				this.userProfile = data.body;
@@ -151,7 +139,6 @@ export default class Connection {
 			// 個々のチャンネルではなくルートレベルでこれらのメッセージを受け取る理由は、
 			// クライアントの事情を考慮したとき、入力フォームはノートチャンネルやメッセージのメインコンポーネントとは別
 			// なこともあるため、それらのコンポーネントがそれぞれ各チャンネルに接続するようにするのは面倒なため。
-			case 'typingOnChannel': this.typingOnChannel(body.channel); break;
 			case 'typingOnMessaging': this.typingOnMessaging(body); break;
 		}
 	}
@@ -191,7 +178,6 @@ export default class Connection {
 		if (this.user && (note.userId !== this.user.id)) {
 			this.noteReadService.read(this.user.id, [note], {
 				following: this.following,
-				followingChannels: this.followingChannels,
 			});
 		}
 	}
@@ -326,13 +312,6 @@ export default class Connection {
 	}
 
 	@bindThis
-	private typingOnChannel(channel: ChannelModel['id']) {
-		if (this.user) {
-			this.globalEventService.publishChannelStream(channel, 'typing', this.user.id);
-		}
-	}
-
-	@bindThis
 	private typingOnMessaging(param: { partner?: User['id']; group?: UserGroup['id']; }) {
 		if (this.user) {
 			if (param.partner) {
@@ -377,18 +356,6 @@ export default class Connection {
 		});
 
 		this.blocking = new Set<string>(blockings.map(x => x.blockerId));
-	}
-
-	@bindThis
-	private async updateFollowingChannels() {
-		const followings = await this.channelFollowingsRepository.find({
-			where: {
-				followerId: this.user!.id,
-			},
-			select: ['followeeId'],
-		});
-
-		this.followingChannels = new Set<string>(followings.map(x => x.followeeId));
 	}
 
 	@bindThis

@@ -23,7 +23,6 @@ import { UrlPreviewService } from './web/UrlPreviewService.js';
 import { MainChannelService } from './api/stream/channels/main.js';
 import { AdminChannelService } from './api/stream/channels/admin.js';
 import { AntennaChannelService } from './api/stream/channels/antenna.js';
-import { ChannelChannelService } from './api/stream/channels/channel.js';
 import { DriveChannelService } from './api/stream/channels/drive.js';
 import { GlobalTimelineChannelService } from './api/stream/channels/global-timeline.js';
 import { HashtagChannelService } from './api/stream/channels/hashtag.js';
@@ -64,7 +63,6 @@ import { UserListChannelService } from './api/stream/channels/user-list.js';
 		MainChannelService,
 		AdminChannelService,
 		AntennaChannelService,
-		ChannelChannelService,
 		DriveChannelService,
 		GlobalTimelineChannelService,
 		HashtagChannelService,

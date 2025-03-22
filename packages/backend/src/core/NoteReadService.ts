@@ -2,12 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { In, IsNull, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { User } from '@/models/entities/User.js';
-import type { Channel } from '@/models/entities/Channel.js';
 import type { Packed } from '@/misc/schema.js';
 import type { Note } from '@/models/entities/Note.js';
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
-import type { UsersRepository, NoteUnreadsRepository, MutingsRepository, NoteThreadMutingsRepository, FollowingsRepository, ChannelFollowingsRepository, AntennaNotesRepository } from '@/models/index.js';
+import type { UsersRepository, NoteUnreadsRepository, MutingsRepository, NoteThreadMutingsRepository, FollowingsRepository, AntennaNotesRepository } from '@/models/index.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { NotificationService } from './NotificationService.js';
@@ -32,9 +31,6 @@ export class NoteReadService {
 		@Inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
 
-		@Inject(DI.channelFollowingsRepository)
-		private channelFollowingsRepository: ChannelFollowingsRepository,
-
 		@Inject(DI.antennaNotesRepository)
 		private antennaNotesRepository: AntennaNotesRepository,
 
@@ -54,7 +50,6 @@ export class NoteReadService {
 		isMentioned: boolean;
 	}): Promise<void> {
 		//#region ミュートしているなら無視
-		// TODO: 現在の仕様ではChannelにミュートは適用されないのでよしなにケアする
 		const mute = await this.mutingsRepository.findBy({
 			muterId: userId,
 		});
@@ -74,7 +69,6 @@ export class NoteReadService {
 			userId: userId,
 			isSpecified: params.isSpecified,
 			isMentioned: params.isMentioned,
-			noteChannelId: note.channelId,
 			noteUserId: note.userId,
 		};
 	
@@ -92,9 +86,6 @@ export class NoteReadService {
 			if (params.isSpecified) {
 				this.globalEventService.publishMainStream(userId, 'unreadSpecifiedNote', note.id);
 			}
-			if (note.channelId) {
-				this.globalEventService.publishMainStream(userId, 'unreadChannel', note.id);
-			}
 		}, 2000);
 	}	
 
@@ -104,20 +95,11 @@ export class NoteReadService {
 		notes: (Note | Packed<'Note'>)[],
 		info?: {
 			following: Set<User['id']>;
-			followingChannels: Set<Channel['id']>;
 		},
 	): Promise<void> {
-		const followingChannels = info?.followingChannels ? info.followingChannels : new Set<string>((await this.channelFollowingsRepository.find({
-			where: {
-				followerId: userId,
-			},
-			select: ['followeeId'],
-		})).map(x => x.followeeId));
-	
 		const myAntennas = (await this.antennaService.getAntennas()).filter(a => a.userId === userId);
 		const readMentions: (Note | Packed<'Note'>)[] = [];
 		const readSpecifiedNotes: (Note | Packed<'Note'>)[] = [];
-		const readChannelNotes: (Note | Packed<'Note'>)[] = [];
 		const readAntennaNotes: (Note | Packed<'Note'>)[] = [];
 	
 		for (const note of notes) {
@@ -125,10 +107,6 @@ export class NoteReadService {
 				readMentions.push(note);
 			} else if (note.visibleUserIds && note.visibleUserIds.includes(userId)) {
 				readSpecifiedNotes.push(note);
-			}
-	
-			if (note.channelId && followingChannels.has(note.channelId)) {
-				readChannelNotes.push(note);
 			}
 	
 			if (note.user != null) { // たぶんnullになることは無いはずだけど一応
@@ -140,11 +118,11 @@ export class NoteReadService {
 			}
 		}
 	
-		if ((readMentions.length > 0) || (readSpecifiedNotes.length > 0) || (readChannelNotes.length > 0)) {
+		if ((readMentions.length > 0) || (readSpecifiedNotes.length > 0)) {
 			// Remove the record
 			await this.noteUnreadsRepository.delete({
 				userId: userId,
-				noteId: In([...readMentions.map(n => n.id), ...readSpecifiedNotes.map(n => n.id), ...readChannelNotes.map(n => n.id)]),
+				noteId: In([...readMentions.map(n => n.id), ...readSpecifiedNotes.map(n => n.id)]),
 			});
 	
 			// TODO: ↓まとめてクエリしたい
@@ -166,16 +144,6 @@ export class NoteReadService {
 				if (specifiedCount === 0) {
 					// 全て既読になったイベントを発行
 					this.globalEventService.publishMainStream(userId, 'readAllUnreadSpecifiedNotes');
-				}
-			});
-	
-			this.noteUnreadsRepository.countBy({
-				userId: userId,
-				noteChannelId: Not(IsNull()),
-			}).then(channelNoteCount => {
-				if (channelNoteCount === 0) {
-					// 全て既読になったイベントを発行
-					this.globalEventService.publishMainStream(userId, 'readAllChannels');
 				}
 			});
 	

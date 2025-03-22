@@ -5,13 +5,11 @@ import type { Note } from '@/models/entities/Note.js';
 import type { UserList } from '@/models/entities/UserList.js';
 import type { UserGroup } from '@/models/entities/UserGroup.js';
 import type { Antenna } from '@/models/entities/Antenna.js';
-import type { Channel } from '@/models/entities/Channel.js';
 import type {
 	StreamChannels,
 	AdminStreamTypes,
 	AntennaStreamTypes,
 	BroadcastTypes,
-	ChannelStreamTypes,
 	DriveStreamTypes,
 	GroupMessagingStreamTypes,
 	InternalStreamTypes,
@@ -81,11 +79,6 @@ export class GlobalEventService {
 			id: noteId,
 			body: value,
 		});
-	}
-
-	@bindThis
-	public publishChannelStream<K extends keyof ChannelStreamTypes>(channelId: Channel['id'], type: K, value?: ChannelStreamTypes[K]): void {
-		this.publish(`channelStream:${channelId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis

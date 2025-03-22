@@ -10,7 +10,7 @@ import { awaitAll } from '@/misc/prelude/await-all.js';
 import type { User } from '@/models/entities/User.js';
 import type { Note } from '@/models/entities/Note.js';
 import type { NoteReaction } from '@/models/entities/NoteReaction.js';
-import type { UsersRepository, NotesRepository, FollowingsRepository, PollsRepository, PollVotesRepository, NoteReactionsRepository, ChannelsRepository, MutedNotesRepository } from '@/models/index.js';
+import type { UsersRepository, NotesRepository, FollowingsRepository, PollsRepository, PollVotesRepository, NoteReactionsRepository, MutedNotesRepository } from '@/models/index.js';
 import { bindThis } from '@/decorators.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { CustomEmojiService } from '../CustomEmojiService.js';
@@ -48,9 +48,6 @@ export class NoteEntityService implements OnModuleInit {
 
 		@Inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
-
-		@Inject(DI.channelsRepository)
-		private channelsRepository: ChannelsRepository,
 
 		@Inject(DI.mutedNotesRepository)
 		private mutedNotesRepository: MutedNotesRepository,
@@ -283,12 +280,6 @@ export class NoteEntityService implements OnModuleInit {
 			text = `【${note.name}】\n${(note.text ?? '').trim()}\n\n${note.url ?? note.uri}`;
 		}
 
-		const channel = note.channelId
-			? note.channel
-				? note.channel
-				: await this.channelsRepository.findOneBy({ id: note.channelId })
-			: null;
-
 		const reactionEmojiNames = Object.keys(note.reactions)
 			.filter(x => x.startsWith(':') && x.includes('@') && !x.includes('@.')) // リモートカスタム絵文字のみ
 			.map(x => this.reactionService.decodeReaction(x).reaction.replaceAll(':', ''));
@@ -315,11 +306,6 @@ export class NoteEntityService implements OnModuleInit {
 			files: this.driveFileEntityService.packMany(note.fileIds),
 			replyId: note.replyId,
 			renoteId: note.renoteId,
-			channelId: note.channelId ?? undefined,
-			channel: channel ? {
-				id: channel.id,
-				name: channel.name,
-			} : undefined,
 			mentions: note.mentions.length > 0 ? note.mentions : undefined,
 			uri: note.uri ?? undefined,
 			url: note.url ?? undefined,
