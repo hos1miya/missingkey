@@ -210,6 +210,7 @@ function more() {
 				text-align: left;
 				box-sizing: border-box;
 				color: var(--navFg);
+				margin-top: 2px;
 
 				> .icon {
 					position: relative;
@@ -219,7 +220,7 @@ function more() {
 
 				> .indicator {
 					position: absolute;
-					top: 0;
+					top: 1px;
 					left: 20px;
 					color: var(--navIndicator);
 					font-size: 8px;

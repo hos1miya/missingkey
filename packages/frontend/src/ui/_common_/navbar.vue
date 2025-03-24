@@ -398,6 +398,7 @@ function menuEdit() {
 					text-align: left;
 					box-sizing: border-box;
 					color: var(--navFg);
+					margin-top: 2px;
 
 					> .icon {
 						position: relative;
@@ -408,7 +409,7 @@ function menuEdit() {
 					> .indicator {
 						position: absolute;
 						top: 0;
-						left: 20px;
+						left: 26px;
 						color: var(--navIndicator);
 						font-size: 8px;
 						animation: blink 1s infinite;
