@@ -149,6 +149,7 @@ onBeforeUnmount(() => {
 .root {
 	position: relative;
 	margin: auto;
+	margin-top: 5%;
 	padding: 32px;
 	min-width: 320px;
 	max-width: 480px;
