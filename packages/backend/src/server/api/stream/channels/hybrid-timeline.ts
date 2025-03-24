@@ -107,7 +107,7 @@ class HybridTimelineChannel extends Channel {
 	private async checkWordMutes(note: Packed<'Note'>): Promise<boolean> {
 		// リプライなら元ノート参照、ミュート判定
 		if (note.replyId != null) {
-			if (await this.noteEntityService.isManualMutedNote(note.replyId, this.user?.id ? this.user.id : '')) return true;
+			if (await this.noteEntityService.isManualMutedNote(note.replyId, this.user?.id ?? '')) return true;
 			note.reply = await this.noteEntityService.pack(note.replyId, this.user, {
 				detail: true,
 			});
@@ -117,7 +117,7 @@ class HybridTimelineChannel extends Channel {
 		}
 		// Renoteなら元ノート参照、ミュート判定
 		if (note.renoteId != null) {
-			if (await this.noteEntityService.isManualMutedNote(note.renoteId, this.user?.id ? this.user.id : '')) return true;
+			if (await this.noteEntityService.isManualMutedNote(note.renoteId, this.user?.id ?? '')) return true;
 			note.renote = await this.noteEntityService.pack(note.renoteId, this.user, {
 				detail: true,
 			});
