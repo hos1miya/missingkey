@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <MkContainer :show-header="true" class="mkw-traininformations data-cy-mkw-traininformations">
 	<template #icon><i class="ti ti-train"></i></template>
-	<template #header>{{ i18n.ts._widgets.trainInformation }}</template>
+	<template #header>{{ i18n.ts._widgets.trainInformation }} ({{ areaOptions.find(option => option.value === widgetProps.area as number)?.label }})</template>
 	
 	<div class="kjidhajs" :style="`height: ${widgetProps.height}px;`">
 		<MkLoading v-if="fetching"/>
@@ -37,31 +37,34 @@ import MkContainer from '@/components/MkContainer.vue';
 import * as os from '@/os';
 import { useInterval } from '@/scripts/use-interval';
 import { i18n } from '@/i18n';
-import { infoImageUrl } from '@/instance';
 	
 const name = 'trainInformation';
+
+const areaOptions = [
+	{
+		value: 2, label: '北海道',
+	}, {
+		value: 3, label: '東北',
+	}, {
+		value: 4, label: '関東',
+	}, {
+		value: 5, label: '中部',
+	}, {
+		value: 6, label: '近畿',
+	}, {
+		value: 8, label: '中国',
+	}, {
+		value: 9, label: '四国',
+	}, {
+		value: 7, label: '九州',
+	}
+];
 	
 const widgetPropsDef = {
 	area: {
 		type: 'radio' as const,
 		default: 4,
-		options: [{
-			value: 2, label: '北海道',
-		}, {
-			value: 3, label: '東北',
-		}, {
-			value: 4, label: '関東',
-		}, {
-			value: 5, label: '中部',
-		}, {
-			value: 6, label: '近畿',
-		}, {
-			value: 8, label: '中国',
-		}, {
-			value: 9, label: '四国',
-		}, {
-			value: 7, label: '九州',
-		}],
+		options: areaOptions,
 	},
 	height: {
 		type: 'number' as const,
