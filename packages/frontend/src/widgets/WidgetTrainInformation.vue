@@ -97,7 +97,17 @@ const fetching = ref(true);
 const fetch = async() : Promise<void> => {
 	try {
 		const res = await os.api('train-information', { area: widgetProps.area as number });
-		alerts.value = res;
+		const statusPriority: { [key: string]: number } = {
+			'運転見合わせ': 0,
+			'列車遅延': 1,
+			'運転状況': 2,
+		};
+		const sortedRes = res.sort((a, b) => {
+			const aPriority = statusPriority[a.status] ?? 999;
+			const bPriority = statusPriority[b.status] ?? 999;
+			return aPriority - bPriority;
+		});
+		alerts.value = sortedRes;
 	} catch (error) {
 		alerts.value = [];
 	} finally {
