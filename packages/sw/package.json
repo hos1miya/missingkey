@@ -7,15 +7,15 @@
 		"lint": "tsc --noEmit && eslint --quiet src/**/*.ts"
 	},
 	"dependencies": {
-		"esbuild": "^0.25.1",
-		"idb-keyval": "6.2.1",
+		"esbuild": "^0.25.4",
+		"idb-keyval": "^6.2.2",
 		"misskey-js": "github:hos1miya/misskey-js#v0.0.28"
 	},
 	"devDependencies": {
-		"@typescript-eslint/parser": "^8.26.1",
-		"@typescript/lib-webworker": "npm:@types/serviceworker@0.0.126",
-		"eslint": "^9.22.0",
+		"@typescript-eslint/parser": "^8.32.1",
+		"@typescript/lib-webworker": "npm:@types/serviceworker@0.0.135",
+		"eslint": "^9.26.0",
 		"eslint-plugin-import": "2.31.0",
-		"typescript": "^5.8.2"
+		"typescript": "^5.8.3"
 	}
 }
