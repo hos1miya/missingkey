@@ -277,8 +277,11 @@ export default defineComponent({
 							if (token.children.length === 1) {
 								const child = token.children[0];
 								const text = child.type === 'text' ? child.props.text : '';
-								const [base, ...rest] = text.split(/\s(.+)/);
-								return h('ruby', {}, [base, h('rt', rest.join(' '))]);
+								const match = text.match(/^(\S+)\s+(.+)$/);
+								if (!match) return text; // fallback
+								const [, base, rt] = match;
+								return h('ruby', {}, [base, h('rt', rt)]);
+								
 							} else {
 								const rt = token.children.at(-1)!;
 								const text = rt.type === 'text' ? rt.props.text : '';
