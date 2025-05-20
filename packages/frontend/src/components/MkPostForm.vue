@@ -766,6 +766,7 @@ onMounted(() => {
 			visibility = init.visibility;
 			localOnly = init.localOnly;
 			quoteId = init.renote ? init.renote.id : null;
+			saveDraft();
 		}
 
 		nextTick(() => watchForDraft());
