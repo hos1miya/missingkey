@@ -27,6 +27,7 @@ import MkMiniChart from '@/components/MkMiniChart.vue';
 import * as os from '@/os';
 import { useInterval } from '@/scripts/use-interval';
 import { i18n } from '@/i18n';
+import { $i } from '@/account';
 
 const name = 'hashtags';
 
@@ -55,7 +56,7 @@ const stats = ref([]);
 const fetching = ref(true);
 
 const fetch = () => {
-	os.api('hashtags/trend').then(res => {
+	os.api('hashtags/trend', { mutedWords: $i!.mutedWords }).then(res => {
 		stats.value = res;
 		fetching.value = false;
 	});

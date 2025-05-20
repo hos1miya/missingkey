@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { NotesRepository } from '@/models/index.js';
 import type { Note } from '@/models/entities/Note.js';
+import { checkWordMuteText } from '@/misc/check-word-mute.js';
 import { safeForSql } from '@/misc/safe-for-sql.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import { MetaService } from '@/core/MetaService.js';
@@ -57,11 +58,12 @@ export const meta = {
 
 export const paramDef = {
 	type: 'object',
-	properties: {},
+	properties: {
+		mutedWords: { type: 'array' },
+	},
 	required: [],
 } as const;
 
-// eslint-disable-next-line import/no-default-export
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> {
 	constructor(
@@ -70,7 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 		private metaService: MetaService,
 	) {
-		super(meta, paramDef, async () => {
+		super(meta, paramDef, async (ps) => {
 			const instance = await this.metaService.fetch(true);
 			const hiddenTags = instance.hiddenTags.map(t => normalizeForSearch(t));
 
@@ -92,10 +94,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				return [];
 			}
 
-			const tags: {
-		name: string;
-		users: Note['userId'][];
-	}[] = [];
+			let tags: {
+				name: string;
+				users: Note['userId'][];
+			}[] = [];
 
 			for (const note of tagNotes) {
 				for (const tag of note.tags) {
@@ -113,6 +115,23 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 						});
 					}
 				}
+			}
+
+			// ミュート判定
+			const mWords = ps.mutedWords ?? [];
+			if (mWords.length > 0) {
+				tags = await (async () => {
+					const checks = await Promise.all(
+						tags.map(async tag => ({
+							tag,
+							muted: await checkWordMuteText(tag.name, mWords),
+						}))
+					);
+			
+					return checks
+						.filter(result => !result.muted)
+						.map(result => result.tag);
+				})();
 			}
 
 			// タグを人気順に並べ替え
