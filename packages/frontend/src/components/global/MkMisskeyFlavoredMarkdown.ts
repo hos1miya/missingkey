@@ -281,7 +281,6 @@ export default defineComponent({
 								if (!match) return text; // fallback
 								const [, base, rt] = match;
 								return h('ruby', {}, [base, h('rt', rt)]);
-								
 							} else {
 								const rt = token.children.at(-1)!;
 								const text = rt.type === 'text' ? rt.props.text : '';
