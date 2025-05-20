@@ -211,12 +211,6 @@ widgets(app);
 directives(app);
 components(app);
 
-const splash = document.getElementById('splash');
-// 念のためnullチェック(HTMLが古い場合があるため(そのうち消す))
-if (splash) splash.addEventListener('transitionend', () => {
-	splash.remove();
-});
-
 await deckStore.ready;
 
 // https://github.com/misskey-dev/misskey/pull/8575#issuecomment-1114239210
@@ -245,9 +239,15 @@ window.onunhandledrejection = null;
 
 reactionPicker.init();
 
+const splash = document.getElementById('splash');
 if (splash) {
 	splash.style.opacity = '0';
 	splash.style.pointerEvents = 'none';
+
+	// transitionendイベントが発火しない場合があるため
+	window.setTimeout(() => {
+		splash.remove();
+	}, 1000);
 }
 
 // クライアントが更新されたか？
