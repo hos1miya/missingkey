@@ -467,7 +467,7 @@ function menuEdit() {
 				position: sticky;
 				top: 0;
 				z-index: 1;
-				padding: 20px 0;
+				padding: 24px 0;
 				background: var(--X14);
 				-webkit-backdrop-filter: var(--blur, blur(8px));
 				backdrop-filter: var(--blur, blur(8px));
@@ -497,7 +497,7 @@ function menuEdit() {
 					display: block;
 					position: relative;
 					width: 100%;
-					height: 52px;
+					height: 40.3px;
 					margin-bottom: 16px;
 					text-align: center;
 
@@ -510,7 +510,7 @@ function menuEdit() {
 						right: 0;
 						bottom: 0;
 						margin: auto;
-						width: 52px;
+						width: 40.3px;
 						aspect-ratio: 1/1;
 						border-radius: 100%;
 						background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
@@ -553,7 +553,7 @@ function menuEdit() {
 				flex: 1;
 
 				> .divider {
-					margin: 8px auto;
+					margin: 16px auto;
 					width: calc(100% - 32px);
 					border-top: solid 0.5px var(--divider);
 				}
@@ -561,9 +561,10 @@ function menuEdit() {
 				> .item {
 					display: block;
 					position: relative;
-					padding: 18px 0;
+					padding: 12.55px 0;
 					width: 100%;
 					text-align: center;
+					margin-top: 2px;
 
 					> .icon {
 						display: block;
@@ -586,7 +587,7 @@ function menuEdit() {
 
 					&:hover, &.active {
 						text-decoration: none;
-						color: var(--accent);
+						color: var(--navActive);
 
 						&:before {
 							content: "";
