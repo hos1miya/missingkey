@@ -79,32 +79,37 @@ export function getNoteMenu(props: {
 		});
 	}
 
-	function toggleNoteMute(mute: boolean) : void {
-		// renoteへの処理
-		if (isRenote) {
-			// renote自体を処理
-			os.api(mute ? 'notes/mutes/create' : 'notes/mutes/delete', {
-				noteId: props.note.id,
-			});
-			// originの状態を取得
-			const originNoteState = os.api('notes/state', {
-				noteId: appearNote.id,
-			});
-			// originとrenoteの状態が同じならreturn
-			originNoteState.then(state => state!.isMutedNote === mute ? {
-				action: () : void => {
-					if (mute) props.isDeleted.value = true;
-					os.success();
-					return;
-				},
-			} : {
+	async function toggleNoteMute(mute: boolean): Promise<void> {
+		const renoteId = props.note.id;
+		const originId = appearNote.id;
+	
+		// 1. 各ノートの現在のミュート状態を取得
+		const [originState, renoteState] = await Promise.all([
+			os.api('notes/state', { noteId: originId }),
+			isRenote ? os.api('notes/state', { noteId: renoteId }) : Promise.resolve(null),
+		]);
+	
+		// 2. Renote 側のミュート/解除（必要な場合のみ）
+		if (isRenote && renoteState?.isMutedNote !== mute) {
+			await os.api(mute ? 'notes/mutes/create' : 'notes/mutes/delete', {
+				noteId: renoteId,
 			});
 		}
-		// originへの処理
-		if (mute) props.isDeleted.value = true;
-		os.apiWithDialog(mute ? 'notes/mutes/create' : 'notes/mutes/delete', {
-			noteId: appearNote.id,
-		});
+	
+		// 3. origin 側のミュート/解除（必要な場合のみ）
+		const shouldMuteOrigin = originState?.isMutedNote !== mute;
+		if (shouldMuteOrigin) {
+			// ミュート時は即座に UI 非表示
+			if (mute) props.isDeleted.value = true;
+	
+			await os.apiWithDialog(mute ? 'notes/mutes/create' : 'notes/mutes/delete', {
+				noteId: originId,
+			});
+		} else {
+			// origin の状態が変わらない場合も UI 更新は必要（ミュート時のみ）
+			if (mute) props.isDeleted.value = true;
+			os.success();
+		}
 	}
 
 	function copyContent() : void {
