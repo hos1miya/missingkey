@@ -602,6 +602,7 @@ function menuEdit() {
 							bottom: 0;
 							border-radius: 999px;
 							background: var(--accentedBg);
+							z-index: -1;
 						}
 
 						> .icon, > .text {
