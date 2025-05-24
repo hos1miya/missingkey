@@ -1,15 +1,16 @@
-export function isUserRelated(note: any, userIds: Set<string>): boolean {
-	if (userIds.has(note.userId)) {
-		return true;
-	}
+import type { Note } from '@/models/entities/Note.js';
 
-	if (note.reply != null && userIds.has(note.reply.userId)) {
-		return true;
-	}
+export function isUserRelated(note: Note | null, userIds: Set<string>): boolean {
+	if (!note) return false;
 
-	if (note.renote != null && userIds.has(note.renote.userId)) {
-		return true;
-	}
+	if (userIds.has(note.userId)) return true;
+
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+	if (note.mentions?.some(userId => userIds.has(userId))) return true;
+
+	if (note.reply && isUserRelated(note.reply, userIds)) return true;
+
+	if (note.renote && isUserRelated(note.renote, userIds)) return true;
 
 	return false;
 }
