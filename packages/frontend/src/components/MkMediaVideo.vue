@@ -8,7 +8,7 @@
 	</div>
 </div>
 <div v-else class="kkjnbbplepmiyuadieoenjgutgcmtsvu">
-	<VuePlyr :options="{ volume: 0.5 }">
+	<VuePlyr :options="{ volume: 0.5, storage: { enabled: true, key: 'plyr' }, ratio: '16:9' }">
 		<video
 			controls
 			:data-poster="video.thumbnailUrl"
