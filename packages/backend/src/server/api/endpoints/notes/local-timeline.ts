@@ -1,6 +1,6 @@
 import { Brackets } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import type { NotesRepository, UsersRepository } from '@/models/index.js';
+import type { NotesRepository, MutingsRepository } from '@/models/index.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -8,6 +8,7 @@ import { MetaService } from '@/core/MetaService.js';
 import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
+import { isUserRelated } from '@/misc/is-user-related.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -59,6 +60,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 	constructor(
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
+
+		@Inject(DI.mutingsRepository)
+		private mutingsRepository: MutingsRepository,
 
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
@@ -123,7 +127,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				}
 			});
 
-			return await this.noteEntityService.packMany(timeline, me);
+			const packedTimeline = await this.noteEntityService.packMany(timeline, me);
+
+			if (!me) return packedTimeline;
+
+			// renote, reply含む再帰的なミュート処理
+			const mutings = await this.mutingsRepository.find({
+				where: {
+					muterId: me.id,
+				},
+				select: ['muteeId'],
+			});
+			const muting = new Set<string>(mutings.map(x => x.muteeId));
+			return packedTimeline.filter(note => !isUserRelated(note, muting));
 		});
 	}
 }

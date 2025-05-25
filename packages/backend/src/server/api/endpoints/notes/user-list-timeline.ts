@@ -1,10 +1,11 @@
 import { Brackets } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import type { NotesRepository, UserListsRepository, UserListJoiningsRepository } from '@/models/index.js';
+import type { NotesRepository, UserListsRepository, UserListJoiningsRepository, MutingsRepository } from '@/models/index.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import ActiveUsersChart from '@/core/chart/charts/active-users.js';
+import { isUserRelated } from '@/misc/is-user-related.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../error.js';
 
@@ -65,6 +66,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 		@Inject(DI.userListJoiningsRepository)
 		private userListJoiningsRepository: UserListJoiningsRepository,
+
+		@Inject(DI.mutingsRepository)
+		private mutingsRepository: MutingsRepository,
 
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
@@ -137,7 +141,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			this.activeUsersChart.read(me);
 
-			return await this.noteEntityService.packMany(timeline, me);
+			const packedTimeline = await this.noteEntityService.packMany(timeline, me);
+
+			// renote, reply含む再帰的なミュート処理
+			const mutings = await this.mutingsRepository.find({
+				where: {
+					muterId: me.id,
+				},
+				select: ['muteeId'],
+			});
+			const muting = new Set<string>(mutings.map(x => x.muteeId));
+			return packedTimeline.filter(note => !isUserRelated(note, muting));
 		});
 	}
 }
