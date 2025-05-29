@@ -80,7 +80,7 @@ export function getUserMenu(user, router: Router = mainRouter) {
 				}, {
 					value: 'custom', text: i18n.ts.customMutePeriod,
 				}],
-				default: 'indefinitely',
+				default: 'custom',
 			});
 			if (canceled) return;
 
@@ -94,8 +94,8 @@ export function getUserMenu(user, router: Router = mainRouter) {
 				if (canceled || time === '') return;
 
 				// 時間・日の判定
-				const hoursQuery = time.match(/([0-9]+)時間/);
-				const daysQuery = time.match(/([0-9]+)日/);
+				const hoursQuery = time.match(/([0-9]+)(?:時間|h)/);
+				const daysQuery = time.match(/([0-9]+)(?:日|d)/);
 				hours = hoursQuery ? parseInt(hoursQuery[1], 10) : 0;
 				days = daysQuery ? parseInt(daysQuery[1], 10) : 0;
 				if (hours + days === 0) return;	// 0時間0日ならキャンセル
