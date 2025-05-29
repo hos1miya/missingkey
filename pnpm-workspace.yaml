@@ -1,4 +1,19 @@
 packages:
- - 'packages/backend'
- - 'packages/frontend'
- - 'packages/sw'
+  - packages/backend
+  - packages/frontend
+  - packages/sw
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@parcel/watcher'
+  - '@swc/core'
+  - '@tensorflow/tfjs-node'
+  - aws-sdk
+  - bufferutil
+  - core-js
+  - cypress
+  - es5-ext
+  - esbuild
+  - msgpackr-extract
+  - re2
+  - sharp
+  - utf-8-validate

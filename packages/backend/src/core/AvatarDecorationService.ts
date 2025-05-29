@@ -5,14 +5,14 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { IsNull } from "typeorm";
-import type { AvatarDecorationsRepository, InstancesRepository, UsersRepository, AvatarDecoration, User } from '@/models';
+import type { AvatarDecorationsRepository, InstancesRepository, UsersRepository, AvatarDecoration, User } from '@/models/index.js';
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { Cache } from '@/misc/cache.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { StreamMessages } from '@/server/api/stream/types';
+import { StreamMessages } from '@/server/api/stream/types.js';
 import { HttpRequestService } from "@/core/HttpRequestService.js";
 import { appendQuery, query } from '@/misc/prelude/url.js';
 import type { Config } from '@/config.js';

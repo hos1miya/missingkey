@@ -13,9 +13,9 @@
 	},
 	"devDependencies": {
 		"@typescript-eslint/parser": "^8.32.1",
-		"@typescript/lib-webworker": "npm:@types/serviceworker@0.0.135",
+		"@typescript/lib-webworker": "npm:@types/serviceworker@0.0.136",
 		"eslint": "^9.27.0",
-		"eslint-plugin-import": "2.31.0",
+		"eslint-plugin-import": "^2.31.0",
 		"typescript": "^5.8.3"
 	}
 }
