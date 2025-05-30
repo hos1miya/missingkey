@@ -193,20 +193,22 @@ export class FileServerService {
 			}
 
 			if (file.fileRole !== 'original') {
+				const mimeType = FILE_TYPE_BROWSERSAFE.includes(file.mime ?? file.file?.type)
+					? (file.mime ?? file.file?.type)
+					: 'application/octet-stream';
+
 				const filename = rename(file.filename, {
 					suffix: file.fileRole === 'thumbnail' ? '-thumb' : '-web',
 					extname: file.ext ? `.${file.ext}` : '.unknown',
 				}).toString();
 
-				reply.header('Content-Type', FILE_TYPE_BROWSERSAFE.includes(file.mime) ? file.mime : 'application/octet-stream');
-				reply.header('Cache-Control', 'max-age=31536000, immutable');
-				reply.header('Content-Disposition', contentDisposition('inline', filename));
-				return fs.createReadStream(file.path);
+				return this.serveFileWithRangeSupport(file.path, mimeType, filename, reply);
 			} else {
-				reply.header('Content-Type', FILE_TYPE_BROWSERSAFE.includes(file.file.type) ? file.file.type : 'application/octet-stream');
-				reply.header('Cache-Control', 'max-age=31536000, immutable');
-				reply.header('Content-Disposition', contentDisposition('inline', file.filename));
-				return fs.createReadStream(file.path);
+				const mimeType = FILE_TYPE_BROWSERSAFE.includes(file.file.type)
+					? file.file.type
+					: 'application/octet-stream';
+			
+				return this.serveFileWithRangeSupport(file.path, mimeType, file.filename, reply);
 			}
 		} catch (e) {
 			if ('cleanup' in file) file.cleanup();
@@ -467,5 +469,43 @@ export class FileServerService {
 			ext: null,
 			path,
 		};
+	}
+
+	@bindThis
+	private serveFileWithRangeSupport(filePath: string, mimeType: string, filename: string, reply: FastifyReply) {
+		const stat = fs.statSync(filePath);
+		const fileSize = stat.size;
+		const range = reply.raw.req.headers.range;
+	
+		reply.header('Content-Disposition', contentDisposition('inline', filename));
+		reply.header('Cache-Control', 'max-age=31536000, immutable');
+		reply.header('Accept-Ranges', 'bytes');
+	
+		if (!range) {
+			// 通常配信
+			reply.header('Content-Type', mimeType);
+			reply.header('Content-Length', fileSize);
+			return fs.createReadStream(filePath);
+		}
+	
+		// Range リクエスト対応
+		const parts = range.replace(/bytes=/, '').split('-');
+		const start = parseInt(parts[0], 10);
+		const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+	
+		if (start >= fileSize || end >= fileSize) {
+			reply.code(416).header('Content-Range', `bytes */${fileSize}`).send();
+			return;
+		}
+	
+		const chunkSize = end - start + 1;
+		const fileStream = fs.createReadStream(filePath, { start, end });
+	
+		reply.code(206);
+		reply.header('Content-Type', mimeType);
+		reply.header('Content-Length', chunkSize);
+		reply.header('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+	
+		return fileStream;
 	}
 }

@@ -165,6 +165,7 @@
 		"@types/rename": "1.0.7",
 		"@types/sanitize-html": "^2.16.0",
 		"@types/semver": "^7.7.0",
+		"@types/sharp": "0.31.1",
 		"@types/sinonjs__fake-timers": "8.1.5",
 		"@types/speakeasy": "2.0.10",
 		"@types/tinycolor2": "1.4.6",
