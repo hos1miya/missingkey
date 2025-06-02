@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: syuilo and other misskey contributors
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 <MkSpacer :content-max="800">
 	<div :class="$style.root">
@@ -90,6 +95,13 @@ async function run() {
 				id: Math.random(),
 				text: value.type === 'str' ? value.value : utils.valToString(value),
 				print: true,
+			});
+		},
+		err: (err) => {
+			os.alert({
+				type: 'error',
+				title: 'AiScript Error',
+				text: err.toString(),
 			});
 		},
 		log: (type, params) => {
