@@ -327,6 +327,8 @@ export function select<C = any>(props: {
 	title?: string | null;
 	text?: string | null;
 	default?: string | null;
+	radio?: boolean;
+	showCancelButton?: boolean;
 } & ({
 	items: {
 		value: C;
@@ -347,11 +349,12 @@ export function select<C = any>(props: {
 		popup(MkDialog, {
 			title: props.title,
 			text: props.text,
-			select: {
+			[props.radio ? 'radios' : 'select']: {
 				items: props.items,
 				groupedItems: props.groupedItems,
 				default: props.default,
 			},
+			showCancelButton: props.showCancelButton,
 		}, {
 			done: result => {
 				resolve(result ? result : { canceled: true });

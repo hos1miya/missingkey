@@ -81,6 +81,8 @@ export function getUserMenu(user, router: Router = mainRouter) {
 					value: 'custom', text: i18n.ts.customMutePeriod,
 				}],
 				default: 'custom',
+				radio: true,
+				showCancelButton: true,
 			});
 			if (canceled) return;
 

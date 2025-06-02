@@ -308,6 +308,7 @@ export function getNoteMenu(props: {
 				text: i18n.ts.clip,
 				action: () => clip(),
 			},
+			/* 効果が分からない機能なので廃止
 			statePromise.then(state => state!.isMutedThread ? {
 				icon: 'ti ti-message-off',
 				text: i18n.ts.unmuteThread,
@@ -317,6 +318,7 @@ export function getNoteMenu(props: {
 				text: i18n.ts.muteThread,
 				action: () => toggleThreadMute(true),
 			}),
+			*/
 			renoteStatePromise.then(state => state!.isMutedNote ? {
 				icon: 'ti ti-eye-off',
 				text: i18n.ts.unmuteNote,

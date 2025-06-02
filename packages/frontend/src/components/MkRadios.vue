@@ -10,6 +10,9 @@ export default defineComponent({
 		modelValue: {
 			required: false,
 		},
+		fullWidth: {
+			required: false,
+		},
 	},
 	data() {
 		return {
@@ -42,6 +45,7 @@ export default defineComponent({
 				value: option.props.value,
 				modelValue: this.value,
 				'onUpdate:modelValue': value => this.value = value,
+				fullWidth: this.fullWidth ? true : false,
 			}, option.children)),
 			),
 			...(caption ? [h('div', {

@@ -3,6 +3,7 @@
 	v-adaptive-border
 	class="novjtctn"
 	:class="{ disabled, checked }"
+	:style="{ width: fullWidth ? '100%' : '' }"
 	:aria-checked="checked"
 	:aria-disabled="disabled"
 	@click="toggle"
@@ -25,6 +26,7 @@ const props = defineProps<{
 	modelValue: any;
 	value: any;
 	disabled: boolean;
+	fullWidth?: boolean;
 }>();
 
 const emit = defineEmits<{

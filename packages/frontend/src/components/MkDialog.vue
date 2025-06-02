@@ -27,6 +27,9 @@
 				</optgroup>
 			</template>
 		</MkSelect>
+		<MkRadios v-if="radios" v-model="checkedValue" :fullWidth="true">
+			<option v-for="item in radios.items" :value="item.value">{{ item.text }}</option>
+		</MkRadios>
 		<div v-if="(showOkButton || showCancelButton) && !actions" :class="$style.buttons">
 			<MkButton v-if="showOkButton" inline primary :autofocus="!input && !select" @click="ok">{{ okText ?? ((showCancelButton || input || select) ? i18n.ts.ok : i18n.ts.gotIt) }}</MkButton>
 			<MkButton v-if="showCancelButton || input || select" inline @click="cancel">{{ cancelText ?? i18n.ts.cancel }}</MkButton>
@@ -44,6 +47,7 @@ import MkModal from '@/components/MkModal.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkSelect from '@/components/MkSelect.vue';
+import MkRadios from '@/components/MkRadios.vue';
 import { i18n } from '@/i18n';
 
 type Input = {
@@ -67,12 +71,21 @@ type Select = {
 	default: string | null;
 };
 
+type Radios = {
+	items: {
+		value: string;
+		text: string;
+	}[];
+	default: string | null;
+};
+
 const props = withDefaults(defineProps<{
 	type?: 'success' | 'error' | 'warning' | 'info' | 'question' | 'waiting';
 	title: string;
 	text?: string;
 	input?: Input;
 	select?: Select;
+	radios?: Radios;
 	icon?: string;
 	actions?: {
 		text: string;
@@ -100,6 +113,7 @@ const modal = shallowRef<InstanceType<typeof MkModal>>();
 
 const inputValue = ref(props.input?.default || null);
 const selectedValue = ref(props.select?.default || null);
+const checkedValue = ref(props.radios?.default || null);
 
 function done(canceled: boolean, result?) {
 	emit('done', { canceled, result });
@@ -112,6 +126,7 @@ async function ok() {
 	const result =
 		props.input ? inputValue.value :
 		props.select ? selectedValue.value :
+		props.radios ? checkedValue.value :
 		true;
 	done(false, result);
 }
