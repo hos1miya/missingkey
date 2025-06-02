@@ -661,8 +661,8 @@ importers:
         specifier: 0.24.0
         version: 0.24.0
       misskey-js:
-        specifier: github:hos1miya/misskey-js#v0.0.28
-        version: https://codeload.github.com/hos1miya/misskey-js/tar.gz/9feb7587d42e7f869c4814c4e1dab78fd2f853c2
+        specifier: github:hos1miya/misskey-js#v0.0.29
+        version: https://codeload.github.com/hos1miya/misskey-js/tar.gz/127ac6081e55aa15a2081c3c3c237fd7dac23130
       photoswipe:
         specifier: 5.4.4
         version: 5.4.4
@@ -5519,6 +5519,10 @@ packages:
 
   misskey-js@2025.4.1:
     resolution: {integrity: sha512-ehgQzAlU3cTK9oGRsY0t8JjdT7osKKEwpoRfXcTMMj6aufsM6vhnrD3XQwXYckMiLamA0/M8tI9ZhHhB8EmSew==}
+
+  misskey-js@https://codeload.github.com/hos1miya/misskey-js/tar.gz/127ac6081e55aa15a2081c3c3c237fd7dac23130:
+    resolution: {tarball: https://codeload.github.com/hos1miya/misskey-js/tar.gz/127ac6081e55aa15a2081c3c3c237fd7dac23130}
+    version: 0.0.29
 
   misskey-js@https://codeload.github.com/hos1miya/misskey-js/tar.gz/9feb7587d42e7f869c4814c4e1dab78fd2f853c2:
     resolution: {tarball: https://codeload.github.com/hos1miya/misskey-js/tar.gz/9feb7587d42e7f869c4814c4e1dab78fd2f853c2}
@@ -13356,6 +13360,12 @@ snapshots:
     dependencies:
       '@simplewebauthn/types': 12.0.0
       eventemitter3: 5.0.1
+      reconnecting-websocket: 4.4.0
+
+  misskey-js@https://codeload.github.com/hos1miya/misskey-js/tar.gz/127ac6081e55aa15a2081c3c3c237fd7dac23130:
+    dependencies:
+      autobind-decorator: 2.4.0
+      eventemitter3: 4.0.7
       reconnecting-websocket: 4.4.0
 
   misskey-js@https://codeload.github.com/hos1miya/misskey-js/tar.gz/9feb7587d42e7f869c4814c4e1dab78fd2f853c2:

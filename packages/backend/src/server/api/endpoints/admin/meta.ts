@@ -73,6 +73,10 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			emojiErrorImageUrl: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			iconUrl: {
 				type: 'string',
 				optional: false, nullable: true,
@@ -298,6 +302,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				serverErrorImageUrl: instance.serverErrorImageUrl,
 				notFoundImageUrl: instance.notFoundImageUrl,
 				infoImageUrl: instance.infoImageUrl,
+				emojiErrorImageUrl: instance.emojiErrorImageUrl,
 				iconUrl: instance.iconUrl,
 				backgroundImageUrl: instance.backgroundImageUrl,
 				logoImageUrl: instance.logoImageUrl,

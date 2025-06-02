@@ -38,6 +38,7 @@ export const paramDef = {
 		serverErrorImageUrl: { type: 'string', nullable: true },
 		infoImageUrl: { type: 'string', nullable: true },
 		notFoundImageUrl: { type: 'string', nullable: true },
+		emojiErrorImageUrl: { type: 'string', nullable: true },
 		iconUrl: { type: 'string', nullable: true },
 		backgroundImageUrl: { type: 'string', nullable: true },
 		logoImageUrl: { type: 'string', nullable: true },
@@ -168,6 +169,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (ps.notFoundImageUrl !== undefined) {
 				set.notFoundImageUrl = ps.notFoundImageUrl;
+			}
+
+			if (ps.emojiErrorImageUrl !== undefined) {
+				set.emojiErrorImageUrl = ps.emojiErrorImageUrl;
 			}
 
 			if (ps.backgroundImageUrl !== undefined) {

@@ -138,6 +138,12 @@ export class Meta {
 	})
 	public infoImageUrl: string | null;
 
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
+	public emojiErrorImageUrl: string | null;
+
 	@Column('boolean', {
 		default: true,
 	})

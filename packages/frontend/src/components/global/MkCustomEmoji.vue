@@ -1,5 +1,5 @@
 <template>
-<span v-if="errored">:{{ customEmojiName }}:</span>
+<img v-if="errored" ref="customEmojiRef" :class="[$style.root, { [$style.normal]: normal, [$style.noStyle]: noStyle }]" :src="emojiErrorImageUrl" :alt="alt" :title="alt" decoding="async"/>
 <img v-else ref="customEmojiRef" :class="[$style.root, { [$style.normal]: normal, [$style.noStyle]: noStyle }]" :src="url" :alt="alt" :title="alt" decoding="async" @error="errored = true" @load="errored = false"/>
 </template>
 
@@ -9,6 +9,7 @@ import { getStaticImageUrl } from '@/scripts/media-proxy';
 import { defaultStore } from '@/store';
 import { customEmojis } from '@/custom-emojis';
 import { useTooltip } from '@/scripts/use-tooltip';
+import { emojiErrorImageUrl } from '@/instance';
 import * as os from '@/os';
 
 const props = defineProps<{

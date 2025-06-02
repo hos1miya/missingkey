@@ -115,6 +115,7 @@ export class ClientServerService {
 			serverErrorImageUrl: meta.serverErrorImageUrl ?? 'https://xn--931a.moe/assets/error.jpg',
 			infoImageUrl: meta.infoImageUrl ?? 'https://xn--931a.moe/assets/info.jpg',
 			notFoundImageUrl: meta.notFoundImageUrl ?? 'https://xn--931a.moe/assets/not-found.jpg',
+			emojiErrorImageUrl: meta.emojiErrorImageUrl ?? 'https://test.hos1mya.icu/unknown.png',
 		};
 	}
 

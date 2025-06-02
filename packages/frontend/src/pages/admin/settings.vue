@@ -80,6 +80,11 @@
 								<template #label>{{ i18n.ts.somethingHappened }}</template>
 							</MkInput>
 
+							<MkInput v-model="emojiErrorImageUrl">
+								<template #prefix><i class="ti ti-link"></i></template>
+								<template #label>{{ i18n.ts.invalidCustomEmoji }}</template>
+							</MkInput>
+
 							<MkInput v-model="themeColor">
 								<template #prefix><i class="ti ti-palette"></i></template>
 								<template #label>{{ i18n.ts.themeColor }}</template>
@@ -181,6 +186,7 @@ let defaultDarkTheme: any = $ref(null);
 let serverErrorImageUrl: string | null = $ref(null);
 let infoImageUrl: string | null = $ref(null);
 let notFoundImageUrl: string | null = $ref(null);
+let emojiErrorImageUrl: string | null = $ref(null);
 let pinnedUsers: string = $ref('');
 let cacheRemoteFiles: boolean = $ref(false);
 let enableRegistration: boolean = $ref(false);
@@ -205,6 +211,7 @@ async function init() {
 	serverErrorImageUrl = meta.serverErrorImageUrl;
 	infoImageUrl = meta.infoImageUrl;
 	notFoundImageUrl = meta.notFoundImageUrl;
+	emojiErrorImageUrl = meta.emojiErrorImageUrl;
 	maintainerName = meta.maintainerName;
 	maintainerEmail = meta.maintainerEmail;
 	pinnedUsers = meta.pinnedUsers.join('\n');
@@ -232,6 +239,7 @@ function save() {
 		infoImageUrl,
 		notFoundImageUrl,
 		serverErrorImageUrl,
+		emojiErrorImageUrl,
 		maintainerName,
 		maintainerEmail,
 		pinnedUsers: pinnedUsers.split('\n'),

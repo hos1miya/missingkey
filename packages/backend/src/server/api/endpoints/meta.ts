@@ -135,6 +135,10 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			emojiErrorImageUrl: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			iconUrl: {
 				type: 'string',
 				optional: false, nullable: true,
@@ -300,6 +304,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				infoImageUrl: instance.infoImageUrl,
 				serverErrorImageUrl: instance.serverErrorImageUrl,
 				notFoundImageUrl: instance.notFoundImageUrl,
+				emojiErrorImageUrl: instance.emojiErrorImageUrl,
 				iconUrl: instance.iconUrl,
 				backgroundImageUrl: instance.backgroundImageUrl,
 				logoImageUrl: instance.logoImageUrl,
