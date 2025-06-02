@@ -119,9 +119,7 @@
 <div v-else :class="$style.muted" @click="muted = false">
 	<I18n :src="i18n.ts.userSaysSomething" tag="small">
 		<template #name>
-			<MkA v-user-preview="appearNote.userId" :to="userPage(appearNote.user)">
-				<MkUserName :user="appearNote.user"/>
-			</MkA>
+			<MkUserName :user="appearNote.user"/>
 		</template>
 	</I18n>
 </div>
