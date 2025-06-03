@@ -45,19 +45,19 @@
 			<MkInstanceTicker v-if="showTicker" :instance="appearNote.user.instance"/>
 			<div style="container-type: inline-size;">
 				<p v-if="appearNote.cw != null" :class="$style.cw">
-					<Mfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :author="appearNote.user" :i="$i"/>
+					<Mfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :author="appearNote.user" :i="$i ?? undefined"/>
 					<MkCwButton v-model="showContent" :note="appearNote"/>
 				</p>
 				<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 					<div :class="$style.text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 						<MkA v-if="appearNote.replyId" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
-						<Mfm v-if="appearNote.text" :text="appearNote.text" :author="appearNote.user" :i="$i" :emoji-urls="appearNote.emojis"/>
+						<Mfm v-if="appearNote.text" :text="appearNote.text" :author="appearNote.user" :i="$i ?? undefined" :emoji-urls="appearNote.emojis"/>
 						<div v-if="translating || translation" :class="$style.translation">
 							<MkLoading v-if="translating" mini/>
 							<div v-else>
 								<b>{{ $t('translatedFrom', { x: translation.sourceLang }) }}: </b>
-								<Mfm :text="translation.text" :author="appearNote.user" :i="$i" :emoji-urls="appearNote.emojis"/>
+								<Mfm :text="translation.text" :author="appearNote.user" :i="$i ?? undefined" :emoji-urls="appearNote.emojis"/>
 							</div>
 						</div>
 					</div>
@@ -369,14 +369,14 @@ function focusBefore() : void {
 function focusAfter() : void {
 	focusNext(el.value ? el.value : null);
 }
-
+/*
 function readPromo() : void {
 	os.api('promo/read', {
 		noteId: appearNote.id,
 	});
 	isDeleted.value = true;
 }
-
+*/
 function showReactions() : void {
 	os.popup(defineAsyncComponent(() => import('@/components/MkReactedUsersDialog.vue')), {
 		noteId: appearNote.id,

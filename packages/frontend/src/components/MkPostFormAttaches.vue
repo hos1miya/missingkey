@@ -15,24 +15,24 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, watch } from 'vue';
+import { defineAsyncComponent } from 'vue';
 import MkDriveFileThumbnail from '@/components/MkDriveFileThumbnail.vue';
 import * as os from '@/os';
-import { deepClone } from '@/scripts/clone';
 import { i18n } from '@/i18n';
+import { DriveFile } from 'misskey-js/built/entities';
 
 const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 
 const props = defineProps<{
 	modelValue: any[];
-	detachMediaFn: () => void;
+	detachMediaFn?: (id?) => void;
 }>();
 
 const emit = defineEmits<{
 	(ev: 'update:modelValue', value: any[]): void;
-	(ev: 'detach'): void;
-	(ev: 'changeSensitive'): void;
-	(ev: 'changeName'): void;
+	(ev: 'detach', id: string): void;
+	(ev: 'changeSensitive', file: DriveFile, isSensitive: boolean): void;
+	(ev: 'changeName', file: DriveFile, result: string): void;
 }>();
 
 let menuShowing = false;
@@ -45,7 +45,7 @@ function detachMedia(id) {
 	}
 }
 
-function toggleSensitive(file) {
+function toggleSensitive(file: DriveFile) {
 	os.api('drive/files/update', {
 		fileId: file.id,
 		isSensitive: !file.isSensitive,
@@ -53,7 +53,7 @@ function toggleSensitive(file) {
 		emit('changeSensitive', file, !file.isSensitive);
 	});
 }
-async function rename(file) {
+async function rename(file: DriveFile) {
 	const { canceled, result } = await os.inputText({
 		title: i18n.ts.enterFileName,
 		default: file.name,
@@ -104,7 +104,7 @@ function showFileMenu(file, ev: MouseEvent) {
 		text: i18n.ts.attachCancel,
 		icon: 'ti ti-circle-x',
 		action: () => { detachMedia(file.id); },
-	}], ev.currentTarget ?? ev.target).then(() => menuShowing = false);
+	}], ev.currentTarget ?? ev.target ?? undefined).then(() => menuShowing = false);
 	menuShowing = true;
 }
 </script>

@@ -75,7 +75,6 @@ import insertTextAtCursor from 'insert-text-at-cursor';
 import { length } from 'stringz';
 import { toASCII } from 'punycode/';
 import * as Acct from 'misskey-js/built/acct';
-import { throttle } from 'throttle-debounce';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import XNotePreview from '@/components/MkNotePreview.vue';
 import XPostFormAttaches from '@/components/MkPostFormAttaches.vue';
@@ -86,10 +85,8 @@ import { extractMentions } from '@/scripts/extract-mentions';
 import { formatTimeString } from '@/scripts/format-time-string';
 import { Autocomplete } from '@/scripts/autocomplete';
 import * as os from '@/os';
-import { stream } from '@/stream';
 import { selectFiles } from '@/scripts/select-file';
 import { defaultStore, notePostInterruptors, postFormActions } from '@/store';
-import MkInfo from '@/components/MkInfo.vue';
 import { i18n } from '@/i18n';
 import { instance } from '@/instance';
 import { $i, notesCount, incNotesCount, getAccounts, openAccountMenu as openAccountMenu_ } from '@/account';
@@ -98,6 +95,7 @@ import { deepClone } from '@/scripts/clone';
 import MkRippleEffect from '@/components/MkRippleEffect.vue';
 import { miLocalStorage } from '@/local-storage';
 import { claimAchievement } from '@/scripts/achievements';
+import { pleaseLogin } from '@/scripts/please-login';
 
 const modal = inject('modal');
 
@@ -151,10 +149,8 @@ let visibleUsers = $ref([]);
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }
-let autocomplete = $ref(null);
 let draghover = $ref(false);
 let quoteId = $ref(null);
-let hasNotSpecifiedMentions = $ref(false);
 let recentHashtags = $ref(JSON.parse(miLocalStorage.getItem('hashtags') || '[]'));
 let imeText = $ref('');
 
@@ -232,7 +228,7 @@ if (props.mention) {
 	text += ' ';
 }
 
-if (props.reply && (props.reply.user.username !== $i.username || (props.reply.user.host != null && props.reply.user.host !== host))) {
+if (props.reply && (!$i || props.reply.user.username !== $i.username || (props.reply.user.host != null && props.reply.user.host !== host))) {
 	text = `@${props.reply.user.username}${props.reply.user.host != null ? '@' + toASCII(props.reply.user.host) : ''} `;
 }
 
@@ -248,7 +244,7 @@ if (props.reply && props.reply.text != null) {
 				`@${x.username}@${toASCII(otherHost)}`;
 
 		// 自分は除外
-		if ($i.username === x.username && (x.host == null || x.host === host)) continue;
+		if (($i !== null && $i.username === x.username) && (x.host == null || x.host === host)) continue;
 
 		// 重複は除外
 		if (text.includes(`${mention} `)) continue;
@@ -270,13 +266,15 @@ if (props.reply && ['home', 'followers', 'specified'].includes(props.reply.visib
 	if (visibility === 'specified') {
 		if (props.reply.visibleUserIds) {
 			os.api('users/show', {
-				userIds: props.reply.visibleUserIds.filter(uid => uid !== $i.id && uid !== props.reply.userId),
+				userIds: props.reply.visibleUserIds.filter(uid => uid !== $i!.id && uid !== props.reply!.userId),
 			}).then(users => {
-				users.forEach(pushVisibleUser);
+				if (Array.isArray(users)) {
+					users.forEach(pushVisibleUser);
+				}
 			});
 		}
 
-		if (props.reply.userId !== $i.id) {
+		if (props.reply.userId !== $i!.id) {
 			os.api('users/show', { userId: props.reply.userId }).then(user => {
 				pushVisibleUser(user);
 			});
@@ -311,7 +309,7 @@ function checkMissingMention() {
 
 		for (const x of extractMentions(ast)) {
 			if (!visibleUsers.some(u => (u.username === x.username) && (u.host === x.host))) {
-				os.api('users/show', { username: x.username, host: x.host }).then(user => {
+				os.api('users/show', { username: x.username, host: x.host ?? undefined }).then(user => {
 					pushVisibleUser(user);
 				});
 				return;
@@ -332,11 +330,11 @@ function togglePoll() {
 		};
 	}
 }
-
+/*
 function addTag(tag: string) {
 	insertTextAtCursor(textareaEl, ` #${tag} `);
 }
-
+*/
 function focus() {
 	if (textareaEl) {
 		textareaEl.focus();
@@ -438,17 +436,17 @@ function onCompositionEnd(ev: CompositionEvent) {
 }
 
 async function onPaste(ev: ClipboardEvent) {
-	for (const { item, i } of Array.from(ev.clipboardData.items).map((item, i) => ({ item, i }))) {
+	for (const { item, i } of Array.from(ev.clipboardData!.items).map((item, i) => ({ item, i }))) {
 		if (item.kind === 'file') {
 			const file = item.getAsFile();
-			const lio = file.name.lastIndexOf('.');
-			const ext = lio >= 0 ? file.name.slice(lio) : '';
-			const formatted = `${formatTimeString(new Date(file.lastModified), defaultStore.state.pastedFileName).replace(/{{number}}/g, `${i + 1}`)}${ext}`;
-			upload(file, formatted);
+			const lio = file!.name.lastIndexOf('.');
+			const ext = lio >= 0 ? file!.name.slice(lio) : '';
+			const formatted = `${formatTimeString(new Date(file!.lastModified), defaultStore.state.pastedFileName).replace(/{{number}}/g, `${i + 1}`)}${ext}`;
+			upload(file!, formatted);
 		}
 	}
 
-	const paste = ev.clipboardData.getData('text');
+	const paste = ev.clipboardData ? ev.clipboardData.getData('text') : '';
 
 	if (!props.renote && !quoteId && paste.startsWith(url + '/notes/')) {
 		ev.preventDefault();
@@ -462,7 +460,7 @@ async function onPaste(ev: ClipboardEvent) {
 				return;
 			}
 
-			quoteId = paste.substr(url.length).match(/^\/notes\/(.+?)\/?$/)[1];
+			quoteId = paste.replace(url, '').match(/^\/notes\/(.+?)\/?$/)?.[1];
 		});
 	}
 }
@@ -507,7 +505,7 @@ function onDrop(ev): void {
 	// ファイルだったら
 	if (ev.dataTransfer.files.length > 0) {
 		ev.preventDefault();
-		for (const x of Array.from(ev.dataTransfer.files)) upload(x);
+		for (const x of Array.from(ev.dataTransfer.files)) upload(x as File);
 		return;
 	}
 
@@ -551,6 +549,8 @@ function deleteDraft() {
 }
 
 async function post(ev?: MouseEvent) {
+	if (!$i) pleaseLogin();
+	
 	if (ev) {
 		const el = ev.currentTarget ?? ev.target;
 		const rect = el.getBoundingClientRect();
@@ -586,7 +586,20 @@ async function post(ev?: MouseEvent) {
 		}
 	}
 
-	let postData = {
+	type PostData = {
+		text?: string;
+		fileIds?: string[];
+		replyId?: string;
+		renoteId?: string;
+		poll?: any; // poll の構造が分かればより厳密に型を指定できます
+		cw?: string;
+		localOnly: boolean;
+		visibility: 'public' | 'home' | 'followers' | 'specified'; // Misskey準拠
+		visibleUserIds?: string[];
+		via: string;
+	};
+
+	let postData: PostData = {
 		text: text === '' ? undefined : text,
 		fileIds: files.length > 0 ? files.map(f => f.id) : undefined,
 		replyId: props.reply ? props.reply.id : undefined,
@@ -607,7 +620,7 @@ async function post(ev?: MouseEvent) {
 	// plugin
 	if (notePostInterruptors.length > 0) {
 		for (const interruptor of notePostInterruptors) {
-			postData = await interruptor.handler(deepClone(postData));
+			postData = await interruptor.handler(deepClone(postData)) as PostData;
 		}
 	}
 
@@ -649,7 +662,7 @@ async function post(ev?: MouseEvent) {
 				claimAchievement('brainDiver');
 			}
 
-			if (props.renote && (props.renote.userId === $i.id) && text.length > 0) {
+			if (props.renote && (props.renote.userId === $i!.id) && text.length > 0) {
 				claimAchievement('selfQuote');
 			}
 
@@ -679,12 +692,12 @@ function cancel() {
 
 function insertMention() {
 	os.selectUser().then(user => {
-		insertTextAtCursor(textareaEl, '@' + Acct.toString(user) + ' ');
+		insertTextAtCursor(textareaEl, '@' + Acct.toString(user as misskey.entities.UserDetailed) + ' ');
 	});
 }
 
 async function insertEmoji(ev: MouseEvent) {
-	os.openEmojiPicker({}, textareaEl, ev.currentTarget ?? ev.target);
+	os.openEmojiPicker({}, textareaEl, ev.currentTarget ?? ev.target ?? undefined);
 }
 
 function showActions(ev) {
@@ -703,12 +716,13 @@ function showActions(ev) {
 let postAccount = $ref<misskey.entities.UserDetailed | null>(null);
 
 function openAccountMenu(ev: MouseEvent) {
+	if (!$i) return;
 	openAccountMenu_({
 		withExtraOperation: false,
 		includeCurrentAccount: true,
 		active: postAccount != null ? postAccount.id : $i.id,
 		onChoose: (account) => {
-			if (account.id === $i.id) {
+			if (account.id === $i!.id) {
 				postAccount = null;
 			} else {
 				postAccount = account;

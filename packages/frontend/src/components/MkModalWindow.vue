@@ -24,8 +24,8 @@ const props = withDefaults(defineProps<{
 	withOkButton: boolean;
 	okButtonDisabled: boolean;
 	width: number;
-	height: number | null;
-	scroll: boolean;
+	height?: number | null;
+	scroll?: boolean;
 }>(), {
 	withOkButton: false,
 	okButtonDisabled: false,

@@ -15,11 +15,11 @@ import { Router } from '@/nirax';
 
 export function getNoteMenu(props: {
 	note: misskey.entities.Note;
-	menuButton: Ref<HTMLElement>;
+	menuButton: Ref<HTMLElement | undefined>;
 	translation: Ref<any>;
 	translating: Ref<boolean>;
 	isDeleted: Ref<boolean>;
-	currentClipPage?: Ref<misskey.entities.Clip>;
+	currentClipPage?: Ref<misskey.entities.Clip> | null;
 }) : any {
 	const isRenote = (
 		props.note.renote != null &&
@@ -72,13 +72,13 @@ export function getNoteMenu(props: {
 			noteId: appearNote.id,
 		});
 	}
-
+	/*
 	function toggleThreadMute(mute: boolean) : void {
 		os.apiWithDialog(mute ? 'notes/thread-muting/create' : 'notes/thread-muting/delete', {
 			noteId: appearNote.id,
 		});
 	}
-
+	*/
 	async function toggleNoteMute(mute: boolean): Promise<void> {
 		const renoteId = props.note.id;
 		const originId = appearNote.id;
@@ -173,7 +173,7 @@ export function getNoteMenu(props: {
 				os.promiseDialog(
 					os.api('clips/add-note', { clipId: clip.id, noteId: appearNote.id }),
 					null,
-					async (err) => {
+					async (err: any) => {
 						if (err.id === '734806c4-542c-463a-9311-15c512803965') {
 							const confirm = await os.confirm({
 								type: 'warning',
