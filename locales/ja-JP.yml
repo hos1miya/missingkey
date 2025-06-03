@@ -211,7 +211,6 @@ processing: "処理中"
 preview: "プレビュー"
 default: "デフォルト"
 defaultValueIs: "デフォルト: {value}"
-noCustomEmojis: "絵文字はありません"
 noJobs: "ジョブはありません"
 federating: "連合中"
 blocked: "ブロック中"
@@ -1925,3 +1924,14 @@ _deck:
 _drivecleaner:
   orderBySizeDesc: "サイズが大きい順"
   orderByCreatedAtAsc: "追加日が古い順"
+
+_emojiManager:
+  selectMode: "一括操作モード"
+  selectAll: "すべて選択"
+  deselectAll: "すべて選択解除"
+  setCategory: "カテゴリー設定"
+  addTag: "タグ追加"
+  removeTag: "タグ削除"
+  setTag: "タグ置き換え"
+  delete: "削除"
+  noCustomEmojis: "絵文字はありません"

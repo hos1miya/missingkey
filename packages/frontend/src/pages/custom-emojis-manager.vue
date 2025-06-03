@@ -10,18 +10,19 @@
 						<template #label>{{ i18n.ts.search }}</template>
 					</MkInput>
 					<MkSwitch v-model="selectMode" style="margin: 8px 0;">
-						<template #label>Select mode</template>
+						<template #label>{{ i18n.ts._emojiManager.selectMode }}</template>
 					</MkSwitch>
 					<div v-if="selectMode" class="_buttons">
-						<MkButton inline @click="selectAll">Select all</MkButton>
-						<MkButton inline @click="setCategoryBulk">Set category</MkButton>
-						<MkButton inline @click="addTagBulk">Add tag</MkButton>
-						<MkButton inline @click="removeTagBulk">Remove tag</MkButton>
-						<MkButton inline @click="setTagBulk">Set tag</MkButton>
-						<MkButton inline danger @click="delBulk">Delete</MkButton>
+						<MkButton inline @click="selectAll">{{ i18n.ts._emojiManager.selectAll }}</MkButton>
+						<MkButton inline @click="deselectAll">{{ i18n.ts._emojiManager.deselectAll }}</MkButton>
+						<MkButton inline @click="setCategoryBulk">{{ i18n.ts._emojiManager.setCategory }}</MkButton>
+						<MkButton inline @click="addTagBulk">{{ i18n.ts._emojiManager.addTag }}</MkButton>
+						<MkButton inline @click="removeTagBulk">{{ i18n.ts._emojiManager.removeTag }}</MkButton>
+						<MkButton inline @click="setTagBulk">{{ i18n.ts._emojiManager.setTag }}</MkButton>
+						<MkButton inline danger @click="delBulk">{{ i18n.ts._emojiManager.delete }}</MkButton>
 					</div>
 					<MkPagination ref="emojisPaginationComponent" :pagination="pagination">
-						<template #empty><span>{{ i18n.ts.noCustomEmojis }}</span></template>
+						<template #empty><span>{{ i18n.ts._emojiManager.noCustomEmojis }}</span></template>
 						<template #default="{items}">
 							<div class="ldhfsamy">
 								<button v-for="emoji in items" :key="emoji.id" class="emoji _panel _button" :class="{ selected: selectedEmojis.includes(emoji.id) }" @click="selectMode ? toggleSelect(emoji) : edit(emoji)">
@@ -47,7 +48,7 @@
 						</MkInput>
 					</FormSplit>
 					<MkPagination :pagination="remotePagination">
-						<template #empty><span>{{ i18n.ts.noCustomEmojis }}</span></template>
+						<template #empty><span>{{ i18n.ts._emojiManager.noCustomEmojis }}</span></template>
 						<template #default="{items}">
 							<div class="ldhfsamy">
 								<div v-for="emoji in items" :key="emoji.id" class="emoji _panel _button" @click="remoteMenu(emoji, $event)">
@@ -82,9 +83,9 @@ import { definePageMetadata } from '@/scripts/page-metadata';
 const emojisPaginationComponent = shallowRef<InstanceType<typeof MkPagination>>();
 
 const tab = ref('local');
-const query = ref(null);
-const queryRemote = ref(null);
-const host = ref(null);
+const query = ref('');
+const queryRemote = ref('');
+const host = ref('');
 const selectMode = ref(false);
 const selectedEmojis = ref<string[]>([]);
 
@@ -92,7 +93,7 @@ const pagination = {
 	endpoint: 'admin/emoji/list' as const,
 	limit: 30,
 	params: computed(() => ({
-		query: (query.value && query.value !== '') ? query.value : null,
+		query: query.value ? query.value.toLowerCase() : null,
 	})),
 };
 
@@ -100,17 +101,17 @@ const remotePagination = {
 	endpoint: 'admin/emoji/list-remote' as const,
 	limit: 30,
 	params: computed(() => ({
-		query: (queryRemote.value && queryRemote.value !== '') ? queryRemote.value : null,
-		host: (host.value && host.value !== '') ? host.value : null,
+		query: queryRemote.value ? queryRemote.value.toLowerCase() : null,
+		host: host.value ? host.value.toLowerCase() : null,
 	})),
 };
 
 const selectAll = () => {
-	if (selectedEmojis.value.length > 0) {
-		selectedEmojis.value = [];
-	} else {
-		selectedEmojis.value = emojisPaginationComponent.value.items.map(item => item.id);
-	}
+	selectedEmojis.value = emojisPaginationComponent.value!.items.map(item => item.id);
+};
+
+const deselectAll = () => {
+	selectedEmojis.value = [];
 };
 
 const toggleSelect = (emoji) => {
@@ -128,7 +129,7 @@ const add = async (ev: MouseEvent) => {
 		fileId: file.id,
 	})));
 	promise.then(() => {
-		emojisPaginationComponent.value.reload();
+		emojisPaginationComponent.value!.reload();
 	});
 	os.promiseDialog(promise);
 };
@@ -139,12 +140,12 @@ const edit = (emoji) => {
 	}, {
 		done: result => {
 			if (result.updated) {
-				emojisPaginationComponent.value.updateItem(result.updated.id, (oldEmoji: any) => ({
+				emojisPaginationComponent.value!.updateItem(result.updated.id, (oldEmoji: any) => ({
 					...oldEmoji,
 					...result.updated,
 				}));
 			} else if (result.deleted) {
-				emojisPaginationComponent.value.removeItem((item) => item.id === emoji.id);
+				emojisPaginationComponent.value!.removeItem((item) => item.id === emoji.id);
 			}
 		},
 	}, 'closed');
@@ -164,7 +165,7 @@ const remoteMenu = (emoji, ev: MouseEvent) => {
 		text: i18n.ts.import,
 		icon: 'ti ti-plus',
 		action: () => { im(emoji); },
-	}], ev.currentTarget ?? ev.target);
+	}], ev.currentTarget ?? ev.target ?? undefined);
 };
 
 const menu = (ev: MouseEvent) => {
@@ -172,8 +173,7 @@ const menu = (ev: MouseEvent) => {
 		icon: 'ti ti-download',
 		text: i18n.ts.export,
 		action: async () => {
-			os.api('export-custom-emojis', {
-			})
+			os.api('export-custom-emojis')
 				.then(() => {
 					os.alert({
 						type: 'info',
@@ -206,7 +206,7 @@ const menu = (ev: MouseEvent) => {
 					});
 				});
 		},
-	}], ev.currentTarget ?? ev.target);
+	}], ev.currentTarget ?? ev.target ?? undefined);
 };
 
 const setCategoryBulk = async () => {
@@ -218,7 +218,7 @@ const setCategoryBulk = async () => {
 		ids: selectedEmojis.value,
 		category: result,
 	});
-	emojisPaginationComponent.value.reload();
+	emojisPaginationComponent.value!.reload();
 };
 
 const addTagBulk = async () => {
@@ -230,7 +230,7 @@ const addTagBulk = async () => {
 		ids: selectedEmojis.value,
 		aliases: result.split(' '),
 	});
-	emojisPaginationComponent.value.reload();
+	emojisPaginationComponent.value!.reload();
 };
 
 const removeTagBulk = async () => {
@@ -242,7 +242,7 @@ const removeTagBulk = async () => {
 		ids: selectedEmojis.value,
 		aliases: result.split(' '),
 	});
-	emojisPaginationComponent.value.reload();
+	emojisPaginationComponent.value!.reload();
 };
 
 const setTagBulk = async () => {
@@ -254,7 +254,7 @@ const setTagBulk = async () => {
 		ids: selectedEmojis.value,
 		aliases: result.split(' '),
 	});
-	emojisPaginationComponent.value.reload();
+	emojisPaginationComponent.value!.reload();
 };
 
 const delBulk = async () => {
@@ -266,7 +266,7 @@ const delBulk = async () => {
 	await os.apiWithDialog('admin/emoji/delete-bulk', {
 		ids: selectedEmojis.value,
 	});
-	emojisPaginationComponent.value.reload();
+	emojisPaginationComponent.value!.reload();
 };
 
 const headerActions = $computed(() => [{

@@ -27,11 +27,10 @@
 		},
 		"typeRoots": [
 			"node_modules/@types",
+			"node_modules/@vue-macros",
 			"@types",
 		],
 		"types": [
-			"vite/client",
-			"@vue-macros/reactivity-transform/macros-global",
 		],
 		"lib": [
 			"esnext",

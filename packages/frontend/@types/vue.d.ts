@@ -1,5 +1,3 @@
-/// <reference types="vue/macros-global" />
-
 import type { $i } from '@/account';
 import type { defaultStore } from '@/store';
 import type { instance } from '@/instance';
