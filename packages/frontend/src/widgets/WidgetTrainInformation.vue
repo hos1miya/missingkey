@@ -89,7 +89,6 @@ const { widgetProps, configure } = useWidgetPropsManager(name,
 	props,
 	emit,
 );
-console.log('widgetProps:', widgetProps);
 	
 const alerts = ref<{ line: string; status: string; detail: string }[]>([]);
 const fetching = ref(true);
