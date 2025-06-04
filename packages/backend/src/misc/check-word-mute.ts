@@ -25,9 +25,21 @@ export async function checkWordMute(note: NoteLike, me: UserLike | null | undefi
 
 		const matched = mutedWords.some(filter => {
 			if (Array.isArray(filter)) {
+				// 通常判定
 				return filter.every(keyword => text.includes(keyword));
+			} else if (typeof filter === 'string' && filter.startsWith('{') && filter.endsWith('}')) {
+				// 単語判定分岐: 囲い文字 {} でくくられた単語一致
+				const word = filter.slice(1, -1);
+				// 区切り考慮の正規表現：文字/数字/アンダースコア以外を単語の境界とみなす
+				try {
+					const boundaryRegex = new RE2(`(?:^|[^\\p{L}\\p{N}_])${word}(?:[^\\p{L}\\p{N}_]|$)`, 'u');
+					return boundaryRegex.test(text);
+				} catch (err) {
+					// フォールバック（誤検出防止）
+					return false;
+				}
 			} else {
-				// represents RegExp
+				// 正規表現
 				const regexp = filter.match(/^\/(.+)\/(.*)$/);
 
 				// This should never happen due to input sanitisation.
@@ -118,5 +130,5 @@ async function replaceSingleCustomEmojiToText(text: string): Promise<string> {
 		':_xya2:': 'ャ', ':_xyu2:': 'ュ', ':_xyo2:': 'ョ',
 	};
 
-	return text.replace(/(:_[a-zA-Z]+:)/g, (match) => emojiToTextDic[match] || match);
+	return text.replace(/(:_[a-zA-Z0-9]+:)/g, (match) => emojiToTextDic[match] || match);
 }
