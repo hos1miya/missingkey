@@ -52,8 +52,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (ps.folderId) {
 				query.andWhere('file.folderId = :folderId', { folderId: ps.folderId });
-			} else {
-				query.andWhere('file.folderId IS NULL');
 			}
 
 			if (ps.type) {
