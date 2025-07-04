@@ -110,20 +110,35 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 		const userHostUrl = `https://${user.host}`;
 		const endpointsApiUrl = `${userHostUrl}/api/endpoints`;
 		const showUserApiUrl = `${userHostUrl}/api/users/show`;
-		const ep = await this.httpRequestService.send(endpointsApiUrl, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({}),
-		});
-		const endpoints: any = await ep.json();
+
+		let endpoints: any;
+		try {
+			const ep = await this.httpRequestService.send(endpointsApiUrl, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({}),
+			});
+			endpoints = await ep.json();
+		} catch (e: any) {
+			if (e?.statusCode === 404) return; // 404ならreturnで処理中断
+			throw e; // 他のエラーはそのまま投げる
+		}
+
 		// endpointsにget-avatar-decorationsが無ければアバターデコ非対応
 		if (!endpoints.includes('get-avatar-decorations')) return;
-		const res = await this.httpRequestService.send(showUserApiUrl, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ 'username': user.username }),
-		});
-		const userData: any = await res.json();
+
+		let userData: any;
+		try {
+			const res = await this.httpRequestService.send(showUserApiUrl, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ username: user.username }),
+			});
+			userData = await res.json();
+		} catch (e: any) {
+			if (e?.statusCode === 404) return; // ユーザー情報取得で404 → return
+			throw e;
+		}
 		const userAvatarDecorations = userData.avatarDecorations ?? undefined;
 		
 		if (!userAvatarDecorations || userAvatarDecorations.length === 0) {
