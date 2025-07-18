@@ -5,11 +5,10 @@
 </template>
 
 <script lang="ts" setup>
-import { inject } from 'vue';
 import * as os from '@/os';
 import copyToClipboard from '@/scripts/copy-to-clipboard';
 import { url } from '@/config';
-import { popout as popout_ } from '@/scripts/popout';
+//import { popout as popout_ } from '@/scripts/popout';
 import { i18n } from '@/i18n';
 import { useRouter } from '@/router';
 
@@ -50,12 +49,12 @@ function onContextmenu(ev) {
 		action: () => {
 			os.pageWindow(props.to);
 		},
-	}, {
+	/*}, {
 		icon: 'ti ti-player-eject',
 		text: i18n.ts.showInPage,
 		action: () => {
 			router.push(props.to, 'forcePage');
-		},
+		},*/
 	}, null, {
 		icon: 'ti ti-external-link',
 		text: i18n.ts.openInNewTab,
@@ -84,11 +83,11 @@ function openWindow() {
 function modalWindow() {
 	os.modalPageWindow(props.to);
 }
-
+/*
 function popout() {
 	popout_(props.to);
 }
-
+*/
 function nav(ev: MouseEvent) {
 	if (props.behavior === 'browser') {
 		location.href = props.to;
