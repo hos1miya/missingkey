@@ -3,6 +3,8 @@ import si from 'systeminformation';
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 
+const MIN_SIZE_BYTES = 1 * 1024 * 1024 * 1024; // 1 GiB
+
 export const meta = {
 	requireCredential: false,
 
@@ -24,6 +26,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			const memStats = await si.mem();
 			const fsStats = await si.fsSize();
 
+      // 1 GiB 以上のファイルシステムを探す（なければ先頭要素を使う）
+      const fsInfo = fsStats.find(fs => fs.size >= MIN_SIZE_BYTES) ?? fsStats[0];
+
 			return {
 				machine: os.hostname(),
 				cpu: {
@@ -34,8 +39,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 					total: memStats.total,
 				},
 				fs: {
-					total: fsStats[2].size,
-					used: fsStats[2].used,
+          total: fsInfo.size,
+          used:  fsInfo.used,
 				},
 			};
 		});

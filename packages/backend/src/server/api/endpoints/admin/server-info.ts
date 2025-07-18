@@ -6,6 +6,8 @@ import * as Redis from 'ioredis';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 
+const MIN_SIZE_BYTES = 1 * 1024 * 1024 * 1024; // 1 GiB
+
 export const meta = {
 	requireCredential: true,
 	requireModerator: true,
@@ -111,6 +113,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			const fsStats = await si.fsSize();
 			const netInterface = await si.networkInterfaceDefault();
 
+      // 1 GiB 以上のファイルシステムを探す（なければ先頭要素を使う）
+      const fsInfo = fsStats.find(fs => fs.size >= MIN_SIZE_BYTES) ?? fsStats[0];
+
 			const redisServerInfo = await this.redisClient.info('Server');
 			const m = redisServerInfo.match(new RegExp('^redis_version:(.*)', 'm'));
 			const redis_version = m?.[1];
@@ -129,8 +134,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 					total: memStats.total,
 				},
 				fs: {
-					total: fsStats[2].size,
-					used: fsStats[2].used,
+          total: fsInfo.size,
+          used:  fsInfo.used,
 				},
 				net: {
 					interface: netInterface,
