@@ -25,6 +25,7 @@ export class InstanceEntityService {
 	@bindThis
 	public async pack(
 		instance: Instance,
+		additionalInfo?: boolean,
 	): Promise<Packed<'FederationInstance'>> {
 		const meta = await this.metaService.fetch();
 		return {
@@ -49,6 +50,7 @@ export class InstanceEntityService {
 			faviconUrl: instance.faviconUrl,
 			themeColor: instance.themeColor,
 			infoUpdatedAt: instance.infoUpdatedAt ? instance.infoUpdatedAt.toISOString() : null,
+			...(additionalInfo && { hiddenSuspended: instance.hiddenSuspended }),
 		};
 	}
 

@@ -84,6 +84,12 @@ export class Instance {
 	})
 	public isSuspended: boolean;
 
+	@Index()
+	@Column('boolean', {
+		default: false,
+	})
+	public hiddenSuspended?: boolean;
+
 	@Column('varchar', {
 		length: 64, nullable: true,
 		comment: 'The software of the Instance.',

@@ -30,6 +30,7 @@
 				<template #label>Moderation</template>
 				<div class="_gaps_s">
 					<MkSwitch v-model="suspended" @update:model-value="toggleSuspend">{{ i18n.ts.stopActivityDelivery }}</MkSwitch>
+					<MkSwitch v-model="hiddenSuspended" @update:model-value="toggleHiddenSuspend">{{ i18n.ts.stopActivityDeliveryHidden }}</MkSwitch>
 					<MkSwitch v-model="isBlocked" @update:model-value="toggleBlock">{{ i18n.ts.blockThisInstance }}</MkSwitch>
 					<MkButton @click="refreshMetadata"><i class="ti ti-refresh"></i> Refresh metadata</MkButton>
 				</div>
@@ -142,6 +143,7 @@ let chartSrc = $ref('instance-requests');
 let meta = $ref<misskey.entities.DetailedInstanceMetadata | null>(null);
 let instance = $ref<misskey.entities.Instance | null>(null);
 let suspended = $ref(false);
+let hiddenSuspended = $ref(false);
 let isBlocked = $ref(false);
 let faviconUrl = $ref(null);
 
@@ -159,10 +161,13 @@ const usersPagination = {
 async function fetch() {
 	instance = await os.api('federation/show-instance', {
 		host: props.host,
+		additionalInfo: true,
 	});
 	suspended = instance.isSuspended;
+	hiddenSuspended = instance.hiddenSuspended;
 	isBlocked = instance.isBlocked;
 	faviconUrl = getProxiedImageUrlNullable(instance.faviconUrl, 'preview') ?? getProxiedImageUrlNullable(instance.iconUrl, 'preview');
+	delete instance.hiddenSuspended;
 }
 
 async function toggleBlock(ev) {
@@ -176,6 +181,14 @@ async function toggleSuspend(v) {
 	await os.api('admin/federation/update-instance', {
 		host: instance.host,
 		isSuspended: suspended,
+	});
+}
+
+async function toggleHiddenSuspend(v) {
+	await os.api('admin/federation/update-instance', {
+		host: instance.host,
+		isSuspended: hiddenSuspended,
+		hidden: true,
 	});
 }
 

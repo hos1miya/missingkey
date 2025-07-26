@@ -16,6 +16,7 @@ export const paramDef = {
 	properties: {
 		host: { type: 'string' },
 		isSuspended: { type: 'boolean' },
+		hidden: { type: 'boolean' },
 	},
 	required: ['host', 'isSuspended'],
 } as const;
@@ -36,9 +37,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				throw new Error('instance not found');
 			}
 
-			this.instancesRepository.update({ host: this.utilityService.toPuny(ps.host) }, {
-				isSuspended: ps.isSuspended,
-			});
+			if (!ps.hidden) {
+				this.instancesRepository.update({ host: this.utilityService.toPuny(ps.host) }, {
+					isSuspended: ps.isSuspended,
+				});
+			} else {
+				this.instancesRepository.update({ host: this.utilityService.toPuny(ps.host) }, {
+					hiddenSuspended: ps.isSuspended,
+				});
+			}
 		});
 	}
 }

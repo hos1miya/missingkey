@@ -23,6 +23,7 @@ import type { DeliverJobData } from '../types.js';
 export class DeliverProcessorService {
 	private logger: Logger;
 	private suspendedHostsCache: Cache<Instance[]>;
+	private hiddenSuspendedHostsCache: Cache<Instance[]>;
 	private latest: string | null;
 
 	constructor(
@@ -47,6 +48,7 @@ export class DeliverProcessorService {
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('deliver');
 		this.suspendedHostsCache = new Cache<Instance[]>(1000 * 60 * 60);
+		this.hiddenSuspendedHostsCache = new Cache<Instance[]>(1000 * 60 * 60);
 	}
 
 	@bindThis
@@ -77,6 +79,20 @@ export class DeliverProcessorService {
 			this.suspendedHostsCache.set(null, suspendedHosts);
 		}
 		if (suspendedHosts.map(x => x.host).includes(this.utilityService.toPuny(host))) {
+			return 'skip (suspended)';
+		}
+
+		// hiddenSuspendedなら中断
+		let hiddenSuspendedHosts = this.hiddenSuspendedHostsCache.get(null);
+		if (hiddenSuspendedHosts == null) {
+			hiddenSuspendedHosts = await this.instancesRepository.find({
+				where: {
+					hiddenSuspended: true,
+				},
+			});
+			this.hiddenSuspendedHostsCache.set(null, hiddenSuspendedHosts);
+		}
+		if (hiddenSuspendedHosts.map(x => x.host).includes(this.utilityService.toPuny(host))) {
 			return 'skip (suspended)';
 		}
 

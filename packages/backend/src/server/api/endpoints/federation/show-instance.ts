@@ -13,7 +13,18 @@ export const meta = {
 	res: {
 		oneOf: [{
 			type: 'object',
-			ref: 'FederationInstance',
+			allOf: [
+				{ ref: 'FederationInstance' },
+				{
+					type: 'object',
+					properties: {
+						hiddenSuspended: {
+							type: 'boolean',
+							nullable: false,
+						},
+					},
+				},
+			],
 		}, {
 			type: 'null',
 		}],
@@ -24,6 +35,7 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		host: { type: 'string' },
+		additionalInfo: { type: 'boolean' },
 	},
 	required: ['host'],
 } as const;
@@ -42,7 +54,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			const instance = await this.instancesRepository
 				.findOneBy({ host: this.utilityService.toPuny(ps.host) });
 
-			return instance ? await this.instanceEntityService.pack(instance) : null;
+			if (instance && !ps.additionalInfo) {
+				delete instance.hiddenSuspended;
+			}
+
+			return instance ? await this.instanceEntityService.pack(instance, ps.additionalInfo) : null;
 		});
 	}
 }
