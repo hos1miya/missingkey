@@ -143,6 +143,7 @@ export const paramDef = {
 		isExplorable: { type: 'boolean' },
 		hideOnlineStatus: { type: 'boolean' },
 		publicReactions: { type: 'boolean' },
+		privateActivities: { type: 'boolean' },
 		carefulBot: { type: 'boolean' },
 		autoAcceptFollowed: { type: 'boolean' },
 		noCrawle: { type: 'boolean' },
@@ -243,6 +244,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			if (typeof ps.isExplorable === 'boolean') updates.isExplorable = ps.isExplorable;
 			if (typeof ps.hideOnlineStatus === 'boolean') updates.hideOnlineStatus = ps.hideOnlineStatus;
 			if (typeof ps.publicReactions === 'boolean') profileUpdates.publicReactions = ps.publicReactions;
+			if (typeof ps.privateActivities === 'boolean') profileUpdates.privateActivities = ps.privateActivities;
 			if (typeof ps.isBot === 'boolean') updates.isBot = ps.isBot;
 			if (typeof ps.showTimelineReplies === 'boolean') updates.showTimelineReplies = ps.showTimelineReplies;
 			if (typeof ps.carefulBot === 'boolean') profileUpdates.carefulBot = ps.carefulBot;

@@ -80,6 +80,11 @@ export class UserProfile {
 	})
 	public publicReactions: boolean;
 
+	@Column('boolean', {
+		default: false,
+	})
+	public privateActivities: boolean;
+
 	@Column('enum', {
 		enum: ffVisibility,
 		default: 'public',

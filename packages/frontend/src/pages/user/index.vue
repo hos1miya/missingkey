@@ -75,15 +75,15 @@ const headerTabs = $computed(() => user ? [{
 	key: 'notes',
 	title: i18n.ts.notes,
 	icon: 'ti ti-pencil',
-}, {
+}, ...($i && ($i.id === user.id)) || !user.privateActivities || ($i && $i.isModerator) ? [{
 	key: 'activity',
 	title: i18n.ts.activity,
 	icon: 'ti ti-chart-line',
-}, ...(user.host == null ? [{
+}] : [], ...(user.host == null ? [{
 	key: 'achievements',
 	title: i18n.ts.achievements,
 	icon: 'ti ti-medal',
-}] : []), ...($i && ($i.id === user.id)) || user.publicReactions ? [{
+}] : []), ...($i && ($i.id === user.id)) || user.publicReactions || ($i && $i.isModerator) ? [{
 	key: 'reactions',
 	title: i18n.ts.reaction,
 	icon: 'ti ti-mood-happy',

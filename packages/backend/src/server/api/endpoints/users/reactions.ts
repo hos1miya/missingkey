@@ -3,6 +3,7 @@ import type { UserProfilesRepository, NoteReactionsRepository } from '@/models/i
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteReactionEntityService } from '@/core/entities/NoteReactionEntityService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../error.js';
 
@@ -57,11 +58,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 		private noteReactionEntityService: NoteReactionEntityService,
 		private queryService: QueryService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: ps.userId });
 
-			if ((me == null || me.id !== ps.userId) && !profile.publicReactions) {
+			if ((me == null || me.id !== ps.userId) && !profile.publicReactions && !await this.roleService.isModerator(me)) {
 				throw new ApiError(meta.errors.reactionsNotPublic);
 			}
 

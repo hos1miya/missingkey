@@ -210,6 +210,10 @@ export const packedUserDetailedNotMeOnlySchema = {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},
+		privateActivities: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
 		twoFactorEnabled: {
 			type: 'boolean',
 			nullable: false, optional: false,

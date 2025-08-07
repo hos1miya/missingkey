@@ -8,6 +8,11 @@
 		<template #caption>{{ i18n.ts.makeReactionsPublicDescription }}</template>
 	</MkSwitch>
 		
+	<MkSwitch v-model="privateActivities" @update:model-value="save()">
+		{{ i18n.ts.makeActivitiesPrivate }}
+		<template #caption>{{ i18n.ts.makeActivitiesPrivateDescription }}</template>
+	</MkSwitch>
+		
 	<MkSelect v-model="ffVisibility" @update:model-value="save()">
 		<template #label>{{ i18n.ts.ffVisibility }}</template>
 		<option value="public">{{ i18n.ts._ffVisibility.public }}</option>
@@ -74,6 +79,7 @@ let noCrawle = $ref($i.noCrawle);
 let isExplorable = $ref($i.isExplorable);
 let hideOnlineStatus = $ref($i.hideOnlineStatus);
 let publicReactions = $ref($i.publicReactions);
+let privateActivities = $ref($i.privateActivities);
 let ffVisibility = $ref($i.ffVisibility);
 
 let defaultNoteVisibility = $computed(defaultStore.makeGetterSetter('defaultNoteVisibility'));
@@ -89,6 +95,7 @@ function save() {
 		isExplorable: !!isExplorable,
 		hideOnlineStatus: !!hideOnlineStatus,
 		publicReactions: !!publicReactions,
+		privateActivities: !!privateActivities,
 		ffVisibility: ffVisibility,
 	});
 }
