@@ -100,10 +100,10 @@
 				<button v-else :class="$style.footerButton" class="_button" disabled>
 					<i class="ti ti-ban"></i>
 				</button>
-				<button v-if="appearNote.myReaction == null" ref="reactButton" :class="$style.footerButton" class="_button" @mousedown="react()">
+				<button v-if="appearNote.myReaction == null" ref="reactButton" :class="$style.footerButton" class="_button" @mousedown="react()" @contextmenu.stop="showReactions()">
 					<i class="ti ti-plus"></i>
 				</button>
-				<button v-if="appearNote.myReaction != null" ref="reactButton" :class="$style.footerButton" class="_button" @click="undoReact(appearNote)">
+				<button v-if="appearNote.myReaction != null" ref="reactButton" :class="$style.footerButton" class="_button" @click="undoReact(appearNote)" @contextmenu.stop="showReactions()">
 					<i class="ti ti-minus"></i>
 				</button>
 				<button v-if="appearNote.user.instance != null" ref="showOnRemoteButton" :class="$style.footerButton" class="_button" @click="openRemote(appearNote)">
