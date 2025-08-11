@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Brackets, ObjectLiteral } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { User } from '@/models/entities/User.js';
-import type { UserProfilesRepository, FollowingsRepository, MutedNotesRepository, BlockingsRepository, NoteThreadMutingsRepository, MutingsRepository } from '@/models/index.js';
+import type { UserProfilesRepository, FollowingsRepository, MutedNotesRepository, BlockingsRepository, NoteThreadMutingsRepository, MutingsRepository, AdvancedMutingsRepository } from '@/models/index.js';
 import { bindThis } from '@/decorators.js';
 import type { SelectQueryBuilder } from 'typeorm';
 
@@ -26,6 +26,9 @@ export class QueryService {
 
 		@Inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
+
+		@Inject(DI.advancedMutingsRepository)
+		private advancedMutingsRepository: AdvancedMutingsRepository,
 	) {
 	}
 
@@ -166,6 +169,62 @@ export class QueryService {
 	
 		q.setParameters(mutingQuery.getParameters());
 		q.setParameters(mutingInstanceQuery.getParameters());
+	}
+
+	@bindThis
+	public generateRenoteMutedUserQuery(q: SelectQueryBuilder<any>, me: { id: User['id'] }, exclude?: User): void {
+		const renoteMutingQuery = this.advancedMutingsRepository.createQueryBuilder('renoteMuting')
+			.select('renoteMuting.muteeId')
+			.where('renoteMuting.muterId = :muterId', { muterId: me.id })
+			.where('renoteMuting.renoteMuted = :isMuted', { isMuted: true });
+	
+		if (exclude) {
+			renoteMutingQuery.andWhere('renoteMuting.muteeId != :excludeId', { excludeId: exclude.id });
+		}
+	
+		// 投稿の作者をミュートしていない かつ
+		// 投稿の返信先の作者をミュートしていない かつ
+		// 投稿の引用元の作者をミュートしていない
+		q
+			.andWhere(`note.userId NOT IN (${ renoteMutingQuery.getQuery() })`)
+			.andWhere(new Brackets(qb => { qb
+				.where('note.replyUserId IS NULL')
+				.orWhere(`note.replyUserId NOT IN (${ renoteMutingQuery.getQuery() })`);
+			}))
+			.andWhere(new Brackets(qb => { qb
+				.where('note.renoteUserId IS NULL')
+				.orWhere(`note.renoteUserId NOT IN (${ renoteMutingQuery.getQuery() })`);
+			}))
+	
+		q.setParameters(renoteMutingQuery.getParameters());
+	}
+
+	@bindThis
+	public generateMediaMutedUserQuery(q: SelectQueryBuilder<any>, me: { id: User['id'] }, exclude?: User): void {
+		const mediaMutingQuery = this.advancedMutingsRepository.createQueryBuilder('mediaMuting')
+			.select('mediaMuting.muteeId')
+			.where('mediaMuting.muterId = :muterId', { muterId: me.id })
+			.where('mediaMuting.mediaMuted = :isMuted', { isMuted: true });
+	
+		if (exclude) {
+			mediaMutingQuery.andWhere('mediaMuting.muteeId != :excludeId', { excludeId: exclude.id });
+		}
+	
+		// 投稿の作者をミュートしていない かつ
+		// 投稿の返信先の作者をミュートしていない かつ
+		// 投稿の引用元の作者をミュートしていない
+		q
+			.andWhere(`note.userId NOT IN (${ mediaMutingQuery.getQuery() })`)
+			.andWhere(new Brackets(qb => { qb
+				.where('note.replyUserId IS NULL')
+				.orWhere(`note.replyUserId NOT IN (${ mediaMutingQuery.getQuery() })`);
+			}))
+			.andWhere(new Brackets(qb => { qb
+				.where('note.renoteUserId IS NULL')
+				.orWhere(`note.renoteUserId NOT IN (${ mediaMutingQuery.getQuery() })`);
+			}))
+	
+		q.setParameters(mediaMutingQuery.getParameters());
 	}
 
 	@bindThis

@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import * as websocket from 'websocket';
 import { DI } from '@/di-symbols.js';
-import type { UsersRepository, BlockingsRepository, FollowingsRepository, MutingsRepository, UserProfilesRepository } from '@/models/index.js';
+import type { UsersRepository, BlockingsRepository, FollowingsRepository, MutingsRepository, AdvancedMutingsRepository, UserProfilesRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
 import { NoteReadService } from '@/core/NoteReadService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -32,6 +32,9 @@ export class StreamingApiServerService {
 
 		@Inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
+
+		@Inject(DI.advancedMutingsRepository)
+		private advancedMutingsRepository: AdvancedMutingsRepository,
 
 		@Inject(DI.blockingsRepository)
 		private blockingsRepository: BlockingsRepository,
@@ -81,6 +84,7 @@ export class StreamingApiServerService {
 			const main = new MainStreamConnection(
 				this.followingsRepository,
 				this.mutingsRepository,
+				this.advancedMutingsRepository,
 				this.blockingsRepository,
 				this.userProfilesRepository,
 				this.channelsService,

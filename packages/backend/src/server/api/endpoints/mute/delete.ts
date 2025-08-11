@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { MutingsRepository } from '@/models/index.js';
+import type { MutingsRepository, AdvancedMutingsRepository } from '@/models/index.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../error.js';
@@ -38,6 +38,7 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		userId: { type: 'string', format: 'misskey:id' },
+		type: { type: 'string' },
 	},
 	required: ['userId'],
 } as const;
@@ -48,6 +49,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 	constructor(
 		@Inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
+
+		@Inject(DI.advancedMutingsRepository)
+		private advancedMutingsRepository: AdvancedMutingsRepository,
 
 		private globalEventService: GlobalEventService,
 		private getterService: GetterService,
@@ -65,6 +69,46 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				if (err.id === '15348ddd-432d-49c2-8a5a-8069753becff') throw new ApiError(meta.errors.noSuchUser);
 				throw err;
 			});
+
+			// Renote or media unmute
+			if (ps.type) {
+				const exist = await this.advancedMutingsRepository.findOneBy({
+					muterId: muter.id,
+					muteeId: mutee.id,
+				});
+
+				// Renote
+				if (ps.type === 'renote') {
+					// Check not muting
+					if (exist == null || !exist.renoteMuted) {
+						throw new ApiError(meta.errors.notMuting);
+					}
+
+					// Unmute
+					await this.advancedMutingsRepository.update(exist.id, {
+						renoteMuted: false,
+					});
+
+					this.globalEventService.publishUserEvent(me.id, 'renoteunmute', mutee);
+					return;
+				}
+
+				// Media
+				if (ps.type === 'media') {
+					// Check not muting
+					if (exist == null || !exist.mediaMuted) {
+						throw new ApiError(meta.errors.notMuting);
+					}
+
+					// Unmute
+					await this.advancedMutingsRepository.update(exist.id, {
+						mediaMuted: false,
+					});
+
+					this.globalEventService.publishUserEvent(me.id, 'mediaunmute', mutee);
+					return;
+				}
+			}
 
 			// Check not muting
 			const exist = await this.mutingsRepository.findOneBy({

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
-import { User, Note, Announcement, AnnouncementRead, App, AvatarDecoration, NoteFavorite, NoteThreadMuting, NoteReaction, NoteUnread, Notification, Poll, PollVote, UserProfile, UserKeypair, UserPending, AttestationChallenge, UserSecurityKey, UserPublickey, UserList, UserListJoining, UserGroup, UserGroupJoining, UserGroupInvitation, UserNotePining, UserIp, UsedUsername, Following, FollowRequest, Instance, Emoji, DriveFile, DriveFolder, Meta, Muting, Blocking, SwSubscription, Hashtag, AbuseUserReport, RegistrationTicket, AuthSession, AccessToken, Signin, MessagingMessage, Page, PageLike, GalleryPost, GalleryLike, ModerationLog, Clip, ClipNote, Antenna, AntennaNote, PromoNote, PromoRead, Relay, MutedNote, RegistryItem, Webhook, Ad, PasswordResetRequest, RetentionAggregation, FlashLike, Flash, Role, RoleAssignment } from './index.js';
+import { User, Note, Announcement, AnnouncementRead, App, AvatarDecoration, NoteFavorite, NoteThreadMuting, NoteReaction, NoteUnread, Notification, Poll, PollVote, UserProfile, UserKeypair, UserPending, AttestationChallenge, UserSecurityKey, UserPublickey, UserList, UserListJoining, UserGroup, UserGroupJoining, UserGroupInvitation, UserNotePining, UserIp, UsedUsername, Following, FollowRequest, Instance, Emoji, DriveFile, DriveFolder, Meta, Muting, AdvancedMuting, Blocking, SwSubscription, Hashtag, AbuseUserReport, RegistrationTicket, AuthSession, AccessToken, Signin, MessagingMessage, Page, PageLike, GalleryPost, GalleryLike, ModerationLog, Clip, ClipNote, Antenna, AntennaNote, PromoNote, PromoRead, Relay, MutedNote, RegistryItem, Webhook, Ad, PasswordResetRequest, RetentionAggregation, FlashLike, Flash, Role, RoleAssignment } from './index.js';
 import type { DataSource } from 'typeorm';
 import type { Provider } from '@nestjs/common';
 
@@ -211,6 +211,12 @@ const $metasRepository: Provider = {
 const $mutingsRepository: Provider = {
 	provide: DI.mutingsRepository,
 	useFactory: (db: DataSource) => db.getRepository(Muting),
+	inject: [DI.db],
+};
+
+const $advancedMutingsRepository: Provider = {
+	provide: DI.advancedMutingsRepository,
+	useFactory: (db: DataSource) => db.getRepository(AdvancedMuting),
 	inject: [DI.db],
 };
 
@@ -439,6 +445,7 @@ const $roleAssignmentsRepository: Provider = {
 		$notificationsRepository,
 		$metasRepository,
 		$mutingsRepository,
+		$advancedMutingsRepository,
 		$blockingsRepository,
 		$swSubscriptionsRepository,
 		$hashtagsRepository,
@@ -507,6 +514,7 @@ const $roleAssignmentsRepository: Provider = {
 		$notificationsRepository,
 		$metasRepository,
 		$mutingsRepository,
+		$advancedMutingsRepository,
 		$blockingsRepository,
 		$swSubscriptionsRepository,
 		$hashtagsRepository,

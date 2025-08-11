@@ -2,8 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { IdService } from '@/core/IdService.js';
-import type { MutingsRepository } from '@/models/index.js';
+import type { MutingsRepository, AdvancedMutingsRepository } from '@/models/index.js';
 import type { Muting } from '@/models/entities/Muting.js';
+import type { AdvancedMuting } from '@/models/entities/AdvancedMuting.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { GetterService } from '@/server/api/GetterService.js';
@@ -51,6 +52,7 @@ export const paramDef = {
 			nullable: true,
 			description: 'A Unix Epoch timestamp that must lie in the future. `null` means an indefinite mute.',
 		},
+		type: { type: 'string' },
 	},
 	required: ['userId'],
 } as const;
@@ -61,6 +63,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 	constructor(
 		@Inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
+
+		@Inject(DI.advancedMutingsRepository)
+		private advancedMutingsRepository: AdvancedMutingsRepository,
 
 		private globalEventService: GlobalEventService,
 		private getterService: GetterService,
@@ -80,6 +85,62 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				throw err;
 			});
 
+			// Renote or media muting
+			if (ps.type) {
+				// Renote
+				if (ps.type === 'renote') {
+					const exist = await this.advancedMutingsRepository.findOneBy({
+						muterId: muter.id,
+						muteeId: mutee.id,
+					});
+
+					// Create mute
+					if (exist == null) {
+						await this.advancedMutingsRepository.insert({
+							id: this.idService.genId(),
+							createdAt: new Date(),
+							muterId: muter.id,
+							muteeId: mutee.id,
+							renoteMuted: true,
+						} as AdvancedMuting);
+					} else {
+						await this.advancedMutingsRepository.update(exist.id, {
+							renoteMuted: true,
+						} as AdvancedMuting);
+					}
+
+					this.globalEventService.publishUserEvent(me.id, 'renotemute', mutee);
+					return;
+				}
+
+				// Media
+				if (ps.type === 'media') {
+					const exist = await this.advancedMutingsRepository.findOneBy({
+						muterId: muter.id,
+						muteeId: mutee.id,
+					});
+
+					// Create mute
+					if (exist == null) {
+						await this.advancedMutingsRepository.insert({
+							id: this.idService.genId(),
+							createdAt: new Date(),
+							muterId: muter.id,
+							muteeId: mutee.id,
+							mediaMuted: true,
+						} as AdvancedMuting);
+					} else {
+						await this.advancedMutingsRepository.update(exist.id, {
+							mediaMuted: true,
+						} as AdvancedMuting);
+					}
+
+					this.globalEventService.publishUserEvent(me.id, 'mediamute', mutee);
+					return;
+				}
+			}
+
+			// User muting
 			// Check if already muting
 			const exist = await this.mutingsRepository.findOneBy({
 				muterId: muter.id,

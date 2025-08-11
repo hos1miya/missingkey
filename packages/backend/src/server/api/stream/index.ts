@@ -1,5 +1,5 @@
 import type { User } from '@/models/entities/User.js';
-import type { FollowingsRepository, MutingsRepository, UserProfilesRepository, BlockingsRepository } from '@/models/index.js';
+import type { FollowingsRepository, MutingsRepository, AdvancedMutingsRepository, UserProfilesRepository, BlockingsRepository } from '@/models/index.js';
 import type { AccessToken } from '@/models/entities/AccessToken.js';
 import type { UserProfile } from '@/models/entities/UserProfile.js';
 import type { UserGroup } from '@/models/entities/UserGroup.js';
@@ -22,6 +22,8 @@ export default class Connection {
 	public userProfile?: UserProfile | null;
 	public following: Set<User['id']> = new Set();
 	public muting: Set<User['id']> = new Set();
+	public renoteMuting: Set<User['id']> = new Set();
+	public mediaMuting: Set<User['id']> = new Set();
 	public blocking: Set<User['id']> = new Set(); // "被"blocking
 	public token?: AccessToken;
 	private wsConnection: websocket.connection;
@@ -33,6 +35,7 @@ export default class Connection {
 	constructor(
 		private followingsRepository: FollowingsRepository,
 		private mutingsRepository: MutingsRepository,
+		private advancedMutingsRepository: AdvancedMutingsRepository,
 		private blockingsRepository: BlockingsRepository,
 		private userProfilesRepository: UserProfilesRepository,
 		private channelsService: ChannelsService,
@@ -64,6 +67,8 @@ export default class Connection {
 		if (this.user) {
 			this.updateFollowing();
 			this.updateMuting();
+			this.updateRenoteMuting();
+			this.updateMediaMuting();
 			this.updateBlocking();
 			this.updateUserProfile();
 
@@ -82,11 +87,19 @@ export default class Connection {
 				this.following.delete(data.body.id);
 				break;
 
-			case 'mute':
+			case 'renotemute':
 				this.muting.add(data.body.id);
 				break;
 
-			case 'unmute':
+			case 'renoteunmute':
+				this.muting.delete(data.body.id);
+				break;
+
+			case 'mediamute':
+				this.muting.add(data.body.id);
+				break;
+
+			case 'mediaunmute':
 				this.muting.delete(data.body.id);
 				break;
 
@@ -342,6 +355,32 @@ export default class Connection {
 		});
 
 		this.muting = new Set<string>(mutings.map(x => x.muteeId));
+	}
+
+	@bindThis
+	private async updateRenoteMuting(): Promise<void> {
+		const renoteMutings = await this.advancedMutingsRepository.find({
+			where: {
+				muterId: this.user!.id,
+				renoteMuted: true,
+			},
+			select: ['muteeId'],
+		});
+
+		this.renoteMuting = new Set<string>(renoteMutings.map(x => x.muteeId));
+	}
+
+	@bindThis
+	private async updateMediaMuting(): Promise<void> {
+		const mediaMutings = await this.advancedMutingsRepository.find({
+			where: {
+				muterId: this.user!.id,
+				mediaMuted: true,
+			},
+			select: ['muteeId'],
+		});
+
+		this.mediaMuting = new Set<string>(mediaMutings.map(x => x.muteeId));
 	}
 
 	@bindThis

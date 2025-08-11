@@ -71,5 +71,6 @@ export const DI = {
 	roleAssignmentsRepository: Symbol('roleAssignmentsRepository'),
 	flashsRepository: Symbol('flashsRepository'),
 	flashLikesRepository: Symbol('flashLikesRepository'),
+	advancedMutingsRepository: Symbol('advancedMutingsRepository'),
 	//#endregion
 };

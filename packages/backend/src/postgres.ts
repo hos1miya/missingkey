@@ -9,6 +9,7 @@ import { entities as charts } from '@/core/chart/entities.js';
 import { AbuseUserReport } from '@/models/entities/AbuseUserReport.js';
 import { AccessToken } from '@/models/entities/AccessToken.js';
 import { Ad } from '@/models/entities/Ad.js';
+import { AdvancedMuting } from '@/models/entities/AdvancedMuting.js';
 import { Announcement } from '@/models/entities/Announcement.js';
 import { AnnouncementRead } from '@/models/entities/AnnouncementRead.js';
 import { Antenna } from '@/models/entities/Antenna.js';
@@ -187,6 +188,7 @@ export const entities = [
 	RoleAssignment,
 	Flash,
 	FlashLike,
+	AdvancedMuting,
 	...charts,
 ];
 

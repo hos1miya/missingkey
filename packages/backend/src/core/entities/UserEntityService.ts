@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { In, Not } from 'typeorm';
 import Ajv from 'ajv';
 import { ModuleRef } from '@nestjs/core';
@@ -12,7 +12,7 @@ import { Cache } from '@/misc/cache.js';
 import type { Instance } from '@/models/entities/Instance.js';
 import type { ILocalUser, IRemoteUser, User } from '@/models/entities/User.js';
 import { birthdaySchema, descriptionSchema, localUsernameSchema, locationSchema, nameSchema, passwordSchema } from '@/models/entities/User.js';
-import type { UsersRepository, UserSecurityKeysRepository, FollowingsRepository, FollowRequestsRepository, BlockingsRepository, MutingsRepository, DriveFilesRepository, NoteUnreadsRepository, NotificationsRepository, UserNotePiningsRepository, UserProfilesRepository, InstancesRepository, AnnouncementReadsRepository, MessagingMessagesRepository, UserGroupJoiningsRepository, AnnouncementsRepository, AntennaNotesRepository, PagesRepository, UserProfile } from '@/models/index.js';
+import type { UsersRepository, UserSecurityKeysRepository, FollowingsRepository, FollowRequestsRepository, BlockingsRepository, MutingsRepository, AdvancedMutingsRepository, DriveFilesRepository, NoteUnreadsRepository, NotificationsRepository, UserNotePiningsRepository, UserProfilesRepository, InstancesRepository, AnnouncementReadsRepository, MessagingMessagesRepository, UserGroupJoiningsRepository, AnnouncementsRepository, AntennaNotesRepository, PagesRepository, UserProfile } from '@/models/index.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
@@ -79,6 +79,9 @@ export class UserEntityService implements OnModuleInit {
 
 		@Inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
+
+		@Inject(DI.advancedMutingsRepository)
+		private advancedMutingsRepository: AdvancedMutingsRepository,
 
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
@@ -198,6 +201,22 @@ export class UserEntityService implements OnModuleInit {
 				where: {
 					muterId: me,
 					muteeId: target,
+				},
+				take: 1,
+			}).then(n => n > 0),
+			isRenoteMuted: this.advancedMutingsRepository.count({
+				where: {
+					muterId: me,
+					muteeId: target,
+					renoteMuted: true,
+				},
+				take: 1,
+			}).then(n => n > 0),
+			isMediaMuted: this.advancedMutingsRepository.count({
+				where: {
+					muterId: me,
+					muteeId: target,
+					mediaMuted: true,
 				},
 				take: 1,
 			}).then(n => n > 0),
@@ -526,6 +545,8 @@ export class UserEntityService implements OnModuleInit {
 				isBlocking: relation.isBlocking,
 				isBlocked: relation.isBlocked,
 				isMuted: relation.isMuted,
+				isRenoteMuted: relation.isRenoteMuted,
+				isMediaMuted: relation.isMediaMuted,
 			} : {}),
 		} as Promiseable<Packed<'User'>> as Promiseable<IsMeAndIsUserDetailed<ExpectsMe, D>>;
 

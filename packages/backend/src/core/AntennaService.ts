@@ -4,7 +4,6 @@ import type { Antenna } from '@/models/entities/Antenna.js';
 import type { Note } from '@/models/entities/Note.js';
 import type { User } from '@/models/entities/User.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { AntennaEntityService } from '@/core/entities/AntennaEntityService.js';
 import { IdService } from '@/core/IdService.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -12,7 +11,7 @@ import { PushNotificationService } from '@/core/PushNotificationService.js';
 import * as Acct from '@/misc/acct.js';
 import type { Packed } from '@/misc/schema.js';
 import { DI } from '@/di-symbols.js';
-import type { MutingsRepository, NotesRepository, AntennaNotesRepository, AntennasRepository, UserGroupJoiningsRepository, UserListJoiningsRepository } from '@/models/index.js';
+import type { MutingsRepository, AdvancedMutingsRepository, NotesRepository, AntennaNotesRepository, AntennasRepository, UserGroupJoiningsRepository, UserListJoiningsRepository } from '@/models/index.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { StreamMessages } from '@/server/api/stream/types.js';
@@ -29,6 +28,9 @@ export class AntennaService implements OnApplicationShutdown {
 
 		@Inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
+
+		@Inject(DI.advancedMutingsRepository)
+		private advancedMutingsRepository: AdvancedMutingsRepository,
 
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
@@ -50,7 +52,6 @@ export class AntennaService implements OnApplicationShutdown {
 		private globalEventService: GlobalEventService,
 		private pushNotificationService: PushNotificationService,
 		private noteEntityService: NoteEntityService,
-		private antennaEntityService: AntennaEntityService,
 	) {
 		this.antennasFetched = false;
 		this.antennas = [];
@@ -112,6 +113,14 @@ export class AntennaService implements OnApplicationShutdown {
 				},
 				select: ['muteeId'],
 			});
+
+			const mediaMutings = await this.advancedMutingsRepository.find({
+				where: {
+					muterId: antenna.userId,
+					mediaMuted: true,
+				},
+				select: ['muteeId'],
+			});
 	
 			// Copy
 			const _note: Note = {
@@ -126,6 +135,10 @@ export class AntennaService implements OnApplicationShutdown {
 			}
 	
 			if (isUserRelated(_note, new Set<string>(mutings.map(x => x.muteeId)))) {
+				return;
+			}
+	
+			if ((_note.fileIds && _note.fileIds.length >= 1) && (isUserRelated(_note, new Set<string>(mediaMutings.map(x => x.muteeId))))) {
 				return;
 			}
 	

@@ -1,6 +1,7 @@
 import { AbuseUserReport } from '@/models/entities/AbuseUserReport.js';
 import { AccessToken } from '@/models/entities/AccessToken.js';
 import { Ad } from '@/models/entities/Ad.js';
+import { AdvancedMuting } from '@/models/entities/AdvancedMuting.js';
 import { Announcement } from '@/models/entities/Announcement.js';
 import { AnnouncementRead } from '@/models/entities/AnnouncementRead.js';
 import { Antenna } from '@/models/entities/Antenna.js';
@@ -70,6 +71,7 @@ export {
 	AbuseUserReport,
 	AccessToken,
 	Ad,
+	AdvancedMuting,
 	Announcement,
 	AnnouncementRead,
 	Antenna,
@@ -138,6 +140,7 @@ export {
 export type AbuseUserReportsRepository = Repository<AbuseUserReport>;
 export type AccessTokensRepository = Repository<AccessToken>;
 export type AdsRepository = Repository<Ad>;
+export type AdvancedMutingsRepository = Repository<AdvancedMuting>;
 export type AnnouncementsRepository = Repository<Announcement>;
 export type AnnouncementReadsRepository = Repository<AnnouncementRead>;
 export type AntennasRepository = Repository<Antenna>;

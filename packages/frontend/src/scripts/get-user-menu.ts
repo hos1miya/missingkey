@@ -120,6 +120,42 @@ export function getUserMenu(user, router: Router = mainRouter) {
 		}
 	}
 
+	async function toggleRenoteMute() {
+		if (user.isRenoteMuted) {
+			os.apiWithDialog('mute/delete', {
+				userId: user.id,
+				type: 'renote',
+			}).then(() => {
+				user.isRenoteMuted = false;
+			});
+		} else {
+			os.apiWithDialog('mute/create', {
+				userId: user.id,
+				type: 'renote',
+			}).then(() => {
+				user.isRenoteMuted = true;
+			});
+		}
+	}
+
+	async function toggleMediaMute() {
+		if (user.isMediaMuted) {
+			os.apiWithDialog('mute/delete', {
+				userId: user.id,
+				type: 'media',
+			}).then(() => {
+				user.isMediaMuted = false;
+			});
+		} else {
+			os.apiWithDialog('mute/create', {
+				userId: user.id,
+				type: 'media',
+			}).then(() => {
+				user.isMediaMuted = true;
+			});
+		}
+	}
+
 	async function toggleBlock() {
 		if (!await getConfirmed(user.isBlocking ? i18n.ts.unblockConfirm : i18n.ts.blockConfirm)) return;
 
@@ -198,6 +234,14 @@ export function getUserMenu(user, router: Router = mainRouter) {
 			icon: user.isMuted ? 'ti ti-eye' : 'ti ti-eye-off',
 			text: user.isMuted ? i18n.ts.unmute : i18n.ts.mute,
 			action: toggleMute,
+		}, {
+			icon: user.isRenoteMuted ? 'ti ti-repeat' : 'ti ti-repeat-off',
+			text: user.isRenoteMuted ? i18n.ts.renoteUnmute : i18n.ts.renoteMute,
+			action: toggleRenoteMute,
+		}, {
+			icon: user.isMediaMuted ? 'ti ti-movie' : 'ti ti-movie-off',
+			text: user.isMediaMuted ? i18n.ts.mediaUnmute : i18n.ts.mediaMute,
+			action: toggleMediaMute,
 		}, {
 			icon: 'ti ti-ban',
 			text: user.isBlocking ? i18n.ts.unblock : i18n.ts.block,
