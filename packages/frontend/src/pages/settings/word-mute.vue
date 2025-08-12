@@ -16,7 +16,7 @@
 			<MkInfo>{{ i18n.ts._wordMute.hardDescription }} {{ i18n.ts.reflectMayTakeTime }}</MkInfo>
 			<MkTextarea v-model="hardMutedWords">
 				<span>{{ i18n.ts._wordMute.muteWords }}</span>
-				<template #caption>{{ i18n.ts._wordMute.muteWordsDescription }}<br>{{ i18n.ts._wordMute.muteWordsDescription2 }}</template>
+				<template #caption>{{ i18n.ts._wordMute.muteWordsDescription }}<br>{{ i18n.ts._wordMute.muteWordsDescription2 }}<br>{{ i18n.ts._wordMute.muteWordsDescription3 }}</template>
 			</MkTextarea>
 			<MkKeyValue v-if="hardWordMutedNotesCount != null">
 				<template #key>{{ i18n.ts._wordMute.mutedNotes }}</template>

@@ -24,21 +24,7 @@ export async function checkWordMute(note: NoteLike, me: UserLike | null | undefi
 		text = await replaceSingleCustomEmojiToText(text);
 
 		const matched = mutedWords.some(filter => {
-			if (Array.isArray(filter)) {
-				// 通常判定
-				return filter.every(keyword => text.includes(keyword));
-			} else if (typeof filter === 'string' && filter.startsWith('{') && filter.endsWith('}')) {
-				// 単語判定分岐: 囲い文字 {} でくくられた単語一致
-				const word = filter.slice(1, -1);
-				// 区切り考慮の正規表現：文字/数字/アンダースコア以外を単語の境界とみなす
-				try {
-					const boundaryRegex = new RE2(`(?:^|[^\\p{L}\\p{N}_])${word}(?:[^\\p{L}\\p{N}_]|$)`, 'u');
-					return boundaryRegex.test(text);
-				} catch (err) {
-					// フォールバック（誤検出防止）
-					return false;
-				}
-			} else {
+			if (!Array.isArray(filter)) {
 				// 正規表現
 				const regexp = filter.match(/^\/(.+)\/(.*)$/);
 
@@ -51,7 +37,46 @@ export async function checkWordMute(note: NoteLike, me: UserLike | null | undefi
 					// This should never happen due to input sanitisation.
 					return false;
 				}
-			}
+			} else if (filter[0].startsWith('{') && filter[0].endsWith('}')) {
+				const word = filter[0].slice(1, -1);
+				if (word.length === 0) return false;  // ここで空文字ならfalseを返す
+
+				const normWord = word.normalize('NFKC');
+				const normText = text.normalize('NFKC');
+
+				try {
+					let beforeBoundary: string;
+					let afterBoundary: string;
+
+					if (/^\p{Script=Katakana}+$/u.test(word)) {
+						// カタカナ単語 → 前後がカタカナでない
+						beforeBoundary = '(?:^|\\P{Script=Katakana})';
+						afterBoundary  = '(?:$|\\P{Script=Katakana})';
+					} else if (/^\p{Script=Hiragana}+$/u.test(word)) {
+						// ひらがな単語 → 前後がひらがなでない
+						beforeBoundary = '(?:^|\\P{Script=Hiragana})';
+						afterBoundary  = '(?:$|\\P{Script=Hiragana})';
+					} else if (/^\p{Script=Han}+$/u.test(word)) {
+						// 漢字単語 → 前後が漢字でない
+						beforeBoundary = '(?:^|\\P{Script=Han})';
+						afterBoundary  = '(?:$|\\P{Script=Han})';
+					} else {
+						// それ以外（英語や数字など） → \b使用
+						beforeBoundary = '\\b';
+						afterBoundary  = '\\b';
+					}
+
+					const regexStr = `${beforeBoundary}${normWord}${afterBoundary}`;
+					const boundaryRegex = new RegExp(regexStr, 'u');
+
+					return boundaryRegex.test(normText);
+				} catch (err) {
+					return false;
+				}
+			} else {
+				// 通常判定
+				return filter.every(keyword => text.includes(keyword));
+			} 
 		});
 
 		if (matched) return true;
@@ -69,10 +94,8 @@ export async function checkWordMuteText(noteText: string, mutedWords: Array<stri
 		text = await replaceSingleCustomEmojiToText(text);
 
 		const matched = mutedWords.some(filter => {
-			if (Array.isArray(filter)) {
-				return filter.every(keyword => text.includes(keyword));
-			} else {
-				// represents RegExp
+			if (!Array.isArray(filter)) {
+				// 正規表現
 				const regexp = filter.match(/^\/(.+)\/(.*)$/);
 
 				// This should never happen due to input sanitisation.
@@ -84,7 +107,46 @@ export async function checkWordMuteText(noteText: string, mutedWords: Array<stri
 					// This should never happen due to input sanitisation.
 					return false;
 				}
-			}
+			} else if (filter[0].startsWith('{') && filter[0].endsWith('}')) {
+				const word = filter[0].slice(1, -1);
+				if (word.length === 0) return false;  // ここで空文字ならfalseを返す
+
+				const normWord = word.normalize('NFKC');
+				const normText = text.normalize('NFKC');
+
+				try {
+					let beforeBoundary: string;
+					let afterBoundary: string;
+
+					if (/^\p{Script=Katakana}+$/u.test(word)) {
+						// カタカナ単語 → 前後がカタカナでない
+						beforeBoundary = '(?:^|\\P{Script=Katakana})';
+						afterBoundary  = '(?:$|\\P{Script=Katakana})';
+					} else if (/^\p{Script=Hiragana}+$/u.test(word)) {
+						// ひらがな単語 → 前後がひらがなでない
+						beforeBoundary = '(?:^|\\P{Script=Hiragana})';
+						afterBoundary  = '(?:$|\\P{Script=Hiragana})';
+					} else if (/^\p{Script=Han}+$/u.test(word)) {
+						// 漢字単語 → 前後が漢字でない
+						beforeBoundary = '(?:^|\\P{Script=Han})';
+						afterBoundary  = '(?:$|\\P{Script=Han})';
+					} else {
+						// それ以外（英語や数字など） → \b使用
+						beforeBoundary = '\\b';
+						afterBoundary  = '\\b';
+					}
+
+					const regexStr = `${beforeBoundary}${normWord}${afterBoundary}`;
+					const boundaryRegex = new RegExp(regexStr, 'u');
+
+					return boundaryRegex.test(normText);
+				} catch (err) {
+					return false;
+				}
+			} else {
+				// 通常判定
+				return filter.every(keyword => text.includes(keyword));
+			} 
 		});
 
 		if (matched) return true;

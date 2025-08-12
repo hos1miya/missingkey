@@ -1422,6 +1422,7 @@ _wordMute:
   muteWords: "ミュートするワード"
   muteWordsDescription: "スペースで区切るとAND指定になり、改行で区切るとOR指定になります。"
   muteWordsDescription2: "キーワードをスラッシュで囲むと正規表現になります。"
+  muteWordsDescription3: "キーワードを{}で囲むと単語判定になります。(試験的機能)"
   softDescription: "指定した条件のノートをタイムラインから隠します。"
   hardDescription: "指定した条件のノートをタイムラインに追加しないようにします。追加されなかったノートは、条件を変更しても除外されたままになります。"
   soft: "ソフト"
