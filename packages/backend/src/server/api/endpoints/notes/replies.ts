@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { NotesRepository, MutingsRepository } from '@/models/index.js';
+import type { NotesRepository, MutingsRepository, AdvancedMutingsRepository } from '@/models/index.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
@@ -43,6 +43,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		@Inject(DI.mutingsRepository)
 		private mutingsRepository: MutingsRepository,
 
+		@Inject(DI.advancedMutingsRepository)
+		private advancedMutingsRepository: AdvancedMutingsRepository,
+
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
 	) {
@@ -79,7 +82,31 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				select: ['muteeId'],
 			});
 			const muting = new Set<string>(mutings.map(x => x.muteeId));
-			return packedTimeline.filter(note => !isUserRelated(note, muting));
+
+			const renoteMutings = await this.advancedMutingsRepository.find({
+				where: {
+					muterId: me.id,
+					renoteMuted: true,
+				},
+				select: ['muteeId'],
+			});
+			const renoteMuting = new Set<string>(renoteMutings.map(x => x.muteeId));
+
+			const mediaMutings = await this.advancedMutingsRepository.find({
+				where: {
+					muterId: me.id,
+					mediaMuted: true,
+				},
+				select: ['muteeId'],
+			});
+			const mediaMuting = new Set<string>(mediaMutings.map(x => x.muteeId));
+
+			return packedTimeline.filter(note => {
+				if (isUserRelated(note, muting)) return false;
+				if (note.renoteId && renoteMuting.has(note.userId)) return false;
+				if (note.fileIds!.length !== 0 && mediaMuting.has(note.userId)) return false;
+				return true;
+			});
 		});
 	}
 }

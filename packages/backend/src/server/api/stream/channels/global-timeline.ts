@@ -3,7 +3,6 @@ import { checkWordMute } from '@/misc/check-word-mute.js';
 import { isInstanceMuted } from '@/misc/is-instance-muted.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import type { Packed } from '@/misc/schema.js';
-import { MetaService } from '@/core/MetaService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -15,7 +14,6 @@ class GlobalTimelineChannel extends Channel {
 	public static requireCredential = false;
 
 	constructor(
-		private metaService: MetaService,
 		private roleService: RoleService,
 		private noteEntityService: NoteEntityService,
 
@@ -66,6 +64,10 @@ class GlobalTimelineChannel extends Channel {
 		if (isUserRelated(note, this.muting)) return;
 		// 流れてきたNoteがブロックされているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.blocking)) return;
+		
+		// RNミュート及びメディアミュート判定
+		if (note.renoteId && this.renoteMuting.has(note.userId)) return;
+		if (note.fileIds!.length !== 0 && this.mediaMuting.has(note.userId)) return;
 
 		// ワードミュート判定
 		this.checkWordMutes(note).then(result => {
@@ -120,7 +122,6 @@ export class GlobalTimelineChannelService {
 	public readonly requireCredential = GlobalTimelineChannel.requireCredential;
 
 	constructor(
-		private metaService: MetaService,
 		private roleService: RoleService,
 		private noteEntityService: NoteEntityService,
 	) {
@@ -129,7 +130,6 @@ export class GlobalTimelineChannelService {
 	@bindThis
 	public create(id: string, connection: Channel['connection']): GlobalTimelineChannel {
 		return new GlobalTimelineChannel(
-			this.metaService,
 			this.roleService,
 			this.noteEntityService,
 			id,

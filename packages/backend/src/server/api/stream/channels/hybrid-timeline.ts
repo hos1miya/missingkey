@@ -85,6 +85,10 @@ class HybridTimelineChannel extends Channel {
 		// 流れてきたNoteがブロックされているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.blocking)) return;
 
+		// RNミュート及びメディアミュート判定
+		if (note.renoteId && this.renoteMuting.has(note.userId)) return;
+		if (note.fileIds!.length !== 0 && this.mediaMuting.has(note.userId)) return;
+
 		// ワードミュート判定
 		this.checkWordMutes(note).then(result => {
 			if (result) {

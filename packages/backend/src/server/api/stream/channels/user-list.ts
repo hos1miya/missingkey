@@ -92,6 +92,10 @@ class UserListChannel extends Channel {
 		if (isUserRelated(note, this.muting)) return;
 		// 流れてきたNoteがブロックされているユーザーが関わるものだったら無視する
 		if (isUserRelated(note, this.blocking)) return;
+		
+		// RNミュート及びメディアミュート判定
+		if (note.renoteId && this.renoteMuting.has(note.userId)) return;
+		if (note.fileIds!.length !== 0 && this.mediaMuting.has(note.userId)) return;
 
 		this.send('note', note);
 	}

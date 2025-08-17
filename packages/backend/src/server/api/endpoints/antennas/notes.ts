@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { NotesRepository, AntennaNotesRepository, AntennasRepository } from '@/models/index.js';
+import type { NotesRepository, AntennaNotesRepository, AntennasRepository, AdvancedMutingsRepository } from '@/models/index.js';
 import { QueryService } from '@/core/QueryService.js';
 import { NoteReadService } from '@/core/NoteReadService.js';
 import { DI } from '@/di-symbols.js';
@@ -59,6 +59,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		@Inject(DI.antennaNotesRepository)
 		private antennaNotesRepository: AntennaNotesRepository,
 
+		@Inject(DI.advancedMutingsRepository)
+		private advancedMutingsRepository: AdvancedMutingsRepository,
+
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
 		private noteReadService: NoteReadService,
@@ -101,7 +104,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				this.noteReadService.read(me.id, notes);
 			}
 
-			return await this.noteEntityService.packMany(notes, me);
+			const packedNotes = await this.noteEntityService.packMany(notes, me);
+			
+			// Media mute
+			const mediaMutings = await this.advancedMutingsRepository.find({
+				where: {
+					muterId: me.id,
+					mediaMuted: true,
+				},
+				select: ['muteeId'],
+			});
+			const mediaMuting = new Set<string>(mediaMutings.map(x => x.muteeId));
+
+			return packedNotes.filter(note => {
+				if (note.fileIds!.length !== 0 && mediaMuting.has(note.userId)) return false;
+				return true;
+			});
 		});
 	}
 }
