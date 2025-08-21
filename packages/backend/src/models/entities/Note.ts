@@ -27,7 +27,7 @@ export class Note {
 	public replyId: Note['id'] | null;
 
 	@ManyToOne(type => Note, {
-		onDelete: 'CASCADE',
+		onDelete: 'NO ACTION',
 	})
 	@JoinColumn()
 	public reply: Note | null;
@@ -41,7 +41,7 @@ export class Note {
 	public renoteId: Note['id'] | null;
 
 	@ManyToOne(type => Note, {
-		onDelete: 'CASCADE',
+		onDelete: 'NO ACTION',
 	})
 	@JoinColumn()
 	public renote: Note | null;
@@ -215,6 +215,20 @@ export class Note {
 		comment: '[Denormalized]',
 	})
 	public renoteUserHost: string | null;
+
+	@Column({
+			type: 'boolean',
+			default: false,
+			comment: 'Logical delete flag',
+	})
+	public isDeleted: boolean;
+
+	@Column({
+			type: 'timestamp with time zone',
+			nullable: true,
+			comment: 'Deleted timestamp',
+	})
+	public deletedAt: Date | null;
 	//#endregion
 
 	constructor(data: Partial<Note>) {

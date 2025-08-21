@@ -661,8 +661,8 @@ importers:
         specifier: 0.24.0
         version: 0.24.0
       misskey-js:
-        specifier: github:hos1miya/misskey-js#v0.0.31
-        version: https://codeload.github.com/hos1miya/misskey-js/tar.gz/c2eed61188e996ad1258c0a669be782821ebd33e
+        specifier: github:hos1miya/misskey-js#v0.0.32
+        version: https://codeload.github.com/hos1miya/misskey-js/tar.gz/10c1d4daa6eb4f3e31ac5e7e68e48c2d6bc3a05b
       photoswipe:
         specifier: 5.4.4
         version: 5.4.4
@@ -830,8 +830,8 @@ importers:
         specifier: ^6.2.2
         version: 6.2.2
       misskey-js:
-        specifier: github:hos1miya/misskey-js#v0.0.31
-        version: https://codeload.github.com/hos1miya/misskey-js/tar.gz/c2eed61188e996ad1258c0a669be782821ebd33e
+        specifier: github:hos1miya/misskey-js#v0.0.32
+        version: https://codeload.github.com/hos1miya/misskey-js/tar.gz/10c1d4daa6eb4f3e31ac5e7e68e48c2d6bc3a05b
     devDependencies:
       '@typescript-eslint/parser':
         specifier: ^8.32.1
@@ -5520,9 +5520,9 @@ packages:
   misskey-js@2025.4.1:
     resolution: {integrity: sha512-ehgQzAlU3cTK9oGRsY0t8JjdT7osKKEwpoRfXcTMMj6aufsM6vhnrD3XQwXYckMiLamA0/M8tI9ZhHhB8EmSew==}
 
-  misskey-js@https://codeload.github.com/hos1miya/misskey-js/tar.gz/c2eed61188e996ad1258c0a669be782821ebd33e:
-    resolution: {tarball: https://codeload.github.com/hos1miya/misskey-js/tar.gz/c2eed61188e996ad1258c0a669be782821ebd33e}
-    version: 0.0.31
+  misskey-js@https://codeload.github.com/hos1miya/misskey-js/tar.gz/10c1d4daa6eb4f3e31ac5e7e68e48c2d6bc3a05b:
+    resolution: {tarball: https://codeload.github.com/hos1miya/misskey-js/tar.gz/10c1d4daa6eb4f3e31ac5e7e68e48c2d6bc3a05b}
+    version: 0.0.32
 
   mkdirp-classic@0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
@@ -13358,7 +13358,7 @@ snapshots:
       eventemitter3: 5.0.1
       reconnecting-websocket: 4.4.0
 
-  misskey-js@https://codeload.github.com/hos1miya/misskey-js/tar.gz/c2eed61188e996ad1258c0a669be782821ebd33e:
+  misskey-js@https://codeload.github.com/hos1miya/misskey-js/tar.gz/10c1d4daa6eb4f3e31ac5e7e68e48c2d6bc3a05b:
     dependencies:
       autobind-decorator: 2.4.0
       eventemitter3: 4.0.7

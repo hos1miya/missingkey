@@ -1,4 +1,4 @@
-import { Brackets, In } from 'typeorm';
+import { In } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
 import type { User, ILocalUser, IRemoteUser } from '@/models/entities/User.js';
 import type { Note, IMentionedRemoteUsers } from '@/models/entities/Note.js';
@@ -84,15 +84,6 @@ export class NoteDeleteService {
 
 				this.deliverToConcerned(user, note, content);
 			}
-
-			// also deliever delete activity to cascaded notes
-			const cascadingNotes = (await this.findCascadingNotes(note)).filter(note => !note.localOnly); // filter out local-only notes
-			for (const cascadingNote of cascadingNotes) {
-				if (!cascadingNote.user) continue;
-				if (!this.userEntityService.isLocalUser(cascadingNote.user)) continue;
-				const content = this.apRendererService.renderActivity(this.apRendererService.renderDelete(this.apRendererService.renderTombstone(`${this.config.url}/notes/${cascadingNote.id}`), cascadingNote.user));
-				this.deliverToConcerned(cascadingNote.user, cascadingNote, content);
-			}
 			//#endregion
 
 			// 統計を更新
@@ -106,34 +97,15 @@ export class NoteDeleteService {
 				});
 			}
 		}
-
-		await this.notesRepository.delete({
-			id: note.id,
-			userId: user.id,
-		});
-	}
-
-	@bindThis
-	private async findCascadingNotes(note: Note) {
-		const cascadingNotes: Note[] = [];
-
-		const recursive = async (noteId: string) => {
-			const query = this.notesRepository.createQueryBuilder('note')
-				.where('note.replyId = :noteId', { noteId })
-				.orWhere(new Brackets(q => {
-					q.where('note.renoteId = :noteId', { noteId })
-						.andWhere('note.text IS NOT NULL');
-				}))
-				.leftJoinAndSelect('note.user', 'user');
-			const replies = await query.getMany();
-			for (const reply of replies) {
-				cascadingNotes.push(reply);
-				await recursive(reply.id);
+		
+		// 物理削除を論理削除に変更
+		await this.notesRepository.update(
+			{ id: note.id, userId: user.id },
+			{
+				isDeleted: true,
+				deletedAt: deletedAt,
 			}
-		};
-		await recursive(note.id);
-
-		return cascadingNotes.filter(note => note.userHost === null); // filter out non-local users
+		);
 	}
 
 	@bindThis

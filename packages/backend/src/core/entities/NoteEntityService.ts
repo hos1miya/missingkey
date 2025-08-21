@@ -1,9 +1,13 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { DataSource, In } from 'typeorm';
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+import { Inject, Injectable } from '@nestjs/common';
+import { In } from 'typeorm';
 import * as mfm from 'mfm-js';
 import { ModuleRef } from '@nestjs/core';
 import { DI } from '@/di-symbols.js';
-import type { Config } from '@/config.js';
 import type { Packed } from '@/misc/schema.js';
 import { nyaize } from '@/misc/nyaize.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
@@ -27,9 +31,6 @@ export class NoteEntityService implements OnModuleInit {
 
 	constructor(
 		private moduleRef: ModuleRef,
-
-		@Inject(DI.db)
-		private db: DataSource,
 
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
@@ -291,8 +292,8 @@ export class NoteEntityService implements OnModuleInit {
 			user: this.userEntityService.pack(note.user ?? note.userId, me, {
 				detail: false,
 			}),
-			text: text,
-			cw: note.cw,
+			text: note.isDeleted ? '(Deleted note)' : text,
+			cw: note.isDeleted ? null : note.cw,
 			visibility: note.visibility,
 			localOnly: note.localOnly ?? undefined,
 			visibleUserIds: note.visibility === 'specified' ? note.visibleUserIds : undefined,
@@ -301,15 +302,16 @@ export class NoteEntityService implements OnModuleInit {
 			reactions: this.reactionService.convertLegacyReactions(note.reactions),
 			reactionEmojis: this.customEmojiService.populateEmojis(reactionEmojiNames, host),
 			emojis: host != null ? this.customEmojiService.populateEmojis(note.emojis, host) : undefined,
-			tags: note.tags.length > 0 ? note.tags : undefined,
-			fileIds: note.fileIds,
-			files: this.driveFileEntityService.packMany(note.fileIds),
+			tags: note.isDeleted ? undefined : note.tags.length > 0 ? note.tags : undefined,
+			fileIds: note.isDeleted ? [] : note.fileIds,
+			files: this.driveFileEntityService.packMany(note.isDeleted ? [] : note.fileIds),
 			replyId: note.replyId,
 			renoteId: note.renoteId,
 			mentions: note.mentions.length > 0 ? note.mentions : undefined,
 			uri: note.uri ?? undefined,
 			url: note.url ?? undefined,
 			via: note.via ?? undefined,
+			isDeleted: note.isDeleted,
 
 			...(opts.detail ? {
 				reply: note.replyId ? this.pack(note.reply ?? note.replyId, me, {
@@ -397,7 +399,8 @@ export class NoteEntityService implements OnModuleInit {
 		// 指定したユーザーの指定したノートのリノートがいくつあるか数える
 		const query = this.notesRepository.createQueryBuilder('note')
 			.where('note.userId = :userId', { userId })
-			.andWhere('note.renoteId = :renoteId', { renoteId });
+			.andWhere('note.renoteId = :renoteId', { renoteId })
+			.andWhere('note.isDeleted = :isDeleted', { isDeleted: false });
 
 		// 指定した投稿を除く
 		if (excludeNoteId) {
@@ -415,6 +418,7 @@ export class NoteEntityService implements OnModuleInit {
 		if (note.renoteId != null) {
 			const renote = await this.notesRepository.findOneBy({
 				id: note.renoteId,
+				isDeleted: false,
 			});
 			if (renote !== null) {
 				// textを元ノートの本文に置き換え

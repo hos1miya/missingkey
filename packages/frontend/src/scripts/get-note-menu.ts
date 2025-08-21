@@ -18,7 +18,7 @@ export function getNoteMenu(props: {
 	menuButton: Ref<HTMLElement | undefined>;
 	translation: Ref<any>;
 	translating: Ref<boolean>;
-	isDeleted: Ref<boolean>;
+	isHided: Ref<boolean>;
 	currentClipPage?: Ref<misskey.entities.Clip> | null;
 }) : any {
 	const isRenote = (
@@ -100,14 +100,14 @@ export function getNoteMenu(props: {
 		const shouldMuteOrigin = originState?.isMutedNote !== mute;
 		if (shouldMuteOrigin) {
 			// ミュート時は即座に UI 非表示
-			if (mute) props.isDeleted.value = true;
+			if (mute) props.isHided.value = true;
 	
 			await os.apiWithDialog(mute ? 'notes/mutes/create' : 'notes/mutes/delete', {
 				noteId: originId,
 			});
 		} else {
 			// origin の状態が変わらない場合も UI 更新は必要（ミュート時のみ）
-			if (mute) props.isDeleted.value = true;
+			if (mute) props.isHided.value = true;
 			os.success();
 		}
 	}
@@ -181,7 +181,7 @@ export function getNoteMenu(props: {
 							});
 							if (!confirm.canceled) {
 								os.apiWithDialog('clips/remove-note', { clipId: clip.id, noteId: appearNote.id });
-								if (props.currentClipPage?.value.id === clip.id) props.isDeleted.value = true;
+								if (props.currentClipPage?.value.id === clip.id) props.isHided.value = true;
 							}
 						} else {
 							os.alert({
@@ -198,7 +198,7 @@ export function getNoteMenu(props: {
 
 	async function unclip(): Promise<void> {
 		os.apiWithDialog('clips/remove-note', { clipId: props.currentClipPage!.value.id, noteId: appearNote.id });
-		props.isDeleted.value = true;
+		props.isHided.value = true;
 	}
 	/*
 	async function promote(): Promise<void> {

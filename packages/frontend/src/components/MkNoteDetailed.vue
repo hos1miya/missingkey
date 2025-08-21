@@ -1,16 +1,16 @@
 <template>
 <div
 	v-if="!muted"
-	v-show="!isDeleted"
+	v-show="!isHided"
 	ref="el"
 	v-hotkey="keymap"
 	class="lxwezrsl"
-	:tabindex="!isDeleted ? '-1' : null"
+	:tabindex="!(isDeleted || isHided) ? '-1' : null"
 	:class="{ renote: isRenote }"
 >
 	<MkNoteSub v-for="note in conversation" :key="note.id" class="reply-to-more" :note="note"/>
 	<MkNoteSub v-if="appearNote.reply" :note="appearNote.reply" class="reply-to"/>
-	<div v-if="isRenote" class="renote">
+	<div v-if="isRenote && !isDeleted" class="renote">
 		<MkAvatar class="avatar" :user="note.user" link preview/>
 		<i class="ti ti-repeat"></i>
 		<I18n :src="i18n.ts.renotedBy" tag="span">
@@ -65,7 +65,8 @@
 					<div class="text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 						<MkA v-if="appearNote.replyId" class="reply" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
-						<Mfm v-if="appearNote.text" :text="appearNote.text" :author="appearNote.user" :i="$i" :emoji-urls="appearNote.emojis"/>
+						<Mfm v-if="appearNote.text" v-show="!isDeleted" :text="appearNote.text" :author="appearNote.user" :i="$i" :emoji-urls="appearNote.emojis"/>
+						<Mfm v-if="appearNote.text" v-show="isDeleted" :text="`(Deleted note)`" :author="appearNote.user" :i="$i" :emoji-urls="appearNote.emojis"/>
 						<a v-if="appearNote.renote != null" class="rp">RN:</a>
 						<div v-if="translating || translation" class="translation">
 							<MkLoading v-if="translating" mini/>
@@ -91,12 +92,16 @@
 					<span v-if="appearNote.via" class="via">{{ appearNote.via }}</span>
 				</div>
 				<MkReactionsViewer ref="reactionsViewer" :note="appearNote"/>
-				<button class="button _button" @click="reply()">
+				<button v-if="!isDeleted" class="button _button" @click="reply()">
 					<i class="ti ti-arrow-back-up"></i>
 					<p v-if="appearNote.repliesCount > 0" class="count">{{ appearNote.repliesCount }}</p>
 				</button>
+				<button v-else class="button _button" disabled>
+					<i class="ti ti-ban"></i>
+					<p v-if="appearNote.repliesCount > 0" class="count">{{ appearNote.repliesCount }}</p>
+				</button>
 				<button
-					v-if="canRenote"
+					v-if="canRenote && !isDeleted"
 					ref="renoteButton"
 					class="button _button"
 					@mousedown="renote()"
@@ -106,15 +111,22 @@
 				</button>
 				<button v-else class="button _button" disabled>
 					<i class="ti ti-ban"></i>
+					<p v-if="appearNote.renoteCount > 0" class="count">{{ appearNote.renoteCount }}</p>
 				</button>
-				<button v-if="appearNote.myReaction == null" ref="reactButton" class="button _button" @mousedown="react()">
+				<button v-if="appearNote.myReaction == null && !isDeleted" ref="reactButton" class="button _button" @mousedown="react()">
 					<i class="ti ti-plus"></i>
 				</button>
-				<button v-if="appearNote.myReaction != null" ref="reactButton" class="button _button reacted" @click="undoReact(appearNote)">
+				<button v-else-if="appearNote.myReaction != null && !isDeleted" ref="reactButton" class="button _button reacted" @click="undoReact(appearNote)">
 					<i class="ti ti-minus"></i>
 				</button>
-				<button ref="menuButton" class="button _button" @mousedown="menu()">
+				<button v-else class="button _button" disabled>
+					<i class="ti ti-ban"></i>
+				</button>
+				<button v-if="!isDeleted" ref="menuButton" class="button _button" @mousedown="menu()">
 					<i class="ti ti-dots"></i>
+				</button>
+				<button v-else class="button _button" disabled>
+					<i class="ti ti-ban"></i>
 				</button>
 			</footer>
 		</div>
@@ -133,7 +145,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, onMounted, onUnmounted, reactive, ref, shallowRef } from 'vue';
+import { computed, onMounted, ref, shallowRef } from 'vue';
 import * as mfm from 'mfm-js';
 import * as misskey from 'misskey-js';
 import MkNoteSub from '@/components/MkNoteSub.vue';
@@ -195,7 +207,8 @@ const reactButton = shallowRef<HTMLElement>();
 let appearNote = $computed(() => isRenote ? note.renote as misskey.entities.Note : note);
 const isMyRenote = $i && ($i.id === note.userId);
 const showContent = ref(false);
-const isDeleted = ref(false);
+const isDeleted = ref(note.isDeleted);
+const isHided = ref(false);
 const muted = ref(checkWordMute(appearNote, $i, defaultStore.state.mutedWords));
 const translation = ref(null);
 const translating = ref(false);
@@ -239,6 +252,7 @@ useTooltip(renoteButton, async (showing) => {
 });
 
 function renote(viaKeyboard = false) {
+	if (appearNote.isDeleted) return;
 	pleaseLogin();
 
 	let items = [] as MenuItem[];
@@ -267,6 +281,7 @@ function renote(viaKeyboard = false) {
 }
 
 function reply(viaKeyboard = false): void {
+	if (appearNote.isDeleted) return;
 	pleaseLogin();
 	os.post({
 		reply: appearNote,
@@ -277,6 +292,7 @@ function reply(viaKeyboard = false): void {
 }
 
 function react(viaKeyboard = false): void {
+	if (appearNote.isDeleted) return;
 	pleaseLogin();
 	blur();
 	reactionPicker.show(reactButton.value, reaction => {
@@ -293,6 +309,7 @@ function react(viaKeyboard = false): void {
 }
 
 function undoReact(note): void {
+	if (appearNote.isDeleted) return;
 	const oldReaction = note.myReaction;
 	if (!oldReaction) return;
 	os.api('notes/reactions/delete', {
@@ -314,12 +331,13 @@ function onContextmenu(ev: MouseEvent): void {
 		ev.preventDefault();
 		react();
 	} else {
-		os.contextMenu(getNoteMenu({ note: note, translating, translation, menuButton, isDeleted }), ev).then(focus);
+		os.contextMenu(getNoteMenu({ note: note, translating, translation, menuButton, isHided }), ev).then(focus);
 	}
 }
 
 function menu(viaKeyboard = false): void {
-	os.popupMenu(getNoteMenu({ note: note, translating, translation, menuButton, isDeleted }), menuButton.value, {
+	if (appearNote.isDeleted) return;
+	os.popupMenu(getNoteMenu({ note: note, translating, translation, menuButton, isHided }), menuButton.value, {
 		viaKeyboard,
 	}).then(focus);
 }
@@ -334,7 +352,7 @@ function showRenoteMenu(viaKeyboard = false): void {
 			os.api('notes/delete', {
 				noteId: note.id,
 			});
-			isDeleted.value = true;
+			isHided.value = true;
 		},
 	}], renoteTime.value, {
 		viaKeyboard: viaKeyboard,

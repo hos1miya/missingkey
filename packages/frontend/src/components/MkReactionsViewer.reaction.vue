@@ -37,6 +37,8 @@ const canToggle = computed(() => !props.reaction.match(/@\w/) && $i);
 const toggleReaction = () => {
 	if (!canToggle.value) return;
 
+	if (props.note.isDeleted) return;
+
 	const oldReaction = props.note.myReaction;
 	if (oldReaction) {
 		os.api('notes/reactions/delete', {

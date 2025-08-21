@@ -1,17 +1,17 @@
 <template>
 <div
 	v-if="!muted"
-	v-show="!isDeleted"
+	v-show="!isHided"
 	ref="el"
 	v-hotkey="keymap"
 	:class="$style.root"
-	:tabindex="!isDeleted ? '-1' : undefined"
+	:tabindex="!(isDeleted || isHided) ? '-1' : undefined"
 >
 	<MkNoteSub v-if="appearNote.reply && !renoteCollapsed" :note="appearNote.reply" :class="$style.replyTo"/>
 	<div v-if="pinned" :class="$style.tip"><i class="ti ti-pin"></i> {{ i18n.ts.pinnedNote }}</div>
 	<!--<div v-if="appearNote._prId_" class="tip"><i class="fas fa-bullhorn"></i> {{ i18n.ts.promotion }}<button class="_textButton hide" @click="readPromo()">{{ i18n.ts.hideThisNote }} <i class="ti ti-x"></i></button></div>-->
 	<!--<div v-if="appearNote._featuredId_" class="tip"><i class="ti ti-bolt"></i> {{ i18n.ts.featured }}</div>-->
-	<div v-if="isRenote" :class="$style.renote">
+	<div v-if="isRenote && !isDeleted" :class="$style.renote">
 		<MkAvatar :class="$style.renoteAvatar" :user="note.user" link preview/>
 		<i class="ti ti-repeat" style="margin-right: 4px;"></i>
 		<I18n :src="i18n.ts.renotedBy" tag="span" :class="$style.renoteText">
@@ -52,7 +52,8 @@
 					<div :class="$style.text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 						<MkA v-if="appearNote.replyId" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
-						<Mfm v-if="appearNote.text" :text="appearNote.text" :author="appearNote.user" :i="$i ?? undefined" :emoji-urls="appearNote.emojis"/>
+						<Mfm v-if="appearNote.text" v-show="!isDeleted" :text="appearNote.text" :author="appearNote.user" :i="$i ?? undefined" :emoji-urls="appearNote.emojis"/>
+						<Mfm v-if="appearNote.text" v-show="isDeleted" :text="`(Deleted note)`" :author="appearNote.user" :i="$i ?? undefined" :emoji-urls="appearNote.emojis"/>
 						<div v-if="translating || translation" :class="$style.translation">
 							<MkLoading v-if="translating" mini/>
 							<div v-else>
@@ -83,12 +84,16 @@
 						</button>
 					</template>
 				</MkReactionsViewer>
-				<button :class="$style.footerButton" class="_button" @click="reply()">
+				<button v-if="!isDeleted" :class="$style.footerButton" class="_button" @click="reply()">
 					<i class="ti ti-arrow-back-up"></i>
 					<p v-if="appearNote.repliesCount > 0" :class="$style.footerButtonCount">{{ appearNote.repliesCount }}</p>
 				</button>
+				<button v-else :class="$style.footerButton" class="_button" disabled>
+					<i class="ti ti-ban"></i>
+					<p v-if="appearNote.repliesCount > 0" :class="$style.footerButtonCount">{{ appearNote.repliesCount }}</p>
+				</button>
 				<button
-					v-if="canRenote"
+					v-if="canRenote && !isDeleted"
 					ref="renoteButton"
 					:class="$style.footerButton"
 					class="_button"
@@ -99,18 +104,28 @@
 				</button>
 				<button v-else :class="$style.footerButton" class="_button" disabled>
 					<i class="ti ti-ban"></i>
+					<p v-if="appearNote.renoteCount > 0" :class="$style.footerButtonCount">{{ appearNote.renoteCount }}</p>
 				</button>
-				<button v-if="appearNote.myReaction == null" ref="reactButton" :class="$style.footerButton" class="_button" @mousedown="react()" @contextmenu.stop="showReactions()">
+				<button v-if="appearNote.myReaction == null && !isDeleted" ref="reactButton" :class="$style.footerButton" class="_button" @mousedown="react()" @contextmenu.stop="showReactions()">
 					<i class="ti ti-plus"></i>
 				</button>
-				<button v-if="appearNote.myReaction != null" ref="reactButton" :class="$style.footerButton" class="_button" @click="undoReact(appearNote)" @contextmenu.stop="showReactions()">
+				<button v-else-if="appearNote.myReaction != null && !isDeleted" ref="reactButton" :class="$style.footerButton" class="_button" @click="undoReact(appearNote)" @contextmenu.stop="showReactions()">
 					<i class="ti ti-minus"></i>
+				</button>
+				<button v-else :class="$style.footerButton" class="_button" disabled>
+					<i class="ti ti-ban"></i>
 				</button>
 				<button v-if="appearNote.user.instance != null" ref="showOnRemoteButton" :class="$style.footerButton" class="_button" @click="openRemote(appearNote)">
 					<i class="ti ti-external-link"></i>
 				</button>
-				<button ref="menuButton" :class="$style.footerButton" class="_button" @mousedown="menu()">
+				<button v-else-if="appearNote.user.instance != null && isDeleted" :class="$style.footerButton" class="_button" disabled>
+					<i class="ti ti-ban"></i>
+				</button>
+				<button v-if="!isDeleted" ref="menuButton" :class="$style.footerButton" class="_button" @mousedown="menu()">
 					<i class="ti ti-dots"></i>
+				</button>
+				<button v-else :class="$style.footerButton" class="_button" disabled>
+					<i class="ti ti-ban"></i>
 				</button>
 			</footer>
 		</div>
@@ -200,7 +215,8 @@ const isLong = (appearNote.cw == null && appearNote.text != null && (
 	(urls && urls.length >= 4)
 ));
 const collapsed = ref(appearNote.cw == null && isLong);
-const isDeleted = ref(false);
+const isDeleted = ref(appearNote.isDeleted);
+const isHided = ref(false);
 const muted = ref(checkWordMute(appearNote, $i, defaultStore.state.mutedWords));
 const translation = ref<any>(null);
 const translating = ref(false);
@@ -246,6 +262,7 @@ useTooltip(renoteButton, async (showing) => {
 });
 
 function renote(viaKeyboard = false) : void {
+	if (appearNote.isDeleted) return;
 	pleaseLogin();
 
 	let items = [] as MenuItem[];
@@ -274,6 +291,7 @@ function renote(viaKeyboard = false) : void {
 }
 
 function reply(viaKeyboard = false) : void {
+	if (appearNote.isDeleted) return;
 	pleaseLogin();
 	os.post({
 		reply: appearNote,
@@ -284,6 +302,7 @@ function reply(viaKeyboard = false) : void {
 }
 
 function react(viaKeyboard = false) : void {
+	if (appearNote.isDeleted) return;
 	pleaseLogin();
 	blur();
 	reactionPicker.show(reactButton.value, reaction => {
@@ -300,6 +319,7 @@ function react(viaKeyboard = false) : void {
 }
 
 function undoReact(note) : void {
+	if (appearNote.isDeleted) return;
 	const oldReaction = note.myReaction;
 	if (!oldReaction) return;
 	os.api('notes/reactions/delete', {
@@ -327,12 +347,13 @@ function onContextmenu(ev: MouseEvent) : void {
 		ev.preventDefault();
 		react();
 	} else {
-		os.contextMenu(getNoteMenu({ note: note, translating, translation, menuButton, isDeleted, currentClipPage }), ev).then(focus);
+		os.contextMenu(getNoteMenu({ note: note, translating, translation, menuButton, isHided, currentClipPage }), ev).then(focus);
 	}
 }
 
 function menu(viaKeyboard = false) : void {
-	os.popupMenu(getNoteMenu({ note: note, translating, translation, menuButton, isDeleted, currentClipPage }), menuButton.value, {
+	if (appearNote.isDeleted) return;
+	os.popupMenu(getNoteMenu({ note: note, translating, translation, menuButton, isHided, currentClipPage }), menuButton.value, {
 		viaKeyboard,
 	}).then(focus);
 }
@@ -347,7 +368,7 @@ function showRenoteMenu(viaKeyboard = false) : void {
 			os.api('notes/delete', {
 				noteId: note.id,
 			});
-			isDeleted.value = true;
+			isHided.value = true;
 		},
 	}], renoteTime.value, {
 		viaKeyboard: viaKeyboard,
@@ -374,7 +395,7 @@ function readPromo() : void {
 	os.api('promo/read', {
 		noteId: appearNote.id,
 	});
-	isDeleted.value = true;
+	isHided.value = true;
 }
 */
 function showReactions() : void {
