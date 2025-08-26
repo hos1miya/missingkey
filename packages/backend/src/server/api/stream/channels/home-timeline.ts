@@ -73,7 +73,11 @@ class HomeTimelineChannel extends Channel {
 
 		// RNミュート及びメディアミュート判定
 		if (note.renoteId && this.renoteMuting.has(note.userId)) return;
-		if (note.fileIds!.length !== 0 && this.mediaMuting.has(note.userId)) return;
+		if (note.renote) {
+			if (note.renote.fileIds?.length !== 0 && this.mediaMuting.has(note.renote.userId)) return;
+		} else {
+			if (note.fileIds?.length !== 0 && this.mediaMuting.has(note.userId)) return;
+		}
 
 		// ワードミュート判定
 		this.checkWordMutes(note).then(result => {

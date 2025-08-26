@@ -53,7 +53,8 @@ class HashtagChannel extends Channel {
 		
 		// RNミュート及びメディアミュート判定
 		if (note.renoteId && this.renoteMuting.has(note.userId)) return;
-		if (note.fileIds!.length !== 0 && this.mediaMuting.has(note.userId)) return;
+		if ((note.renote ? note.renote.fileIds!.length : note.fileIds!.length !== 0)
+			&& this.mediaMuting.has(note.renote ? note.renote.userId : note.userId)) return false;
 
 		this.connection.cacheNote(note);
 

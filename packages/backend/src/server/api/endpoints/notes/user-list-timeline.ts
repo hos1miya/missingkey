@@ -176,7 +176,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			return packedTimeline.filter(note => {
 				if (isUserRelated(note, muting)) return false;
 				if (note.renoteId && renoteMuting.has(note.userId)) return false;
-				if (note.fileIds!.length !== 0 && mediaMuting.has(note.userId)) return false;
+				if (note.renote) {
+					if (note.renote.fileIds?.length !== 0 && mediaMuting.has(note.renote.userId)) return false;
+				} else {
+					if (note.fileIds?.length !== 0 && mediaMuting.has(note.userId)) return false;
+				}
 				return true;
 			});
 		});

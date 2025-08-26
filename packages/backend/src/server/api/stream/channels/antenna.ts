@@ -41,7 +41,11 @@ class AntennaChannel extends Channel {
 			if (isUserRelated(note, this.blocking)) return;
 			
 			// メディアミュート判定
-			if (note.fileIds!.length !== 0 && this.mediaMuting.has(note.userId)) return;
+			if (note.renote) {
+				if (note.renote.fileIds?.length !== 0 && this.mediaMuting.has(note.renote.userId)) return;
+			} else {
+				if (note.fileIds?.length !== 0 && this.mediaMuting.has(note.userId)) return;
+			}
 
 			this.connection.cacheNote(note);
 
