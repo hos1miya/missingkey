@@ -32,6 +32,7 @@ export const paramDef = {
 		folderId: { type: 'string', format: 'misskey:id', nullable: true, default: null },
 		type: { type: 'string', nullable: true, pattern: /^[a-zA-Z\/\-*]+$/.toString().slice(1, -1) },
 		sort: { type: 'string', nullable: true, enum: ['+createdAt', '-createdAt', '+name', '-name', '+size', '-size'] },
+		allFolders: { type: 'boolean' },
 	},
 	required: [],
 } as const;
@@ -52,6 +53,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (ps.folderId) {
 				query.andWhere('file.folderId = :folderId', { folderId: ps.folderId });
+			} else if (!ps.allFolders) {
+				query.andWhere('file.folderId IS NULL');
 			}
 
 			if (ps.type) {
