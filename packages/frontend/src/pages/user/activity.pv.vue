@@ -12,7 +12,6 @@
 import { onMounted } from 'vue';
 import { Chart, ChartDataset } from 'chart.js';
 import * as pleaides from 'pleaides-lib';
-import gradient from 'chartjs-plugin-gradient';
 import * as os from '@/os';
 import { defaultStore } from '@/store';
 import { useChartTooltip } from '@/scripts/use-chart-tooltip';
@@ -106,7 +105,6 @@ async function renderChart() {
 					offset: true,
 					stacked: true,
 					time: {
-						stepSize: 1,
 						unit: 'day',
 						displayFormats: {
 							day: 'M/d',
@@ -120,6 +118,7 @@ async function renderChart() {
 						display: true,
 						maxRotation: 0,
 						autoSkipPadding: 8,
+						stepSize: 1,
 					},
 				},
 				y: {
@@ -144,8 +143,6 @@ async function renderChart() {
 					display: true,
 					text: 'Unique/Natural PV',
 					padding: {
-						left: 0,
-						right: 0,
 						top: 0,
 						bottom: 12,
 					},
@@ -161,7 +158,6 @@ async function renderChart() {
 					},
 					external: externalTooltipHandler,
 				},
-				gradient,
 			},
 		},
 		plugins: [chartVLine(vLineColor), chartLegend(legendEl)],

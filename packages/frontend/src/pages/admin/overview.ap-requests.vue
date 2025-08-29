@@ -15,15 +15,10 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted } from 'vue';
 import { Chart } from 'chart.js';
 import gradient from 'chartjs-plugin-gradient';
-import tinycolor from 'tinycolor2';
-import MkMiniChart from '@/components/MkMiniChart.vue';
 import * as os from '@/os';
-import number from '@/filters/number';
-import MkNumberDiff from '@/components/MkNumberDiff.vue';
-import { i18n } from '@/i18n';
 import { useChartTooltip } from '@/scripts/use-chart-tooltip';
 import { chartVLine } from '@/scripts/chart-vline';
 import { defaultStore } from '@/store';
@@ -70,9 +65,6 @@ onMounted(async () => {
 	const vLineColor = defaultStore.state.darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
 	const succColor = '#87e000';
 	const failColor = '#ff4400';
-
-	const succMax = Math.max(...raw.deliverSucceeded);
-	const failMax = Math.max(...raw.deliverFailed);
 
 	new Chart(chartEl, {
 		type: 'line',
@@ -123,7 +115,6 @@ onMounted(async () => {
 					stacked: true,
 					offset: false,
 					time: {
-						stepSize: 1,
 						unit: 'day',
 					},
 					grid: {
@@ -133,6 +124,7 @@ onMounted(async () => {
 						display: true,
 						maxRotation: 0,
 						autoSkipPadding: 16,
+						stepSize: 1,
 					},
 					min: getDate(chartLimit).getTime(),
 				},
@@ -146,7 +138,7 @@ onMounted(async () => {
 					ticks: {
 						display: true,
 						//mirror: true,
-						callback: (value, index, values) => value < 0 ? -value : value,
+						callback: (value, index, values) => (value as number) < 0 ? -value : value,
 					},
 				},
 			},
@@ -172,10 +164,9 @@ onMounted(async () => {
 					},
 					external: externalTooltipHandler,
 				},
-				gradient,
 			},
 		},
-		plugins: [chartVLine(vLineColor)],
+		plugins: [chartVLine(vLineColor), gradient],
 	});
 
 	new Chart(chartEl2, {
@@ -212,7 +203,6 @@ onMounted(async () => {
 					type: 'time',
 					offset: false,
 					time: {
-						stepSize: 1,
 						unit: 'day',
 						displayFormats: {
 							day: 'M/d',
@@ -226,6 +216,7 @@ onMounted(async () => {
 						display: false,
 						maxRotation: 0,
 						autoSkipPadding: 16,
+						stepSize: 1,
 					},
 					min: getDate(chartLimit).getTime(),
 				},
@@ -259,7 +250,6 @@ onMounted(async () => {
 					},
 					external: externalTooltipHandler2,
 				},
-				gradient,
 			},
 		},
 		plugins: [chartVLine(vLineColor)],

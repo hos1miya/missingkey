@@ -8,22 +8,19 @@
 </template>
 
 <script lang="ts" setup>
-import { markRaw, version as vueVersion, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { onMounted } from 'vue';
 import { Chart } from 'chart.js';
-import tinycolor from 'tinycolor2';
-import gradient from 'chartjs-plugin-gradient';
 import * as os from '@/os';
 import { defaultStore } from '@/store';
 import { useChartTooltip } from '@/scripts/use-chart-tooltip';
 import { chartVLine } from '@/scripts/chart-vline';
-import { alpha } from '@/scripts/color';
 import { initChart } from '@/scripts/init-chart';
 
 initChart();
 
 const chartEl = $shallowRef<HTMLCanvasElement>(null);
 const now = new Date();
-let chartInstance: Chart = null;
+let chartInstance: Chart;
 const chartLimit = 7;
 let fetching = $ref(true);
 
@@ -55,8 +52,6 @@ async function renderChart() {
 
 	const colorRead = '#3498db';
 	const colorWrite = '#2ecc71';
-
-	const max = Math.max(...raw.read);
 
 	chartInstance = new Chart(chartEl, {
 		type: 'bar',
@@ -102,7 +97,6 @@ async function renderChart() {
 					type: 'time',
 					offset: true,
 					time: {
-						stepSize: 1,
 						unit: 'day',
 						displayFormats: {
 							day: 'M/d',
@@ -116,6 +110,7 @@ async function renderChart() {
 						display: true,
 						maxRotation: 0,
 						autoSkipPadding: 8,
+						stepSize: 1,
 					},
 				},
 				y: {
@@ -146,7 +141,6 @@ async function renderChart() {
 					},
 					external: externalTooltipHandler,
 				},
-				gradient,
 			},
 		},
 		plugins: [chartVLine(vLineColor)],
