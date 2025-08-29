@@ -187,7 +187,7 @@ const render = () => {
 						unit: props.span === 'day' ? 'month' : 'day',
 						displayFormats: {
 							day: 'M/d',
-							month: 'Y/M',
+							month: 'y/M',
 						},
 					},
 					grid: {
