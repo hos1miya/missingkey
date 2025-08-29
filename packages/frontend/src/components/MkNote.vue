@@ -115,11 +115,8 @@
 				<button v-else :class="$style.footerButton" class="_button" disabled>
 					<i class="ti ti-ban"></i>
 				</button>
-				<button v-if="appearNote.user.instance != null" ref="showOnRemoteButton" :class="$style.footerButton" class="_button" @click="openRemote(appearNote)">
+				<button v-if="appearNote.user.instance != null && !isDeleted" ref="showOnRemoteButton" :class="$style.footerButton" class="_button" @click="openRemote(appearNote)">
 					<i class="ti ti-external-link"></i>
-				</button>
-				<button v-else-if="appearNote.user.instance != null && isDeleted" :class="$style.footerButton" class="_button" disabled>
-					<i class="ti ti-ban"></i>
 				</button>
 				<button v-if="!isDeleted" ref="menuButton" :class="$style.footerButton" class="_button" @mousedown="menu()">
 					<i class="ti ti-dots"></i>

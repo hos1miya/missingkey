@@ -11,6 +11,7 @@ import NotesChart from '@/core/chart/charts/notes.js';
 import PerUserNotesChart from '@/core/chart/charts/per-user-notes.js';
 import InstanceChart from '@/core/chart/charts/instance.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
+import { NotePiningService } from '@/core/NotePiningService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
@@ -35,6 +36,7 @@ export class NoteDeleteService {
 		private userEntityService: UserEntityService,
 		private noteEntityService: NoteEntityService,
 		private globalEventService: GlobalEventService,
+		private notePiningSerice: NotePiningService,
 		private relayService: RelayService,
 		private federatedInstanceService: FederatedInstanceService,
 		private apRendererService: ApRendererService,
@@ -97,6 +99,9 @@ export class NoteDeleteService {
 				});
 			}
 		}
+
+		// ピン止めの解除
+		await this.notePiningSerice.removePinned(user, note.id);
 		
 		// 物理削除を論理削除に変更
 		await this.notesRepository.update(
