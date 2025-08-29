@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted } from 'vue';
+import { onUnmounted, reactive } from 'vue';
 import XNotes from '@/components/MkNotes.vue';
 import { stream } from '@/stream';
 import * as sound from '@/scripts/sound';
@@ -110,21 +110,32 @@ if (props.src === 'antenna') {
 	connection.on('userRemoved', onUserRemoved);
 }
 
-const pagination = {
+const pagination = reactive({
 	endpoint: endpoint,
 	limit: 10,
 	params: query,
-};
+});
 
 onUnmounted(() => {
 	connection.dispose();
 	if (connection2) connection2.dispose();
 });
 
-/* TODO
-const timetravel = (date?: Date) => {
-	this.date = date;
-	this.$refs.tl.reload();
+function timetravel(date?: Date) {
+	if (!date) {
+		pagination.params = {
+			...pagination.params,
+		};
+	} else {
+		pagination.params = {
+			...pagination.params,
+			untilDate: Math.floor(date.getTime()),
+		};
+	}
+	tlComponent.pagingComponent?.reload();
 };
-*/
+
+defineExpose({
+	timetravel,
+});
 </script>

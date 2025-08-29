@@ -94,8 +94,8 @@ async function timetravel(): Promise<void> {
 	const { canceled, result: date } = await os.inputDate({
 		title: i18n.ts.date,
 	});
-	if (canceled) return;
-
+	if (canceled || (date && (date as unknown as string) == 'Invalid Date')) return;
+	
 	tlComponent.timetravel(date);
 }
 
@@ -103,7 +103,11 @@ function focus(): void {
 	tlComponent.focus();
 }
 
-const headerActions = $computed(() => []);
+const headerActions = $computed(() => [{
+	icon: 'ti ti-calendar ti-fw',
+	text: i18n.ts.jumpToSpecifiedDate,
+	handler: timetravel,
+}]);
 
 const headerTabs = $computed(() => [{
 	key: 'home',

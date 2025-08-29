@@ -90,7 +90,7 @@
 		"os-utils": "0.0.14",
 		"parse5": "^7.3.0",
 		"pg": "^8.16.0",
-		"pleaides-lib": "github:hos1miya/pleaides-lib#v1.0.8",
+		"pleaides-lib": "github:hos1miya/pleaides-lib#v1.0.9",
 		"private-ip": "3.0.2",
 		"probe-image-size": "7.2.3",
 		"promise-limit": "2.7.0",

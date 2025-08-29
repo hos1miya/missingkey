@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, inject } from 'vue';
+import { computed, watch } from 'vue';
 import XTimeline from '@/components/MkTimeline.vue';
 import { scroll } from '@/scripts/scroll';
 import * as os from '@/os';
@@ -59,13 +59,13 @@ async function timetravel() {
 	const { canceled, result: date } = await os.inputDate({
 		title: i18n.ts.date,
 	});
-	if (canceled) return;
+	if (canceled || (date && (date as unknown as string) == 'Invalid Date')) return;
 
 	tlEl.timetravel(date);
 }
 
 const headerActions = $computed(() => list ? [{
-	icon: 'fas fa-calendar-alt',
+	icon: 'ti ti-calendar ti-fw',
 	text: i18n.ts.jumpToSpecifiedDate,
 	handler: timetravel,
 }, {
