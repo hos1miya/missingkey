@@ -102,6 +102,8 @@ export const paramDef = {
 		objectStorageS3ForcePathStyle: { type: 'boolean' },
 		enableIpLogging: { type: 'boolean' },
 		enableActiveEmailValidation: { type: 'boolean' },
+		enableAuthorizedFetch: { type: 'boolean', nullable: true },
+		enableBotProtectionForAuthorizedFetch: { type: 'boolean', nullable: true },
 	},
 	required: [],
 } as const;
@@ -409,6 +411,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (ps.enableActiveEmailValidation !== undefined) {
 				set.enableActiveEmailValidation = ps.enableActiveEmailValidation;
+			}
+			
+			if (typeof ps.enableAuthorizedFetch === 'boolean') {
+				set.enableAuthorizedFetch = ps.enableAuthorizedFetch;
+			}
+
+			if (typeof ps.enableBotProtectionForAuthorizedFetch === 'boolean') {
+				set.enableBotProtectionForAuthorizedFetch = ps.enableBotProtectionForAuthorizedFetch;
 			}
 
 			await this.metaService.update(set);

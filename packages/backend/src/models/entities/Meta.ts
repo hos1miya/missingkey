@@ -430,4 +430,14 @@ export class Meta {
 		default: { },
 	})
 	public policies: Record<string, any>;
+
+	@Column('boolean', {
+		default: false,
+	})
+	public enableAuthorizedFetch: boolean;
+
+	@Column('boolean', {
+		default: false,
+	})
+	public enableBotProtectionForAuthorizedFetch: boolean;
 }

@@ -95,6 +95,22 @@
 						<MkButton primary @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
 					</div>
 				</MkFolder>
+
+				<MkFolder>
+					<template #label>{{ i18n.ts.secureMode }}</template>
+					<template #caption>{{ i18n.ts.secureModeDescription }}</template>
+					<template v-if="enableAuthorizedFetch" #suffix>Enabled</template>
+					<template v-else #suffix>Disabled</template>
+
+					<div class="_gaps_m">
+						<MkSwitch v-model="enableAuthorizedFetch" @update:model-value="save">
+							<template #label>Enable</template>
+						</MkSwitch>
+						<MkSwitch v-model="enableBotProtectionForAuthorizedFetch">
+							<template #label>Enable Bot Protection Mode</template>
+						</MkSwitch>
+					</div>
+				</MkFolder>
 			</div>
 		</FormSuspense>
 	</MkSpacer>
@@ -108,7 +124,6 @@ import XHeader from './_header_.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkRadios from '@/components/MkRadios.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
-import FormInfo from '@/components/MkInfo.vue';
 import FormSuspense from '@/components/form/suspense.vue';
 import MkRange from '@/components/MkRange.vue';
 import MkInput from '@/components/MkInput.vue';
@@ -128,6 +143,8 @@ let setSensitiveFlagAutomatically: boolean = $ref(false);
 let enableSensitiveMediaDetectionForVideos: boolean = $ref(false);
 let enableIpLogging: boolean = $ref(false);
 let enableActiveEmailValidation: boolean = $ref(false);
+let enableAuthorizedFetch: boolean = $ref(false);
+let enableBotProtectionForAuthorizedFetch: boolean = $ref(false);
 
 async function init() {
 	const meta = await os.api('admin/meta');
@@ -146,6 +163,8 @@ async function init() {
 	enableSensitiveMediaDetectionForVideos = meta.enableSensitiveMediaDetectionForVideos;
 	enableIpLogging = meta.enableIpLogging;
 	enableActiveEmailValidation = meta.enableActiveEmailValidation;
+	enableAuthorizedFetch = meta.enableAuthorizedFetch;
+	enableBotProtectionForAuthorizedFetch = meta.enableBotProtectionForAuthorizedFetch;
 }
 
 function save() {
@@ -163,6 +182,8 @@ function save() {
 		enableSensitiveMediaDetectionForVideos,
 		enableIpLogging,
 		enableActiveEmailValidation,
+		enableAuthorizedFetch,
+		enableBotProtectionForAuthorizedFetch,
 	}).then(() => {
 		fetchInstance();
 	});

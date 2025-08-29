@@ -998,6 +998,8 @@ customMutePeriod: "カスタム(時間・日)"
 customMutePeriodInput: "ミュート期間を入力(～時間もしくは～日)"
 deleteFromHistory: "履歴から削除しますか？"
 invalidCustomEmoji: "無効なカスタム絵文字"
+secureMode: "セキュアモード (Authorized Fetch)"
+secureModeDescription: "有効にすると、認証情報のないサーバーからのリクエストを拒否します。"
 
 _achievements:
   earnedAt: "獲得日時"

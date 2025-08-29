@@ -183,4 +183,16 @@ export class ApDbResolverService {
 			key,
 		};
 	}
+
+	@bindThis
+	public async refetchPublicKeyForApId(user: CacheableRemoteUser): Promise<UserPublickey | null> {
+		await this.apPersonService.updatePerson(user.uri!);
+
+		const key = await this.userPublickeysRepository.findOneBy({ userId: user.id });
+		if (key != null) {
+			await this.publicKeyByUserIdCache.set(user.id, key);
+		}
+		return key;
+	}
+
 }

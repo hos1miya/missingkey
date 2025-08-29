@@ -7,10 +7,13 @@ import { Brackets, In, IsNull, LessThan, Not } from 'typeorm';
 import accepts from 'accepts';
 import vary from 'vary';
 import { DI } from '@/di-symbols.js';
-import type { FollowingsRepository, NotesRepository, EmojisRepository, NoteReactionsRepository, UserProfilesRepository, UserNotePiningsRepository, UsersRepository } from '@/models/index.js';
+import type { FollowingsRepository, NotesRepository, EmojisRepository, NoteReactionsRepository, UserProfilesRepository, UserNotePiningsRepository, UsersRepository, UserPublickey } from '@/models/index.js';
+import type { CacheableRemoteUser, CacheableUser } from '@/models/entities/User.js';
 import * as url from '@/misc/prelude/url.js';
 import type { Config } from '@/config.js';
+import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
+import { getApId } from '@/core/activitypub/type.js';
 import { QueueService } from '@/core/QueueService.js';
 import type { ILocalUser, User } from '@/models/entities/User.js';
 import { UserKeypairStoreService } from '@/core/UserKeypairStoreService.js';
@@ -20,6 +23,7 @@ import type { Note } from '@/models/entities/Note.js';
 import { QueryService } from '@/core/QueryService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { MetaService } from '@/core/MetaService.js';
 import { bindThis } from '@/decorators.js';
 import { IActivity } from '@/core/activitypub/type.js';
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOptions } from 'fastify';
@@ -57,7 +61,9 @@ export class ActivityPubServerService {
 
 		private utilityService: UtilityService,
 		private userEntityService: UserEntityService,
+		private apDbResolverService: ApDbResolverService,
 		private apRendererService: ApRendererService,
+		private metaService: MetaService,
 		private queueService: QueueService,
 		private userKeypairStoreService: UserKeypairStoreService,
 		private queryService: QueryService,
@@ -89,12 +95,114 @@ export class ActivityPubServerService {
 		return this.apRendererService.renderCreate(await this.apRendererService.renderNote(note, false), note);
 	}
 
+	/**
+	 * Handle request should reject
+	 * @param request FastifyRequest
+	 * @param reply FastifyReply
+	 * @returns bool
+	 */
 	@bindThis
-	private inbox(request: FastifyRequest, reply: FastifyReply) {
-		let signature;
+	private async shouldReject(request: FastifyRequest, reply: FastifyReply): Promise<boolean> {
+		
+		const meta = await this.metaService.fetch();
 
+		if (!meta.enableAuthorizedFetch) {
+			return false;
+		}
+
+		let signature;
 		try {
-			signature = httpSignature.parseRequest(request.raw, { 'headers': [] });
+			signature = httpSignature.parseRequest(request.raw, {
+				headers: ['(request-target)', 'host', 'date'],
+				authorizationHeaderName: 'signature',
+			});
+		} catch (e) {
+			return true;
+		}
+
+		const keyId = new URL(signature.keyId);
+		const keyHost = this.utilityService.toPuny(keyId.hostname);
+		if (!this.utilityService.isFederationAllowedHost(keyHost)) {
+			reply.code(403);
+			return true;
+		}
+
+		const keyIdLower = signature.keyId.toLowerCase();
+		if (keyIdLower.startsWith('acct:')) {
+			reply.code(401);
+			return true;
+		}
+
+		let authUser: {
+			user: CacheableRemoteUser,
+			key: UserPublickey | null,
+		} | null = await this.apDbResolverService.getAuthUserFromKeyId(signature.keyId);
+
+		// 存在しない場合一度Resolveを試みる
+		if (authUser == null) {
+			try {
+				keyId.hash = '';
+				authUser = await this.apDbResolverService.getAuthUserFromApId(getApId(keyId.toString()));
+			} catch (e) {
+				// Resolveできなかったらreject
+				reply.code(403);
+				return true;
+			}
+		}
+
+		// 鍵がなかったらreject
+		if (authUser?.key == null) {
+			reply.code(403);
+			return true;
+		}
+
+		// 凍結されていたらreject
+		if (authUser.user.isSuspended) {
+			reply.code(403);
+			return true;
+		}
+
+		// Bot Protectionが有効かつauthUserがbotならreject
+		if (meta.enableBotProtectionForAuthorizedFetch && authUser.user.isBot) {
+			reply.code(403);
+			return true;
+		}
+
+		// 念の為もう一度チェック
+		if (authUser.user.host !== keyHost) {
+			reply.code(403);
+			return true;
+		}
+
+		// 鍵の検証
+		let validatedHttpSignature = httpSignature.verifySignature(signature, authUser.key.keyPem);
+		if (!validatedHttpSignature) {
+			authUser.key = await this.apDbResolverService.refetchPublicKeyForApId(authUser.user);
+			if (authUser.key == null) {
+				reply.code(403);
+				return true;
+			}
+
+			validatedHttpSignature = httpSignature.verifySignature(signature, authUser.key.keyPem);
+		}
+
+		if (!validatedHttpSignature) {
+			reply.code(403);
+			return true;
+		}
+
+		reply.header('cache-control', 'private, max-age=0, must-revalidate');
+		return false;
+	}
+
+	@bindThis
+	private async inbox(request: FastifyRequest, reply: FastifyReply) {
+		if (await this.shouldReject(request, reply)) {
+			return;
+		}
+		let signature;
+		try {
+			signature = httpSignature.parseRequest(request.raw, { 'headers': ['(request-target)', 'host', 'date'], authorizationHeaderName: 'signature' });
 		} catch (e) {
 			reply.code(401);
 			return;
@@ -128,7 +236,7 @@ export class ActivityPubServerService {
 				return;
 			}
 
-			const algo = match[1];
+			const algo = match[1].toUpperCase();
 			const digestValue = match[2];
 
 			if (algo !== 'SHA-256') {
@@ -151,7 +259,14 @@ export class ActivityPubServerService {
 				return;
 			}
 		}
-		this.queueService.inbox(request.body as IActivity, signature);
+
+		const activity = request.body as IActivity;
+		if (!activity.type || !signature.keyId) {
+			reply.code(400);
+			return;
+		}
+
+		this.queueService.inbox(activity, signature);
 
 		reply.code(202);
 	}
@@ -161,6 +276,10 @@ export class ActivityPubServerService {
 		request: FastifyRequest<{ Params: { user: string; }; Querystring: { cursor?: string; page?: string; }; }>,
 		reply: FastifyReply,
 	) {
+		if (await this.shouldReject(request, reply)) {
+			return;
+		}
+
 		const userId = request.params.user;
 
 		const cursor = request.query.cursor;
@@ -249,6 +368,10 @@ export class ActivityPubServerService {
 		request: FastifyRequest<{ Params: { user: string; }; Querystring: { cursor?: string; page?: string; }; }>,
 		reply: FastifyReply,
 	) {
+		if (await this.shouldReject(request, reply)) {
+			return;
+		}
+
 		const userId = request.params.user;
 
 		const cursor = request.query.cursor;
@@ -334,6 +457,10 @@ export class ActivityPubServerService {
 
 	@bindThis
 	private async featured(request: FastifyRequest<{ Params: { user: string; }; }>, reply: FastifyReply) {
+		if (await this.shouldReject(request, reply)) {
+			return;
+		}
+
 		const userId = request.params.user;
 
 		const user = await this.usersRepository.findOneBy({
@@ -374,6 +501,10 @@ export class ActivityPubServerService {
 		}>,
 		reply: FastifyReply,
 	) {
+		if (await this.shouldReject(request, reply)) {
+			return;
+		}
+
 		const userId = request.params.user;
 
 		const sinceId = request.query.since_id;
@@ -456,6 +587,10 @@ export class ActivityPubServerService {
 
 	@bindThis
 	private async userInfo(request: FastifyRequest, reply: FastifyReply, user: User | null) {
+		if (await this.shouldReject(request, reply)) {
+			return;
+		}
+
 		if (user == null) {
 			reply.code(404);
 			return;
@@ -510,6 +645,10 @@ export class ActivityPubServerService {
 		fastify.get<{ Params: { note: string; } }>('/notes/:note', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
 			vary(reply.raw, 'Accept');
 
+			if (await this.shouldReject(request, reply)) {
+				return;
+			}
+
 			const note = await this.notesRepository.findOneBy({
 				id: request.params.note,
 				visibility: In(['public', 'home']),
@@ -539,6 +678,10 @@ export class ActivityPubServerService {
 		// note activity
 		fastify.get<{ Params: { note: string; } }>('/notes/:note/activity', async (request, reply) => {
 			vary(reply.raw, 'Accept');
+
+			if (await this.shouldReject(request, reply)) {
+				return;
+			}
 
 			const note = await this.notesRepository.findOneBy({
 				id: request.params.note,
@@ -580,6 +723,10 @@ export class ActivityPubServerService {
 
 		// publickey
 		fastify.get<{ Params: { user: string; } }>('/users/:user/publickey', async (request, reply) => {
+			if (await this.shouldReject(request, reply)) {
+				return;
+			}
+
 			const userId = request.params.user;
 
 			const user = await this.usersRepository.findOneBy({
@@ -605,6 +752,10 @@ export class ActivityPubServerService {
 		});
 
 		fastify.get<{ Params: { user: string; } }>('/users/:user', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
+			if (await this.shouldReject(request, reply)) {
+				return;
+			}
+
 			const userId = request.params.user;
 
 			const user = await this.usersRepository.findOneBy({
@@ -617,6 +768,10 @@ export class ActivityPubServerService {
 		});
 
 		fastify.get<{ Params: { user: string; } }>('/@:user', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
+			if (await this.shouldReject(request, reply)) {
+				return;
+			}
+
 			const user = await this.usersRepository.findOneBy({
 				usernameLower: request.params.user.toLowerCase(),
 				host: IsNull(),
@@ -629,6 +784,10 @@ export class ActivityPubServerService {
 
 		// emoji
 		fastify.get<{ Params: { emoji: string; } }>('/emojis/:emoji', async (request, reply) => {
+			if (await this.shouldReject(request, reply)) {
+				return;
+			}
+
 			const emoji = await this.emojisRepository.findOneBy({
 				host: IsNull(),
 				name: request.params.emoji,
@@ -646,6 +805,10 @@ export class ActivityPubServerService {
 
 		// like
 		fastify.get<{ Params: { like: string; } }>('/likes/:like', async (request, reply) => {
+			if (await this.shouldReject(request, reply)) {
+				return;
+			}
+
 			const reaction = await this.noteReactionsRepository.findOneBy({ id: request.params.like });
 
 			if (reaction == null) {
@@ -667,6 +830,10 @@ export class ActivityPubServerService {
 
 		// follow
 		fastify.get<{ Params: { follower: string; followee: string; } }>('/follows/:follower/:followee', async (request, reply) => {
+			if (await this.shouldReject(request, reply)) {
+				return;
+			}
+
 			// This may be used before the follow is completed, so we do not
 			// check if the following exists.
 

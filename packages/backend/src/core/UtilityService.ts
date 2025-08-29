@@ -4,12 +4,19 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
+import { MetaService } from '@/core/MetaService.js';
+import type { InstancesRepository } from '@/models/index.js';
 
 @Injectable()
 export class UtilityService {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
+
+		@Inject(DI.instancesRepository)
+		private instancesRepository: InstancesRepository,
+
+		private metaService: MetaService,
 	) {
 	}
 
@@ -51,5 +58,16 @@ export class UtilityService {
 	public toPunyNullable(host: string | null | undefined): string | null {
 		if (host == null) return null;
 		return toASCII(host.toLowerCase());
+	}
+
+	@bindThis
+	public async isFederationAllowedHost(host: string): Promise<boolean> {
+		const meta = await this.metaService.fetch();
+		const instance = await this.instancesRepository.findOneBy({ host: host });
+		
+		if (this.isBlockedHost(meta.blockedHosts, host)) return false;
+		if (instance && instance.softwareName && this.isBlockedSoftware(meta.blockedSoftwares, instance.softwareName)) return false;
+
+		return true;
 	}
 }
