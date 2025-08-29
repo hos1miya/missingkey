@@ -106,7 +106,7 @@
 						<MkSwitch v-model="enableAuthorizedFetch" @update:model-value="save">
 							<template #label>Enable</template>
 						</MkSwitch>
-						<MkSwitch v-model="enableBotProtectionForAuthorizedFetch">
+						<MkSwitch v-model="enableBotProtectionForAuthorizedFetch" @update:model-value="save">
 							<template #label>Enable Bot Protection Mode</template>
 						</MkSwitch>
 					</div>

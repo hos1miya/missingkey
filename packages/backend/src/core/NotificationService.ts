@@ -65,7 +65,7 @@ export class NotificationService {
 
 	@bindThis
 	private postReadNotifications(userId: User['id'], notificationIds: Notification['id'][]): Promise<void> {
-		this.globalEventService.publishMainStream(userId, 'readNotifications', notificationIds);
+		this.globalEventService.publishMainStream(userId, 'readNotifications', notificationIds as any);
 		return this.pushNotificationService.pushNotification(userId, 'readNotifications', { notificationIds });
 	}
 }

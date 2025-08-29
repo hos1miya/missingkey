@@ -1,4 +1,3 @@
-import { Not } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import type { UsersRepository, PollsRepository, PollVotesRepository } from '@/models/index.js';
 import type { IRemoteUser } from '@/models/entities/User.js';
@@ -162,7 +161,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			if (note.userHost != null) {
 				const pollOwner = await this.usersRepository.findOneByOrFail({ id: note.userId }) as IRemoteUser;
 
-				this.queueService.deliver(me, this.apRendererService.renderActivity(await this.apRendererService.renderVote(me, vote, note, poll, pollOwner)), pollOwner.inbox);
+				this.queueService.deliver(me, this.apRendererService.addContext(await this.apRendererService.renderVote(me, vote, note, poll, pollOwner)), pollOwner.inbox);
 			}
 
 			// リモートフォロワーにUpdate配信

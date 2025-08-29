@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+import type { Context, JsonLd } from 'jsonld/jsonld-spec.js';
+
 /* eslint:disable:quotemark indent */
 const id_v1 = {
 	'@context': {
@@ -86,7 +93,7 @@ const id_v1 = {
 		'accessControl': { '@id': 'perm:accessControl', '@type': '@id' },
 		'writePermission': { '@id': 'perm:writePermission', '@type': '@id' },
 	},
-};
+} satisfies JsonLd;
 
 const security_v1 = {
 	'@context': {
@@ -137,7 +144,7 @@ const security_v1 = {
 		'signatureAlgorithm': 'sec:signingAlgorithm',
 		'signatureValue': 'sec:signatureValue',
 	},
-};
+} satisfies JsonLd;
 
 const activitystreams = {
 	'@context': {
@@ -517,57 +524,58 @@ const activitystreams = {
 			'@type': '@id',
 		},
 	},
-};
+} satisfies JsonLd;
 
-export const WellKnownContext = {
-	'@context': [
-		'https://www.w3.org/ns/activitystreams',
-		'https://w3id.org/security/v1',
-		{
-			// as non-standards
-			manuallyApprovesFollowers: 'as:manuallyApprovesFollowers',
-			movedTo: {
-				'@id': 'https://www.w3.org/ns/activitystreams#movedTo',
-				'@type': '@id',
-			},
-			movedToUri: 'as:movedTo',
-			sensitive: 'as:sensitive',
-			Hashtag: 'as:Hashtag',
-			quoteUri: 'fedibird:quoteUri',
-			quoteUrl: 'as:quoteUrl',
-			// Mastodon
-			toot: 'http://joinmastodon.org/ns#',
-			Emoji: 'toot:Emoji',
-			featured: 'toot:featured',
-			discoverable: 'toot:discoverable',
-			indexable: 'toot:indexable',
-			// schema
-			schema: 'http://schema.org#',
-			PropertyValue: 'schema:PropertyValue',
-			value: 'schema:value',
-			// Firefish
-			firefish: 'https://firefish.dev/ns#',
-			speakAsCat: 'firefish:speakAsCat',
-			// Misskey
-			misskey: 'https://misskey-hub.net/ns#',
-			_misskey_talk: 'misskey:_misskey_talk',
-			_misskey_reaction: 'misskey:_misskey_reaction',
-			_misskey_votes: 'misskey:_misskey_votes',
-			_misskey_summary: 'misskey:_misskey_summary',
-			isCat: 'misskey:isCat',
-			// Fedibird
-			fedibird: 'http://fedibird.com/ns#',
-			// vcard
-			vcard: 'http://www.w3.org/2006/vcard/ns#',
-			// litepub
-			litepub: 'http://litepub.social/ns#',
-			ChatMessage: 'litepub:ChatMessage',
-			directMessage: 'litepub:directMessage',
-		},
-	],
-};
+const context_iris = [
+	'https://www.w3.org/ns/activitystreams',
+	'https://w3id.org/security/v1',
+];
 
-export const CONTEXTS: Record<string, unknown> = {
+export const extension_context_definition = {
+	// as non-standards
+	manuallyApprovesFollowers: 'as:manuallyApprovesFollowers',
+	movedTo: {
+		'@id': 'https://www.w3.org/ns/activitystreams#movedTo',
+		'@type': '@id',
+	},
+	movedToUri: 'as:movedTo',
+	sensitive: 'as:sensitive',
+	Hashtag: 'as:Hashtag',
+	quoteUri: 'fedibird:quoteUri',
+	quoteUrl: 'as:quoteUrl',
+	// Mastodon
+	toot: 'http://joinmastodon.org/ns#',
+	Emoji: 'toot:Emoji',
+	featured: 'toot:featured',
+	discoverable: 'toot:discoverable',
+	indexable: 'toot:indexable',
+	// schema
+	schema: 'http://schema.org#',
+	PropertyValue: 'schema:PropertyValue',
+	value: 'schema:value',
+	// Firefish
+	firefish: 'https://firefish.dev/ns#',
+	speakAsCat: 'firefish:speakAsCat',
+	// Misskey
+	misskey: 'https://misskey-hub.net/ns#',
+	_misskey_talk: 'misskey:_misskey_talk',
+	_misskey_reaction: 'misskey:_misskey_reaction',
+	_misskey_votes: 'misskey:_misskey_votes',
+	_misskey_summary: 'misskey:_misskey_summary',
+	isCat: 'misskey:isCat',
+	// Fedibird
+	fedibird: 'http://fedibird.com/ns#',
+	// vcard
+	vcard: 'http://www.w3.org/2006/vcard/ns#',
+	// litepub
+	litepub: 'http://litepub.social/ns#',
+	ChatMessage: 'litepub:ChatMessage',
+	directMessage: 'litepub:directMessage',
+} satisfies Context;
+
+export const CONTEXT: (string | Context)[] = [...context_iris, extension_context_definition];
+
+export const PRELOADED_CONTEXTS: Record<string, JsonLd> = {
 	'https://w3id.org/identity/v1': id_v1,
 	'https://w3id.org/security/v1': security_v1,
 	'https://www.w3.org/ns/activitystreams': activitystreams,

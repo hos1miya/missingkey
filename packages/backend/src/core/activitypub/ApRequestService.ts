@@ -146,7 +146,7 @@ export class ApRequestService {
 
 	@bindThis
 	public async signedPost(user: { id: User['id'] }, url: string, object: any) {
-		const body = JSON.stringify(object);
+		const body = typeof object === 'string' ? object : JSON.stringify(object);
 
 		const keypair = await this.userKeypairStoreService.getUserKeypair(user.id);
 

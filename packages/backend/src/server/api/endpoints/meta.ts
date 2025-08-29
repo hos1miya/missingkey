@@ -196,14 +196,6 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: false,
 			},
-			enableAuthorizedFetch: {
-				type: 'boolean',
-				optional: false, nullable: false,
-			},
-			enableBotProtectionForAuthorizedFetch: {
-				type: 'boolean',
-				optional: false, nullable: false,
-			},
 			features: {
 				type: 'object',
 				optional: true, nullable: false,
@@ -334,9 +326,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				policies: { ...DEFAULT_POLICIES, ...instance.policies },
 
 				mediaProxy: this.config.mediaProxy,
-				
-				enableAuthorizedFetch: instance.enableAuthorizedFetch,
-				enableBotProtectionForAuthorizedFetch: instance.enableBotProtectionForAuthorizedFetch,
 
 				...(ps.detail ? {
 					pinnedPages: instance.pinnedPages,

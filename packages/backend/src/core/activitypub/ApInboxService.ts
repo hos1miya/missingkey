@@ -289,9 +289,8 @@ export class ApInboxService {
 			return;
 		}
 
-		// アナウンス先をブロックしてたら中断
-		const meta = await this.metaService.fetch();
-		if (this.utilityService.isBlockedHost(meta.blockedHosts, this.utilityService.extractDbHost(uri))) return;
+		// ドメインorソフトウェアブロックしてたら中断
+		if (!await this.utilityService.isFederationAllowedHost(this.utilityService.extractDbHost(uri))) return;
 
 		const unlock = await this.appLockService.getApLock(uri);
 

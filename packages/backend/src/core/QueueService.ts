@@ -270,6 +270,16 @@ export class QueueService {
 	}
 
 	@bindThis
+	public createEndedPollNotificationJob(noteId: string, delay: number) {
+		return this.endedPollNotificationQueue.add('endedPollNotification', {
+			noteId: noteId,
+		}, {
+			delay: delay,
+			removeOnComplete: true,
+		});
+	}
+
+	@bindThis
 	public webhookDeliver(webhook: Webhook, type: typeof webhookEventTypes[number], content: unknown) {
 		const data = {
 			type,

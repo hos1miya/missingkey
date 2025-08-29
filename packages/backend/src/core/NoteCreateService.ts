@@ -516,12 +516,7 @@ export class NoteCreateService {
 
 		if (data.poll && data.poll.expiresAt) {
 			const delay = data.poll.expiresAt.getTime() - Date.now();
-			this.queueService.endedPollNotificationQueue.add({
-				noteId: note.id,
-			}, {
-				delay,
-				removeOnComplete: true,
-			});
+			this.queueService.createEndedPollNotificationJob(note.id, delay);
 		}
 
 		if (!silent) {
@@ -713,7 +708,7 @@ export class NoteCreateService {
 			? this.apRendererService.renderAnnounce(data.renote.uri ?? `${this.config.url}/notes/${data.renote.id}`, note)
 			: this.apRendererService.renderCreate(await this.apRendererService.renderNote(note, false), note);
 
-		return this.apRendererService.renderActivity(content);
+		return this.apRendererService.addContext(content);
 	}
 
 	@bindThis

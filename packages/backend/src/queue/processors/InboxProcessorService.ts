@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import { URL } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
 import httpSignature from '@peertube/http-signature';
@@ -13,14 +18,14 @@ import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataServic
 import InstanceChart from '@/core/chart/charts/instance.js';
 import ApRequestChart from '@/core/chart/charts/ap-request.js';
 import FederationChart from '@/core/chart/charts/federation.js';
-import { getApId } from '@/core/activitypub/type.js';
+import { getApId, IActivity } from '@/core/activitypub/type.js';
 import type { CacheableRemoteUser } from '@/models/entities/User.js';
 import type { UserPublickey } from '@/models/entities/UserPublickey.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { StatusError } from '@/misc/status-error.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
-import { LdSignatureService } from '@/core/activitypub/LdSignatureService.js';
+import { JsonLdService } from '@/core/activitypub/JsonLdService.js';
 import { ApInboxService } from '@/core/activitypub/ApInboxService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
@@ -46,7 +51,7 @@ export class InboxProcessorService {
 		private apInboxService: ApInboxService,
 		private federatedInstanceService: FederatedInstanceService,
 		private fetchInstanceMetadataService: FetchInstanceMetadataService,
-		private ldSignatureService: LdSignatureService,
+		private jsonLdService: JsonLdService,
 		private apRequestService: ApRequestService,
 		private apPersonService: ApPersonService,
 		private apDbResolverService: ApDbResolverService,
@@ -71,21 +76,11 @@ export class InboxProcessorService {
 
 		const host = this.utilityService.toPuny(new URL(signature.keyId).hostname);
 
-		// ドメインブロックしてたら中断
-		const meta = await this.metaService.fetch();
-		if (this.utilityService.isBlockedHost(meta.blockedHosts, host)) {
+		// ドメインorソフトウェアブロックしてたら中断
+		if (!await this.utilityService.isFederationAllowedHost(host)) {
 			return `Blocked request: ${host}`;
 		}
-		/*
-		// ソフトウェアブロックしてたら中断
-		const toInstance = await this.instancesRepository.findOneBy({ host: this.utilityService.toPuny(host) });
-		//let toInstance = await this.instancesRepository.findOneBy({ host: this.federatedInstanceService.fetch(host) });
-		if (toInstance !== null) {
-			if (this.utilityService.isBlockedSoftware(meta.blockedSoftwares, toInstance.softwareName)) {
-				return 'skip (software blocked)';
-			}
-		}
-		*/
+
 		const keyIdLower = signature.keyId.toLowerCase();
 		if (keyIdLower.startsWith('acct:')) {
 			return `Old keyId is no longer supported. ${keyIdLower}`;
@@ -127,21 +122,22 @@ export class InboxProcessorService {
 
 		// また、signatureのsignerは、activity.actorと一致する必要がある
 		if (!httpSignatureValidated || authUser.user.uri !== activity.actor) {
+			let ldSignature = activity.signature;
 			// 一致しなくても、でもLD-Signatureがありそうならそっちも見る
-			if (activity.signature) {
-				if (activity.signature.type !== 'RsaSignature2017') {
-					throw new Bull.UnrecoverableError(`skip: unsupported LD-signature type ${activity.signature.type}`);
+			if (ldSignature) {
+				if (ldSignature.type !== 'RsaSignature2017') {
+					throw new Bull.UnrecoverableError(`skip: unsupported LD-signature type ${ldSignature.type}`);
 				}
 
 				// activity.signature.creator: https://example.oom/users/user#main-key
 				// みたいになっててUserを引っ張れば公開キーも入ることを期待する
-				if (activity.signature.creator) {
-					const candicate = activity.signature.creator.replace(/#.*/, '');
+				if (ldSignature.creator) {
+					const candicate = ldSignature.creator.replace(/#.*/, '');
 					await this.apPersonService.resolvePerson(candicate).catch(() => null);
 				}
 
 				// keyIdからLD-Signatureのユーザーを取得
-				authUser = await this.apDbResolverService.getAuthUserFromKeyId(activity.signature.creator);
+				authUser = await this.apDbResolverService.getAuthUserFromKeyId(ldSignature.creator);
 				if (authUser == null) {
 					throw new Bull.UnrecoverableError('skip: LD-Signatureのユーザーが取得できませんでした');
 				}
@@ -150,24 +146,39 @@ export class InboxProcessorService {
 					throw new Bull.UnrecoverableError('skip: LD-SignatureのユーザーはpublicKeyを持っていませんでした');
 				}
 
+				const jsonLd = this.jsonLdService.use();
+
 				// LD-Signature検証
-				const ldSignature = this.ldSignatureService.use();
-				const verified = await ldSignature.verifyRsaSignature2017(activity, authUser.key.keyPem).catch(() => false);
+				const verified = await jsonLd.verifyRsaSignature2017(activity, authUser.key.keyPem).catch(() => false);
 				if (!verified) {
 					throw new Bull.UnrecoverableError('skip: LD-Signatureの検証に失敗しました');
 				}
 
-				activity = await ldSignature.compactToWellKnown(activity);
+				// アクティビティを正規化
+				delete activity.signature;
+				try {
+					activity = await jsonLd.compact(activity) as IActivity;
+				} catch (e) {
+					throw new Bull.UnrecoverableError(`skip: failed to compact activity: ${e}`);
+				}
+				// TODO: 元のアクティビティと非互換な形に正規化される場合は転送をスキップする
+				// https://github.com/mastodon/mastodon/blob/664b0ca/app/services/activitypub/process_collection_service.rb#L24-L29
+				activity.signature = ldSignature;
+
+				//#region Log
+				const compactedInfo = Object.assign({}, activity);
+				delete compactedInfo['@context'];
+				this.logger.debug(`compacted: ${JSON.stringify(compactedInfo, null, 2)}`);
+				//#endregion
 
 				// もう一度actorチェック
 				if (authUser.user.uri !== activity.actor) {
 					throw new Bull.UnrecoverableError(`skip: LD-Signature user(${authUser.user.uri}) !== activity.actor(${activity.actor})`);
 				}
 
-				// ブロックしてたら中断
 				const ldHost = this.utilityService.extractDbHost(authUser.user.uri);
-				if (this.utilityService.isBlockedHost(meta.blockedHosts, ldHost)) {
-					return `Blocked request: ${ldHost}`;
+				if (!this.utilityService.isFederationAllowedHost(ldHost)) {
+					throw new Bull.UnrecoverableError(`Blocked request: ${ldHost}`);
 				}
 			} else {
 				throw new Bull.UnrecoverableError(`skip: http-signature verification failed and no LD-Signature. keyId=${signature.keyId}`);

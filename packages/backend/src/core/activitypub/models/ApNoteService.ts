@@ -330,10 +330,11 @@ export class ApNoteService {
 	public async resolveNote(value: string | IObject, resolver?: Resolver): Promise<Note | null> {
 		const uri = typeof value === 'string' ? value : value.id;
 		if (uri == null) throw new Error('missing uri');
-	
-		// ブロックしてたら中断
-		const meta = await this.metaService.fetch();
-		if (this.utilityService.isBlockedHost(meta.blockedHosts, this.utilityService.extractDbHost(uri))) throw { statusCode: 451 };
+
+		// ドメインorソフトウェアブロックしてたら中断
+		if (!await this.utilityService.isFederationAllowedHost(this.utilityService.extractDbHost(uri))) {
+			throw { statusCode: 451 }
+		}
 	
 		const unlock = await this.appLockService.getApLock(uri);
 	

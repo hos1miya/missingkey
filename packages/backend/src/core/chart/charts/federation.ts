@@ -109,7 +109,7 @@ export default class FederationChart extends Chart<typeof schema> {
 	}
 
 	@bindThis
-	public async deliverd(host: string, succeeded: boolean): Promise<void> {
+	public async delivered(host: string, succeeded: boolean): Promise<void> {
 		await this.commit(succeeded ? {
 			'deliveredInstances': [host],
 		} : {

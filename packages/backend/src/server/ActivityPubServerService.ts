@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import * as crypto from 'node:crypto';
 import { IncomingMessage } from 'node:http';
 import { Inject, Injectable } from '@nestjs/common';
@@ -7,8 +12,8 @@ import { Brackets, In, IsNull, LessThan, Not } from 'typeorm';
 import accepts from 'accepts';
 import vary from 'vary';
 import { DI } from '@/di-symbols.js';
-import type { FollowingsRepository, NotesRepository, EmojisRepository, NoteReactionsRepository, UserProfilesRepository, UserNotePiningsRepository, UsersRepository, UserPublickey } from '@/models/index.js';
-import type { CacheableRemoteUser, CacheableUser } from '@/models/entities/User.js';
+import type { FollowingsRepository, FollowRequestsRepository, NotesRepository, EmojisRepository, NoteReactionsRepository, UserProfilesRepository, UserNotePiningsRepository, UsersRepository, UserPublickey } from '@/models/index.js';
+import type { CacheableRemoteUser } from '@/models/entities/User.js';
 import * as url from '@/misc/prelude/url.js';
 import type { Config } from '@/config.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
@@ -26,6 +31,7 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { MetaService } from '@/core/MetaService.js';
 import { bindThis } from '@/decorators.js';
 import { IActivity } from '@/core/activitypub/type.js';
+import * as Acct from '@/misc/acct.js';
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOptions } from 'fastify';
 import type { FindOptionsWhere } from 'typeorm';
 
@@ -58,6 +64,9 @@ export class ActivityPubServerService {
 
 		@Inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
+
+		@Inject(DI.followRequestsRepository)
+		private followRequestsRepository: FollowRequestsRepository,
 
 		private utilityService: UtilityService,
 		private userEntityService: UserEntityService,
@@ -122,7 +131,7 @@ export class ActivityPubServerService {
 
 		const keyId = new URL(signature.keyId);
 		const keyHost = this.utilityService.toPuny(keyId.hostname);
-		if (!this.utilityService.isFederationAllowedHost(keyHost)) {
+		if (!await this.utilityService.isFederationAllowedHost(keyHost)) {
 			reply.code(403);
 			return true;
 		}
@@ -353,13 +362,13 @@ export class ActivityPubServerService {
 			);
 
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(rendered));
+			return (this.apRendererService.addContext(rendered));
 		} else {
 			// index page
 			const rendered = this.apRendererService.renderOrderedCollection(partOf, user.followersCount, `${partOf}?page=true`);
 			reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(rendered));
+			return (this.apRendererService.addContext(rendered));
 		}
 	}
 
@@ -445,13 +454,13 @@ export class ActivityPubServerService {
 			);
 
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(rendered));
+			return (this.apRendererService.addContext(rendered));
 		} else {
 			// index page
 			const rendered = this.apRendererService.renderOrderedCollection(partOf, user.followingCount, `${partOf}?page=true`);
 			reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(rendered));
+			return (this.apRendererService.addContext(rendered));
 		}
 	}
 
@@ -490,7 +499,7 @@ export class ActivityPubServerService {
 
 		reply.header('Cache-Control', 'public, max-age=180');
 		this.setResponseType(request, reply);
-		return (this.apRendererService.renderActivity(rendered));
+		return (this.apRendererService.addContext(rendered));
 	}
 
 	@bindThis
@@ -572,7 +581,7 @@ export class ActivityPubServerService {
 			);
 
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(rendered));
+			return (this.apRendererService.addContext(rendered));
 		} else {
 			// index page
 			const rendered = this.apRendererService.renderOrderedCollection(partOf, user.notesCount,
@@ -581,7 +590,7 @@ export class ActivityPubServerService {
 			);
 			reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(rendered));
+			return (this.apRendererService.addContext(rendered));
 		}
 	}
 
@@ -596,9 +605,19 @@ export class ActivityPubServerService {
 			return;
 		}
 
+		// リモートだったらリダイレクト
+		if (user.host != null) {
+			if (user.uri == null || this.utilityService.isSelfHost(user.host)) {
+				reply.code(500);
+				return;
+			}
+			reply.redirect(user.uri, 301);
+			return;
+		}
+
 		reply.header('Cache-Control', 'public, max-age=180');
 		this.setResponseType(request, reply);
-		return (this.apRendererService.renderActivity(await this.apRendererService.renderPerson(user as ILocalUser)));
+		return (this.apRendererService.addContext(await this.apRendererService.renderPerson(user as ILocalUser)));
 	}
 
 	@bindThis
@@ -672,7 +691,7 @@ export class ActivityPubServerService {
 
 			reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(await this.apRendererService.renderNote(note, false)));
+			return (this.apRendererService.addContext(await this.apRendererService.renderNote(note, false)));
 		});
 
 		// note activity
@@ -697,7 +716,7 @@ export class ActivityPubServerService {
 
 			reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(await this.packActivity(note)));
+			return (this.apRendererService.addContext(await this.packActivity(note)));
 		});
 
 		// outbox
@@ -744,7 +763,7 @@ export class ActivityPubServerService {
 			if (this.userEntityService.isLocalUser(user)) {
 				reply.header('Cache-Control', 'public, max-age=180');
 				this.setResponseType(request, reply);
-				return (this.apRendererService.renderActivity(this.apRendererService.renderKey(user, keypair)));
+				return (this.apRendererService.addContext(this.apRendererService.renderKey(user, keypair)));
 			} else {
 				reply.code(400);
 				return;
@@ -760,21 +779,24 @@ export class ActivityPubServerService {
 
 			const user = await this.usersRepository.findOneBy({
 				id: userId,
-				host: IsNull(),
 				isSuspended: false,
 			});
 
 			return await this.userInfo(request, reply, user);
 		});
 
-		fastify.get<{ Params: { user: string; } }>('/@:user', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
+		fastify.get<{ Params: { acct: string; } }>('/@:acct', { constraints: { apOrHtml: 'ap' } }, async (request, reply) => {
+			vary(reply.raw, 'Accept');
+
 			if (await this.shouldReject(request, reply)) {
 				return;
 			}
 
+			const acct = Acct.parse(request.params.acct);
+
 			const user = await this.usersRepository.findOneBy({
-				usernameLower: request.params.user.toLowerCase(),
-				host: IsNull(),
+				usernameLower: acct.username,
+				host: acct.host ?? IsNull(),
 				isSuspended: false,
 			});
 
@@ -800,7 +822,7 @@ export class ActivityPubServerService {
 
 			reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(await this.apRendererService.renderEmoji(emoji)));
+			return (this.apRendererService.addContext(await this.apRendererService.renderEmoji(emoji)));
 		});
 
 		// like
@@ -825,7 +847,7 @@ export class ActivityPubServerService {
 
 			reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(await this.apRendererService.renderLike(reaction, note)));
+			return (this.apRendererService.addContext(await this.apRendererService.renderLike(reaction, note)));
 		});
 
 		// follow
@@ -855,7 +877,46 @@ export class ActivityPubServerService {
 
 			reply.header('Cache-Control', 'public, max-age=180');
 			this.setResponseType(request, reply);
-			return (this.apRendererService.renderActivity(this.apRendererService.renderFollow(follower, followee)));
+			return (this.apRendererService.addContext(this.apRendererService.renderFollow(follower, followee)));
+		});
+
+		// follow request
+		fastify.get<{ Params: { followRequestId: string; } }>('/follows/:followRequestId', async (request, reply) => {
+			if (await this.shouldReject(request, reply)) {
+				return;
+			}
+
+			// This may be used before the follow is completed, so we do not
+			// check if the following exists and only check if the follow request exists.
+
+			const followRequest = await this.followRequestsRepository.findOneBy({
+				id: request.params.followRequestId,
+			});
+
+			if (followRequest == null) {
+				reply.code(404);
+				return;
+			}
+
+			const [follower, followee] = await Promise.all([
+				this.usersRepository.findOneBy({
+					id: followRequest.followerId,
+					host: IsNull(),
+				}),
+				this.usersRepository.findOneBy({
+					id: followRequest.followeeId,
+					host: Not(IsNull()),
+				}),
+			]) as [ILocalUser | CacheableRemoteUser | null, ILocalUser | CacheableRemoteUser | null];
+
+			if (follower == null || followee == null) {
+				reply.code(404);
+				return;
+			}
+
+			reply.header('Cache-Control', 'public, max-age=180');
+			this.setResponseType(request, reply);
+			return (this.apRendererService.addContext(this.apRendererService.renderFollow(follower, followee)));
 		});
 
 		done();

@@ -92,8 +92,8 @@ export class Resolver {
 			return await this.resolveLocal(value);
 		}
 
-		const meta = await this.metaService.fetch();
-		if (this.utilityService.isBlockedHost(meta.blockedHosts, host)) {
+		// ドメインorソフトウェアブロックしてたら中断
+		if (!await this.utilityService.isFederationAllowedHost(host)) {
 			throw new Error('Instance is blocked');
 		}
 
@@ -127,7 +127,7 @@ export class Resolver {
 					.then(note => {
 						if (parsed.rest === 'activity') {
 							// this refers to the create activity and not the note itself
-							return this.apRendererService.renderActivity(this.apRendererService.renderCreate(this.apRendererService.renderNote(note), note))!;
+							return this.apRendererService.addContext(this.apRendererService.renderCreate(this.apRendererService.renderNote(note), note))!;
 						} else {
 							return this.apRendererService.renderNote(note);
 						}
@@ -143,8 +143,8 @@ export class Resolver {
 				])
 					.then(([note, poll]) => this.apRendererService.renderQuestion({ id: note.userId }, note, poll));
 			case 'likes':
-				return this.noteReactionsRepository.findOneByOrFail({ id: parsed.id }).then(reaction =>
-					this.apRendererService.renderActivity(this.apRendererService.renderLike(reaction, { uri: null }))!);
+				return this.noteReactionsRepository.findOneByOrFail({ id: parsed.id }).then(async reaction =>
+					this.apRendererService.addContext(await this.apRendererService.renderLike(reaction, { uri: null })));
 			case 'follows':
 				// rest should be <followee id>
 				if (parsed.rest == null || !/^\w+$/.test(parsed.rest)) throw new Error('resolveLocal: invalid follow URI');
@@ -152,7 +152,7 @@ export class Resolver {
 				return Promise.all(
 					[parsed.id, parsed.rest].map(id => this.usersRepository.findOneByOrFail({ id })),
 				)
-					.then(([follower, followee]) => this.apRendererService.renderActivity(this.apRendererService.renderFollow(follower, followee, url))!);
+					.then(([follower, followee]) => this.apRendererService.addContext(this.apRendererService.renderFollow(follower, followee, url))!);
 			default:
 				throw new Error(`resolveLocal: type ${parsed.type} unhandled`);
 		}

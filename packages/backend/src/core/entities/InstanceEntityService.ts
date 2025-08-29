@@ -38,7 +38,7 @@ export class InstanceEntityService {
 			followersCount: instance.followersCount,
 			isNotResponding: instance.isNotResponding,
 			isSuspended: instance.isSuspended,
-			isBlocked: this.utilityService.isBlockedHost(meta.blockedHosts, instance.host),
+			isBlocked: !await this.utilityService.isFederationAllowedHost(instance.host),
 			softwareName: instance.softwareName,
 			softwareVersion: instance.softwareVersion,
 			openRegistrations: instance.openRegistrations,

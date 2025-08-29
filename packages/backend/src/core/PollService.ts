@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository, UsersRepository, PollsRepository, PollVotesRepository } from '@/models/index.js';
 import type { Note } from '@/models/entities/Note.js';
@@ -97,7 +96,7 @@ export class PollService {
 		if (user == null) throw new Error('note not found');
 	
 		if (this.userEntityService.isLocalUser(user)) {
-			const content = this.apRendererService.renderActivity(this.apRendererService.renderUpdate(await this.apRendererService.renderNote(note, false), user));
+			const content = this.apRendererService.addContext(this.apRendererService.renderUpdate(await this.apRendererService.renderNote(note, false), user));
 			this.apDeliverManagerService.deliverToFollowers(user, content);
 			this.relayService.deliverToRelays(user, content);
 		}

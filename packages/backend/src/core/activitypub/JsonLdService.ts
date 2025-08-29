@@ -1,14 +1,20 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import * as crypto from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
-import jsonld from 'jsonld';
+import { Injectable } from '@nestjs/common';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
-import { CONTEXTS, WellKnownContext } from './misc/contexts.js';
+import { CONTEXT, PRELOADED_CONTEXTS } from './misc/contexts.js';
 import { validateContentTypeSetAsJsonLD } from './misc/validator.js';
+import type { JsonLdDocument } from 'jsonld';
+import type { JsonLd as JsonLdObject, RemoteDocument } from 'jsonld/jsonld-spec.js';
 
-// RsaSignature2017 based from https://github.com/transmute-industries/RsaSignature2017
+// RsaSignature2017 implementation is based on https://github.com/transmute-industries/RsaSignature2017
 
-class LdSignature {
+class JsonLd {
 	public debug = false;
 	public preLoad = true;
 	public loderTimeout = 5000;
@@ -20,22 +26,21 @@ class LdSignature {
 
 	@bindThis
 	public async signRsaSignature2017(data: any, privateKey: string, creator: string, domain?: string, created?: Date): Promise<any> {
-		const options = {
-			type: 'RsaSignature2017',
-			creator,
-			domain,
-			nonce: crypto.randomBytes(16).toString('hex'),
-			created: (created ?? new Date()).toISOString(),
-		} as {
+		const options: {
 			type: string;
 			creator: string;
 			domain?: string;
 			nonce: string;
 			created: string;
+		} = {
+			type: 'RsaSignature2017',
+			creator,
+			nonce: crypto.randomBytes(16).toString('hex'),
+			created: (created ?? new Date()).toISOString(),
 		};
 
-		if (!domain) {
-			delete options.domain;
+		if (domain) {
+			options.domain = domain;
 		}
 
 		const toBeSigned = await this.createVerifyData(data, options);
@@ -64,7 +69,7 @@ class LdSignature {
 	}
 
 	@bindThis
-	public async createVerifyData(data: any, options: any) {
+	public async createVerifyData(data: any, options: any): Promise<string> {
 		const transformedOptions = {
 			...options,
 			'@context': 'https://w3id.org/identity/v1',
@@ -84,31 +89,34 @@ class LdSignature {
 	}
 
 	@bindThis
-	public async normalize(data: any) {
+	public async compact(data: any, context: any = CONTEXT): Promise<JsonLdDocument> {
 		const customLoader = this.getLoader();
-		return await jsonld.normalize(data, {
+		// XXX: Importing jsonld dynamically since Jest frequently fails to import it statically
+		// https://github.com/misskey-dev/misskey/pull/9894#discussion_r1103753595
+		return (await import('jsonld')).default.compact(data, context, {
 			documentLoader: customLoader,
 		});
 	}
 
-	public async compactToWellKnown(data: any): Promise<any> {
-		const options = { documentLoader: this.getLoader() };
-		const context = WellKnownContext as any;
-		delete data['signature'];
-		return await jsonld.compact(data, context, options);
+	@bindThis
+	public async normalize(data: JsonLdDocument): Promise<string> {
+		const customLoader = this.getLoader();
+		return (await import('jsonld')).default.normalize(data, {
+			documentLoader: customLoader,
+		});
 	}
 
 	@bindThis
 	private getLoader() {
-		return async (url: string): Promise<any> => {
-			if (!url.match('^https?\:\/\/')) throw new Error(`Invalid URL ${url}`);
+		return async (url: string): Promise<RemoteDocument> => {
+			if (!/^https?:\/\//.test(url)) throw new Error(`Invalid URL ${url}`);
 
 			if (this.preLoad) {
-				if (url in CONTEXTS) {
+				if (url in PRELOADED_CONTEXTS) {
 					if (this.debug) console.debug(`HIT: ${url}`);
 					return {
-						contextUrl: null,
-						document: CONTEXTS[url],
+						contextUrl: undefined,
+						document: PRELOADED_CONTEXTS[url],
 						documentUrl: url,
 					};
 				}
@@ -117,7 +125,7 @@ class LdSignature {
 			if (this.debug) console.debug(`MISS: ${url}`);
 			const document = await this.fetchDocument(url);
 			return {
-				contextUrl: null,
+				contextUrl: undefined,
 				document: document,
 				documentUrl: url,
 			};
@@ -125,13 +133,15 @@ class LdSignature {
 	}
 
 	@bindThis
-	private async fetchDocument(url: string) {
-		const json = await this.httpRequestService.send(url, {
-			headers: {
-				Accept: 'application/ld+json, application/json',
+	private async fetchDocument(url: string): Promise<JsonLdObject> {
+		const json = await this.httpRequestService.send(
+			url,
+			{
+				headers: {
+					Accept: 'application/ld+json, application/json',
+				},
+				timeout: this.loderTimeout,
 			},
-			timeout: this.loderTimeout,
-		},
 			{
 				throwErrorWhenResponseNotOk: false,
 				validators: [validateContentTypeSetAsJsonLD],
@@ -144,7 +154,7 @@ class LdSignature {
 			}
 		});
 
-		return json;
+		return json as JsonLdObject;
 	}
 
 	@bindThis
@@ -156,14 +166,14 @@ class LdSignature {
 }
 
 @Injectable()
-export class LdSignatureService {
+export class JsonLdService {
 	constructor(
 		private httpRequestService: HttpRequestService,
 	) {
 	}
 
 	@bindThis
-	public use(): LdSignature {
-		return new LdSignature(this.httpRequestService);
+	public use(): JsonLd {
+		return new JsonLd(this.httpRequestService);
 	}
 }

@@ -73,10 +73,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (typeof ps.blocked === 'boolean') {
 				const meta = await this.metaService.fetch(true);
+				const blockedHosts = meta.blockedHosts ?? [];
+
 				if (ps.blocked) {
-					query.andWhere('instance.host IN (:...blocks)', { blocks: meta.blockedHosts });
+					if (blockedHosts.length > 0) {
+						query.andWhere('instance.host IN (:...blocks)', { blocks: blockedHosts });
+					} else {
+						// ブロック対象が無いなら絶対にマッチしない条件
+						query.andWhere('1 = 0');
+					}
 				} else {
-					query.andWhere('instance.host NOT IN (:...blocks)', { blocks: meta.blockedHosts });
+					if (blockedHosts.length > 0) {
+						query.andWhere('instance.host NOT IN (:...blocks)', { blocks: blockedHosts });
+					}
+					// 空配列なら「全件許可」なので条件を追加しない
 				}
 			}
 

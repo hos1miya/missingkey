@@ -55,17 +55,9 @@ export class DeliverProcessorService {
 	public async process(job: Bull.Job<DeliverJobData>): Promise<string> {
 		const { host } = new URL(job.data.to);
 
-		// ドメインブロックしてたら中断
-		const meta = await this.metaService.fetch();
-		if (this.utilityService.isBlockedHost(meta.blockedHosts, this.utilityService.toPuny(host))) {
-			return 'skip (host blocked)';
-		}
-
-		// ソフトウェアブロックしてたら中断
-		const toInstance = await this.instancesRepository.findOneBy({ host: this.utilityService.toPuny(host) });
-		//let toInstance = await this.instancesRepository.findOneBy({ host: this.federatedInstanceService.fetch(host) });
-		if (toInstance != null && this.utilityService.isBlockedSoftware(meta.blockedSoftwares, toInstance.softwareName)) {
-			return 'skip (software blocked)';
+		// ドメインorソフトウェアブロックしてたら中断
+		if (!await this.utilityService.isFederationAllowedHost(this.utilityService.toPuny(host))) {
+			return 'skip (host or software blocked)';
 		}
 
 		// isSuspendedなら中断
@@ -114,7 +106,7 @@ export class DeliverProcessorService {
 
 				this.instanceChart.requestSent(i.host, true);
 				this.apRequestChart.deliverSucc();
-				this.federationChart.deliverd(i.host, true);
+				this.federationChart.delivered(i.host, true);
 			});
 
 			return 'Success';
@@ -132,7 +124,7 @@ export class DeliverProcessorService {
 
 				this.instanceChart.requestSent(i.host, false);
 				this.apRequestChart.deliverFail();
-				this.federationChart.deliverd(i.host, false);
+				this.federationChart.delivered(i.host, false);
 			});
 
 			if (res instanceof StatusError) {

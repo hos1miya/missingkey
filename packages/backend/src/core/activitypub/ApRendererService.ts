@@ -1,7 +1,11 @@
-import { createPublicKey } from 'node:crypto';
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+import { createPublicKey, randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { In, IsNull } from 'typeorm';
-import { v4 as uuid } from 'uuid';
 import * as mfm from 'mfm-js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -22,8 +26,8 @@ import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.j
 import type { UserKeypair } from '@/models/entities/UserKeypair.js';
 import type { UsersRepository, UserProfilesRepository, NotesRepository, DriveFilesRepository, EmojisRepository, PollsRepository } from '@/models/index.js';
 import { bindThis } from '@/decorators.js';
-import { WellKnownContext } from '@/core/activitypub/misc/contexts.js';
-import { LdSignatureService } from './LdSignatureService.js';
+import { CONTEXT } from '@/core/activitypub/misc/contexts.js';
+import { JsonLdService } from './JsonLdService.js';
 import { ApMfmService } from './ApMfmService.js';
 import type { IActivity, IObject } from './type.js';
 import type { IIdentifier } from './models/identifier.js';
@@ -54,7 +58,7 @@ export class ApRendererService {
 
 		private userEntityService: UserEntityService,
 		private driveFileEntityService: DriveFileEntityService,
-		private ldSignatureService: LdSignatureService,
+		private jsonLdService: JsonLdService,
 		private userKeypairStoreService: UserKeypairStoreService,
 		private apMfmService: ApMfmService,
 		private mfmService: MfmService,
@@ -620,23 +624,21 @@ export class ApRendererService {
 			},
 		};
 	}
-
+	
 	@bindThis
-	public renderActivity(x: any): IActivity | null {
-		if (x == null) return null;
-
+	public addContext<T extends IObject>(x: T): T & { '@context': any; id: string; } {
 		if (typeof x === 'object' && x.id == null) {
-			x.id = `${this.config.url}/${uuid()}`;
+			x.id = `${this.config.url}/${randomUUID()}`;
 		}
 
-		return Object.assign({}, WellKnownContext, x);
+		return Object.assign({ '@context': CONTEXT }, x as T & { id: string });
 	}
 
 	@bindThis
 	public async attachLdSignature(activity: any, user: { id: User['id']; host: null; }): Promise<IActivity> {
 		const keypair = await this.userKeypairStoreService.getUserKeypair(user.id);
 
-		const ldSignature = this.ldSignatureService.use();
+		const ldSignature = this.jsonLdService.use();
 		ldSignature.debug = false;
 		activity = await ldSignature.signRsaSignature2017(activity, keypair.privateKey, `${this.config.url}/users/${user.id}#main-key`);
 
