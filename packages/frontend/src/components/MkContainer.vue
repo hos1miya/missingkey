@@ -25,7 +25,7 @@
 	>
 		<div v-show="showBody" ref="content" :class="[$style.content, { [$style.omitted]: omitted }]">
 			<slot></slot>
-			<button v-if="omitted" :class="$style.fade" class="_button" @click="() => { ignoreOmit = true; omitted = false; }">
+			<button v-if="omitted" :class="$style.fade" class="_button" @click="showMore()">
 				<span :class="$style.fadeLabel">{{ $ts.showMore }}</span>
 			</button>
 		</div>
@@ -33,105 +33,95 @@
 </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script lang="ts" setup>
+import { onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 
-export default defineComponent({
-	props: {
-		showHeader: {
-			type: Boolean,
-			required: false,
-			default: true,
-		},
-		thin: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
-		naked: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
-		foldable: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
-		expanded: {
-			type: Boolean,
-			required: false,
-			default: true,
-		},
-		scrollable: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
-		maxHeight: {
-			type: Number,
-			required: false,
-			default: null,
-		},
-	},
-	data() {
-		return {
-			showBody: this.expanded,
-			omitted: null,
-			ignoreOmit: false,
-		};
-	},
-	mounted() {
-		this.$watch('showBody', showBody => {
-			const headerHeight = this.showHeader ? this.$refs.header.offsetHeight : 0;
-			this.$el.style.minHeight = `${headerHeight}px`;
-			if (showBody) {
-				this.$el.style.flexBasis = 'auto';
-			} else {
-				this.$el.style.flexBasis = `${headerHeight}px`;
-			}
-		}, {
-			immediate: true,
-		});
+const props = withDefaults(defineProps<{
+	showHeader?: boolean;
+	thin?: boolean;
+	naked?: boolean;
+	foldable?: boolean;
+	scrollable?: boolean;
+	expanded?: boolean;
+	maxHeight?: number | null;
+}>(), {
+	expanded: true,
+	showHeader: true,
+	maxHeight: null,
+});
 
-		this.$el.style.setProperty('--maxHeight', this.maxHeight + 'px');
+const rootEl = shallowRef<HTMLElement>();
+const contentEl = shallowRef<HTMLElement>();
+const headerEl = shallowRef<HTMLElement>();
+const showBody = ref(props.expanded);
+const ignoreOmit = ref(false);
+const omitted = ref(false);
 
-		const calcOmit = () => {
-			if (this.omitted || this.ignoreOmit || this.maxHeight == null) return;
-			const height = this.$refs.content.offsetHeight;
-			this.omitted = height > this.maxHeight;
-		};
+function enter(el: Element) {
+	if (!(el instanceof HTMLElement)) return;
+	const elementHeight = el.getBoundingClientRect().height;
+	el.style.height = '0';
+	el.offsetHeight; // reflow
+	el.style.height = `${Math.min(elementHeight, props.maxHeight ?? Infinity)}px`;
+}
 
-		calcOmit();
-		new ResizeObserver((entries, observer) => {
-			calcOmit();
-		}).observe(this.$refs.content);
-	},
-	methods: {
-		toggleContent(show: boolean) {
-			if (!this.foldable) return;
-			this.showBody = show;
-		},
+function afterEnter(el: Element) {
+	if (!(el instanceof HTMLElement)) return;
+	el.style.height = '';
+}
 
-		enter(el) {
-			const elementHeight = el.getBoundingClientRect().height;
-			el.style.height = 0;
-			el.offsetHeight; // reflow
-			el.style.height = elementHeight + 'px';
-		},
-		afterEnter(el) {
-			el.style.height = null;
-		},
-		leave(el) {
-			const elementHeight = el.getBoundingClientRect().height;
-			el.style.height = elementHeight + 'px';
-			el.offsetHeight; // reflow
-			el.style.height = 0;
-		},
-		afterLeave(el) {
-			el.style.height = null;
-		},
-	},
+function leave(el: Element) {
+	if (!(el instanceof HTMLElement)) return;
+	const elementHeight = el.getBoundingClientRect().height;
+	el.style.height = `${elementHeight}px`;
+	el.offsetHeight; // reflow
+	el.style.height = '0';
+}
+
+function afterLeave(el: Element) {
+	if (!(el instanceof HTMLElement)) return;
+	el.style.height = '';
+}
+
+const calcOmit = () => {
+	if (omitted.value || ignoreOmit.value || props.maxHeight == null) return;
+	if (!contentEl.value) return;
+	const height = contentEl.value.offsetHeight;
+	omitted.value = height > props.maxHeight;
+};
+
+const omitObserver = new ResizeObserver((entries, observer) => {
+	calcOmit();
+});
+
+function showMore() {
+	ignoreOmit.value = true;
+	omitted.value = false;
+}
+
+onMounted(() => {
+	watch(showBody, v => {
+		if (!rootEl.value) return;
+		const headerHeight = props.showHeader ? headerEl.value?.offsetHeight ?? 0 : 0;
+		rootEl.value.style.minHeight = `${headerHeight}px`;
+		if (v) {
+			rootEl.value.style.flexBasis = 'auto';
+		} else {
+			rootEl.value.style.flexBasis = `${headerHeight}px`;
+		}
+	}, {
+		immediate: true,
+	});
+
+	if (rootEl.value) rootEl.value.style.setProperty('--maxHeight', props.maxHeight + 'px');
+
+	calcOmit();
+
+	if (contentEl.value) omitObserver.observe(contentEl.value);
+});
+
+onUnmounted(() => {
+	omitObserver.disconnect();
 });
 </script>
 
