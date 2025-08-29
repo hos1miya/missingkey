@@ -14,7 +14,7 @@
 			<MkEmoji :normal="true" :no-style="true" emoji="🍙"/>
 		</div>
 		<div class="main">
-			<img :src="$instance.iconUrl || $instance.faviconUrl || '/favicon.ico'" alt="" class="icon"/>
+			<img :src="$instance.iconUrl || '/favicon.ico'" alt="" class="icon"/>
 			<button class="_button _acrylic menu" @click="showMenu"><i class="ti ti-dots"></i></button>
 			<div class="fg">
 				<h1>
@@ -24,7 +24,7 @@
 				</h1>
 				<div class="about">
 					<!-- eslint-disable-next-line vue/no-v-html -->
-					<div class="desc" v-html="meta.description || i18n.ts.headlineMissingkey"></div>
+					<div class="desc" v-html="meta.description || i18n.ts.headlineMissingKey"></div>
 				</div>
 				<div class="action">
 					<MkButton inline rounded gradate data-cy-signup style="margin-right: 12px;" @click="signup()">{{ i18n.ts.signup }}</MkButton>
@@ -46,50 +46,29 @@
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
-import { toUnicode } from 'punycode/';
+import { ref } from 'vue';
 import XTimeline from './welcome.timeline.vue';
 import MarqueeText from '@/components/MkMarquee.vue';
 import XSigninDialog from '@/components/MkSigninDialog.vue';
 import XSignupDialog from '@/components/MkSignupDialog.vue';
 import MkButton from '@/components/MkButton.vue';
-import XNote from '@/components/MkNote.vue';
 import MkFeaturedPhotos from '@/components/MkFeaturedPhotos.vue';
-import { host, instanceName } from '@/config';
+import { instanceName } from '@/config';
 import * as os from '@/os';
-import number from '@/filters/number';
 import { i18n } from '@/i18n';
 
-let meta = $ref();
-let stats = $ref();
-let tags = $ref();
-let onlineUsersCount = $ref();
-let instances = $ref();
+let meta = ref();
+let instances = ref();
 
 os.api('meta', { detail: true }).then(_meta => {
-	meta = _meta;
-});
-
-os.api('stats').then(_stats => {
-	stats = _stats;
-});
-
-os.api('get-online-users-count').then(res => {
-	onlineUsersCount = res.count;
-});
-
-os.api('hashtags/list', {
-	sort: '+mentionedLocalUsers',
-	limit: 8,
-}).then(_tags => {
-	tags = _tags;
+	meta.value = _meta;
 });
 
 os.api('federation/instances', {
 	sort: '+pubSub',
 	limit: 20,
 }).then(_instances => {
-	instances = _instances;
+	instances.value = _instances;
 });
 
 function signin() {

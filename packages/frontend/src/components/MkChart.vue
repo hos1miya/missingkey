@@ -92,6 +92,7 @@ const getColor = (i) => {
 const now = new Date();
 let chartInstance: Chart;
 let chartData: {
+	bytes?: boolean;
 	series: {
 		name: string;
 		type: 'line' | 'area';
@@ -267,9 +268,11 @@ const render = () => {
 	});
 };
 
+/* TODO
 const exportData = () => {
 	// TODO
 };
+*/
 
 const fetchFederationChart = async (): Promise<typeof chartData> => {
 	const raw = await os.apiGet('charts/federation', { limit: props.limit, span: props.span });

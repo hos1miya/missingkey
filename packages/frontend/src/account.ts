@@ -7,6 +7,7 @@ import { del, get, set } from '@/scripts/idb-proxy';
 import { apiUrl } from '@/config';
 import { waiting, api, popup, popupMenu, success, alert } from '@/os';
 import { unisonReload, reloadChannel } from '@/scripts/unison-reload';
+import { MenuItem } from './types/menu';
 
 // TODO: 他のタブと永続化されたstateを同期
 
@@ -35,7 +36,7 @@ export async function signout() {
 	});
 	miLocalStorage.removeItem('account');
 
-	await removeAccount($i.id);
+	await removeAccount($i!.id);
 
 	const accounts = await getAccounts();
 
@@ -48,7 +49,7 @@ export async function signout() {
 				await window.fetch(`${apiUrl}/sw/unregister`, {
 					method: 'POST',
 					body: JSON.stringify({
-						i: $i.token,
+						i: $i!.token,
 						endpoint: push.endpoint,
 					}),
 					headers: {
@@ -130,13 +131,13 @@ function fetchAccount(token: string): Promise<Account> {
 
 export function updateAccount(accountData) {
 	for (const [key, value] of Object.entries(accountData)) {
-		$i[key] = value;
+		$i![key] = value;
 	}
 	miLocalStorage.setItem('account', JSON.stringify($i));
 }
 
 export function refreshAccount() {
-	return fetchAccount($i.token).then(updateAccount);
+	return fetchAccount($i!.token).then(updateAccount);
 }
 
 export async function login(token: Account['token'], redirect?: string) {
@@ -183,7 +184,7 @@ export async function openAccountMenu(opts: {
 
 	async function switchAccount(account: pleaides.entities.UserDetailed) {
 		const storedAccounts = await getAccounts();
-		const token = storedAccounts.find(x => x.id === account.id).token;
+		const token = storedAccounts.find(x => x.id === account.id)!.token;
 		switchAccountWithToken(token);
 	}
 
@@ -191,7 +192,7 @@ export async function openAccountMenu(opts: {
 		login(token);
 	}
 
-	const storedAccounts = await getAccounts().then(accounts => accounts.filter(x => x.id !== $i.id));
+	const storedAccounts = await getAccounts().then(accounts => accounts.filter(x => x.id !== $i!.id));
 	const accountsPromise = api('users/show', { userIds: storedAccounts.map(x => x.id) });
 
 	function createItem(account: pleaides.entities.UserDetailed) {
@@ -211,7 +212,7 @@ export async function openAccountMenu(opts: {
 
 	const accountItemPromises = storedAccounts.map(a => new Promise(res => {
 		accountsPromise.then(accounts => {
-			const account = accounts.find(x => x.id === a.id);
+			const account = (accounts as unknown as Account).find(x => x.id === a.id);
 			if (account == null) return res(null);
 			res(createItem(account));
 		});
@@ -220,10 +221,10 @@ export async function openAccountMenu(opts: {
 	if (opts.withExtraOperation) {
 		popupMenu([...[{
 			type: 'link',
-			text: `${ i18n.ts.profile } - @${ $i.username }`,
-			to: `/@${ $i.username }`,
+			text: `${ i18n.ts.profile } - @${ $i!.username }`,
+			to: `/@${ $i!.username }`,
 			avatar: $i,
-		}, null, ...(opts.includeCurrentAccount ? [createItem($i)] : []), ...accountItemPromises, {
+		}, null, ...(opts.includeCurrentAccount ? [createItem($i!)] : []), ...accountItemPromises, {
 			type: 'parent',
 			icon: 'ti ti-plus',
 			text: i18n.ts.addAccount,
@@ -239,11 +240,11 @@ export async function openAccountMenu(opts: {
 			icon: 'ti ti-users',
 			text: i18n.ts.manageAccounts,
 			to: '/settings/accounts',
-		}]], ev.currentTarget ?? ev.target, {
+		}]] as MenuItem[], ev.currentTarget ?? ev.target ?? undefined, {
 			align: 'left',
 		});
 	} else {
-		popupMenu([...(opts.includeCurrentAccount ? [createItem($i)] : []), ...accountItemPromises], ev.currentTarget ?? ev.target, {
+		popupMenu([...(opts.includeCurrentAccount ? [createItem($i!)] : []), ...accountItemPromises] as MenuItem[], ev.currentTarget ?? ev.target ?? undefined, {
 			align: 'left',
 		});
 	}

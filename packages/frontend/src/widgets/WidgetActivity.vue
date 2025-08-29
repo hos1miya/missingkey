@@ -15,8 +15,8 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, reactive, ref, watch } from 'vue';
-import { useWidgetPropsManager, Widget, WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget';
+import { ref } from 'vue';
+import { useWidgetPropsManager, Widget, WidgetComponentExpose } from './widget';
 import XCalendar from './WidgetActivity.calendar.vue';
 import XChart from './WidgetActivity.chart.vue';
 import { GetFormResultType } from '@/scripts/form';
@@ -57,7 +57,7 @@ const { widgetProps, configure, save } = useWidgetPropsManager(name,
 	emit,
 );
 
-const activity = ref(null);
+const activity = ref();
 const fetching = ref(true);
 
 const toggleView = () => {
@@ -70,7 +70,7 @@ const toggleView = () => {
 };
 
 os.apiGet('charts/user/notes', {
-	userId: $i.id,
+	userId: $i!.id,
 	span: 'day',
 	limit: 7 * 21,
 }).then(res => {

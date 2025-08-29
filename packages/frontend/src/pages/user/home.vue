@@ -180,7 +180,7 @@ function parallaxLoop() {
 }
 
 function parallax() {
-	const banner = bannerEl as any;
+	const banner = bannerEl;
 	if (banner == null) return;
 
 	const top = getScrollPosition(rootEl);

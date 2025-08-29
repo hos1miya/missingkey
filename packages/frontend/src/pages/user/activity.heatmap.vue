@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: syuilo and misskey-project
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 <template>
 <div ref="rootEl">
 	<MkLoading v-if="fetching"/>
@@ -53,7 +58,7 @@ async function renderChart() {
 		return new Date(y, m, d - ago);
 	};
 
-	const format = (arr) => {
+	const format = (arr: number[]) => {
 		return arr.map((v, i) => {
 			const dt = getDate(i);
 			const iso = `${dt.getFullYear()}-${(dt.getMonth() + 1).toString().padStart(2, '0')}-${dt.getDate().toString().padStart(2, '0')}`;
@@ -66,11 +71,28 @@ async function renderChart() {
 		});
 	};
 
-	let values;
+	let values: number[] = [];
 
-	if (props.src === 'notes') {
-		const raw = await os.api('charts/user/notes', { userId: props.user.id, limit: chartLimit, span: 'day' });
-		values = raw.inc;
+	if (props.src === 'active-users') {
+		const raw = await os.api('charts/active-users', { limit: chartLimit, span: 'day' });
+		values = raw.readWrite;
+	} else if (props.src === 'notes') {
+		if (props.user) {
+			const raw = await os.api('charts/user/notes', { userId: props.user.id, limit: chartLimit, span: 'day' });
+			values = raw.inc;
+		} else {
+			const raw = await os.api('charts/notes', { limit: chartLimit, span: 'day' });
+			values = raw.local.inc;
+		}
+	} else if (props.src === 'ap-requests-inbox-received') {
+		const raw = await os.api('charts/ap-request', { limit: chartLimit, span: 'day' });
+		values = raw.inboxReceived;
+	} else if (props.src === 'ap-requests-deliver-succeeded') {
+		const raw = await os.api('charts/ap-request', { limit: chartLimit, span: 'day' });
+		values = raw.deliverSucceeded;
+	} else if (props.src === 'ap-requests-deliver-failed') {
+		const raw = await os.api('charts/ap-request', { limit: chartLimit, span: 'day' });
+		values = raw.deliverFailed;
 	}
 
 	fetching = false;
@@ -91,20 +113,17 @@ async function renderChart() {
 		data: {
 			datasets: [{
 				label: '',
-				data: format(values),
-				pointRadius: 0,
+				data: format(values) as any,
 				borderWidth: 0,
-				borderJoinStyle: 'round',
 				borderRadius: 3,
 				backgroundColor(c) {
-					const value = c.dataset.data[c.dataIndex].v;
+					const value = c.dataset.data[c.dataIndex].v as number;
 					let a = (value - min) / max;
 					if (value !== 0) { // 0でない限りは完全に不可視にはしない
 						a = Math.max(a, 0.05);
 					}
 					return alpha(color, a);
 				},
-				fill: true,
 				width(c) {
 					const a = c.chart.chartArea ?? {};
 					return (a.right - a.left) / weeks - marginEachCell;

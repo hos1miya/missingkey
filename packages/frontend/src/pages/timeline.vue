@@ -68,7 +68,7 @@ async function chooseList(ev: MouseEvent): Promise<void> {
 		text: list.name,
 		to: `/timeline/list/${list.id}`,
 	}));
-	os.popupMenu(items, ev.currentTarget ?? ev.target);
+	os.popupMenu(items, ev.currentTarget ?? ev.target ?? undefined);
 }
 
 async function chooseAntenna(ev: MouseEvent): Promise<void> {
@@ -79,7 +79,7 @@ async function chooseAntenna(ev: MouseEvent): Promise<void> {
 		indicate: antenna.hasUnreadNote,
 		to: `/timeline/antenna/${antenna.id}`,
 	}));
-	os.popupMenu(items, ev.currentTarget ?? ev.target);
+	os.popupMenu(items, ev.currentTarget ?? ev.target ?? undefined);
 }
 
 function saveSrc(newSrc: 'home' | 'local' | 'social' | 'global'): void {

@@ -35,97 +35,74 @@
 </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import { toUnicode } from 'punycode/';
 import XSigninDialog from '@/components/MkSigninDialog.vue';
 import XSignupDialog from '@/components/MkSignupDialog.vue';
 import MkButton from '@/components/MkButton.vue';
-import XNote from '@/components/MkNote.vue';
 import MkFeaturedPhotos from '@/components/MkFeaturedPhotos.vue';
 import XTimeline from './welcome.timeline.vue';
 import { host, instanceName } from '@/config';
 import * as os from '@/os';
 import number from '@/filters/number';
 
-export default defineComponent({
-	components: {
-		MkButton,
-		XNote,
-		XTimeline,
-		MkFeaturedPhotos,
-	},
+// --- reactive state ---
+const meta = ref<any | null>(null);
+const stats = ref<any | null>(null);
+const tags = ref<any[]>([]);
+const onlineUsersCount = ref<number | null>(null);
 
-	data() {
-		return {
-			host: toUnicode(host),
-			instanceName,
-			meta: null,
-			stats: null,
-			tags: [],
-			onlineUsersCount: null,
-		};
-	},
-
-	created() {
-		os.api('meta', { detail: true }).then(meta => {
-			this.meta = meta;
-		});
-
-		os.api('stats').then(stats => {
-			this.stats = stats;
-		});
-
-		os.api('get-online-users-count').then(res => {
-			this.onlineUsersCount = res.count;
-		});
-
-		os.api('hashtags/list', {
-			sort: '+mentionedLocalUsers',
-			limit: 8,
-		}).then(tags => {
-			this.tags = tags;
-		});
-	},
-
-	methods: {
-		signin() {
-			os.popup(XSigninDialog, {
-				autoSet: true,
-			}, {}, 'closed');
-		},
-
-		signup() {
-			os.popup(XSignupDialog, {
-				autoSet: true,
-			}, {}, 'closed');
-		},
-
-		showMenu(ev) {
-			os.popupMenu([{
-				text: this.$t('aboutX', { x: instanceName }),
-				icon: 'ti ti-info-circle',
-				action: () => {
-					os.pageWindow('/about');
-				},
-			}, {
-				text: this.$ts.aboutMissingKey,
-				icon: 'ti ti-info-circle',
-				action: () => {
-					os.pageWindow('/about-missingkey');
-				},
-			}, null, {
-				text: this.$ts.help,
-				icon: 'ti ti-help',
-				action: () => {
-					window.open(`https://misskey-hub.net/help.md`, '_blank');
-				},
-			}], ev.currentTarget ?? ev.target);
-		},
-
-		number,
-	},
+// --- lifecycle ---
+onMounted(() => {
+	os.api('meta', { detail: true }).then(res => {
+		meta.value = res;
+	});
+	os.api('stats').then(res => {
+		stats.value = res;
+	});
+	os.api('get-online-users-count').then(res => {
+		onlineUsersCount.value = res.count;
+	});
+	os.api('hashtags/list', {
+		sort: '+mentionedLocalUsers',
+		limit: 8,
+	}).then(res => {
+		tags.value = res as any;
+	});
 });
+
+// --- methods ---
+function signin() {
+	os.popup(XSigninDialog, { autoSet: true }, {}, 'closed');
+}
+
+function signup() {
+	os.popup(XSignupDialog, { autoSet: true }, {}, 'closed');
+}
+
+function showMenu(ev: Event) {
+	os.popupMenu([
+		{
+			text: (window as any).$t('aboutX', { x: instanceName }),
+			icon: 'ti ti-info-circle',
+			action: () => os.pageWindow('/about'),
+		},
+		{
+			text: (window as any).$ts.aboutMissingKey,
+			icon: 'ti ti-info-circle',
+			action: () => os.pageWindow('/about-missingkey'),
+		},
+		null,
+		{
+			text: (window as any).$ts.help,
+			icon: 'ti ti-help',
+			action: () => {
+				window.open('https://misskey-hub.net/help.md', '_blank');
+			},
+		},
+	], (ev.currentTarget ?? ev.target) as HTMLElement);
+}
 </script>
 
 <style lang="scss" scoped>

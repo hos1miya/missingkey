@@ -343,6 +343,6 @@ export class ApiCallService implements OnApplicationShutdown {
 
 	@bindThis
 	public onApplicationShutdown(signal?: string | undefined): void {
-		clearInterval(this.userIpHistoriesClearIntervalId);
+		clearInterval(this.userIpHistoriesClearIntervalId as unknown as number);
 	}
 }

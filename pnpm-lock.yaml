@@ -260,8 +260,8 @@ importers:
         specifier: ^8.16.0
         version: 8.16.0
       pleaides-lib:
-        specifier: github:hos1miya/pleaides-lib#v1.0.5
-        version: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f
+        specifier: github:hos1miya/pleaides-lib#v1.0.8
+        version: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/155a7678512d5d19c7265d105802aefb5a519058
       private-ip:
         specifier: 3.0.2
         version: 3.0.2
@@ -664,8 +664,8 @@ importers:
         specifier: 5.4.4
         version: 5.4.4
       pleaides-lib:
-        specifier: github:hos1miya/pleaides-lib#v1.0.5
-        version: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f
+        specifier: github:hos1miya/pleaides-lib#v1.0.8
+        version: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/155a7678512d5d19c7265d105802aefb5a519058
       prismjs:
         specifier: ^1.30.0
         version: 1.30.0
@@ -830,8 +830,8 @@ importers:
         specifier: ^6.2.2
         version: 6.2.2
       pleaides-lib:
-        specifier: github:hos1miya/pleaides-lib#v1.0.5
-        version: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f
+        specifier: github:hos1miya/pleaides-lib#v1.0.8
+        version: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/155a7678512d5d19c7265d105802aefb5a519058
     devDependencies:
       '@typescript-eslint/parser':
         specifier: ^8.32.1
@@ -6028,9 +6028,9 @@ packages:
   pkg-types@2.1.0:
     resolution: {integrity: sha512-wmJwA+8ihJixSoHKxZJRBQG1oY8Yr9pGLzRmSsNms0iNWyHHAlZCa7mmKiFR10YPZuz/2k169JiS/inOjBCZ2A==}
 
-  pleaides-lib@https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f:
-    resolution: {tarball: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f}
-    version: 1.0.5
+  pleaides-lib@https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/155a7678512d5d19c7265d105802aefb5a519058:
+    resolution: {tarball: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/155a7678512d5d19c7265d105802aefb5a519058}
+    version: 1.0.7
 
   plimit-lit@1.6.1:
     resolution: {integrity: sha512-B7+VDyb8Tl6oMJT9oSO2CW8XC/T4UcJGrwOVoNGwOQsQYhlpfajmrMj5xeejqaASq3V/EqThyOeATEOMuSEXiA==}
@@ -13827,7 +13827,7 @@ snapshots:
       exsolve: 1.0.5
       pathe: 2.0.3
 
-  pleaides-lib@https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f:
+  pleaides-lib@https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/155a7678512d5d19c7265d105802aefb5a519058:
     dependencies:
       autobind-decorator: 2.4.0
       eventemitter3: 5.0.1
