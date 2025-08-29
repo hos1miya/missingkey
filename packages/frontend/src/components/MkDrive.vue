@@ -89,7 +89,7 @@
 
 <script lang="ts" setup>
 import { markRaw, nextTick, onActivated, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import MkButton from './MkButton.vue';
 import XNavFolder from '@/components/MkDrive.navFolder.vue';
 import XFolder from '@/components/MkDrive.folder.vue';
@@ -102,7 +102,7 @@ import { uploadFile, uploads } from '@/scripts/upload';
 import { claimAchievement } from '@/scripts/achievements';
 
 const props = withDefaults(defineProps<{
-	initialFolder?: Misskey.entities.DriveFolder;
+	initialFolder?: Pleaides.entities.DriveFolder;
 	type?: string;
 	multiple?: boolean;
 	select?: 'file' | 'folder' | null;
@@ -112,24 +112,24 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-	(ev: 'selected', v: Misskey.entities.DriveFile | Misskey.entities.DriveFolder): void;
-	(ev: 'change-selection', v: Misskey.entities.DriveFile[] | Misskey.entities.DriveFolder[]): void;
+	(ev: 'selected', v: Pleaides.entities.DriveFile | Pleaides.entities.DriveFolder): void;
+	(ev: 'change-selection', v: Pleaides.entities.DriveFile[] | Pleaides.entities.DriveFolder[]): void;
 	(ev: 'move-root'): void;
-	(ev: 'cd', v: Misskey.entities.DriveFolder | null): void;
-	(ev: 'open-folder', v: Misskey.entities.DriveFolder): void;
+	(ev: 'cd', v: Pleaides.entities.DriveFolder | null): void;
+	(ev: 'open-folder', v: Pleaides.entities.DriveFolder): void;
 }>();
 
 const loadMoreFiles = shallowRef<InstanceType<typeof MkButton>>();
 const fileInput = shallowRef<HTMLInputElement>();
 
-const folder = ref<Misskey.entities.DriveFolder | null>(null);
-const files = ref<Misskey.entities.DriveFile[]>([]);
-const folders = ref<Misskey.entities.DriveFolder[]>([]);
+const folder = ref<Pleaides.entities.DriveFolder | null>(null);
+const files = ref<Pleaides.entities.DriveFile[]>([]);
+const folders = ref<Pleaides.entities.DriveFolder[]>([]);
 const moreFiles = ref(false);
 const moreFolders = ref(false);
-const hierarchyFolders = ref<Misskey.entities.DriveFolder[]>([]);
-const selectedFiles = ref<Misskey.entities.DriveFile[]>([]);
-const selectedFolders = ref<Misskey.entities.DriveFolder[]>([]);
+const hierarchyFolders = ref<Pleaides.entities.DriveFolder[]>([]);
+const selectedFiles = ref<Pleaides.entities.DriveFile[]>([]);
+const selectedFolders = ref<Pleaides.entities.DriveFolder[]>([]);
 const uploadings = uploads;
 const connection = stream.useChannel('drive');
 const keepOriginal = ref<boolean>(defaultStore.state.keepOriginalUploading); // 外部渡しが多いので$refは使わないほうがよい
@@ -149,11 +149,11 @@ const ilFilesObserver = new IntersectionObserver(
 
 watch(folder, () => emit('cd', folder.value));
 
-function onStreamDriveFileCreated(file: Misskey.entities.DriveFile) {
+function onStreamDriveFileCreated(file: Pleaides.entities.DriveFile) {
 	addFile(file, true);
 }
 
-function onStreamDriveFileUpdated(file: Misskey.entities.DriveFile) {
+function onStreamDriveFileUpdated(file: Pleaides.entities.DriveFile) {
 	const current = folder.value ? folder.value.id : null;
 	if (current !== file.folderId) {
 		removeFile(file);
@@ -166,11 +166,11 @@ function onStreamDriveFileDeleted(fileId: string) {
 	removeFile(fileId);
 }
 
-function onStreamDriveFolderCreated(createdFolder: Misskey.entities.DriveFolder) {
+function onStreamDriveFolderCreated(createdFolder: Pleaides.entities.DriveFolder) {
 	addFolder(createdFolder, true);
 }
 
-function onStreamDriveFolderUpdated(updatedFolder: Misskey.entities.DriveFolder) {
+function onStreamDriveFolderUpdated(updatedFolder: Pleaides.entities.DriveFolder) {
 	const current = folder.value ? folder.value.id : null;
 	if (current !== updatedFolder.parentId) {
 		removeFolder(updatedFolder);
@@ -327,7 +327,7 @@ function createFolder() {
 	});
 }
 
-function renameFolder(folderToRename: Misskey.entities.DriveFolder) {
+function renameFolder(folderToRename: Pleaides.entities.DriveFolder) {
 	os.inputText({
 		title: i18n.ts.renameFolder,
 		placeholder: i18n.ts.inputNewFolderName,
@@ -344,7 +344,7 @@ function renameFolder(folderToRename: Misskey.entities.DriveFolder) {
 	});
 }
 
-function deleteFolder(folderToDelete: Misskey.entities.DriveFolder) {
+function deleteFolder(folderToDelete: Pleaides.entities.DriveFolder) {
 	os.api('drive/folders/delete', {
 		folderId: folderToDelete.id,
 	}).then(() => {
@@ -375,13 +375,13 @@ function onChangeFileInput() {
 	}
 }
 
-function upload(file: File, folderToUpload?: Misskey.entities.DriveFolder | null) {
+function upload(file: File, folderToUpload?: Pleaides.entities.DriveFolder | null) {
 	uploadFile(file, (folderToUpload && typeof folderToUpload === 'object') ? folderToUpload.id : null, undefined, keepOriginal.value).then(res => {
 		addFile(res, true);
 	});
 }
 
-function chooseFile(file: Misskey.entities.DriveFile) {
+function chooseFile(file: Pleaides.entities.DriveFile) {
 	const isAlreadySelected = selectedFiles.value.some(f => f.id === file.id);
 	if (props.multiple) {
 		if (isAlreadySelected) {
@@ -400,7 +400,7 @@ function chooseFile(file: Misskey.entities.DriveFile) {
 	}
 }
 
-function chooseFolder(folderToChoose: Misskey.entities.DriveFolder) {
+function chooseFolder(folderToChoose: Pleaides.entities.DriveFolder) {
 	const isAlreadySelected = selectedFolders.value.some(f => f.id === folderToChoose.id);
 	if (props.multiple) {
 		if (isAlreadySelected) {
@@ -419,7 +419,7 @@ function chooseFolder(folderToChoose: Misskey.entities.DriveFolder) {
 	}
 }
 
-function move(target?: Misskey.entities.DriveFolder) {
+function move(target?: Pleaides.entities.DriveFolder | string | null) {
 	if (!target) {
 		goRoot();
 		return;
@@ -447,7 +447,7 @@ function move(target?: Misskey.entities.DriveFolder) {
 	});
 }
 
-function addFolder(folderToAdd: Misskey.entities.DriveFolder, unshift = false) {
+function addFolder(folderToAdd: Pleaides.entities.DriveFolder, unshift = false) {
 	const current = folder.value ? folder.value.id : null;
 	if (current !== folderToAdd.parentId) return;
 
@@ -464,7 +464,7 @@ function addFolder(folderToAdd: Misskey.entities.DriveFolder, unshift = false) {
 	}
 }
 
-function addFile(fileToAdd: Misskey.entities.DriveFile, unshift = false) {
+function addFile(fileToAdd: Pleaides.entities.DriveFile, unshift = false) {
 	const current = folder.value ? folder.value.id : null;
 	if (current !== fileToAdd.folderId) return;
 
@@ -481,29 +481,29 @@ function addFile(fileToAdd: Misskey.entities.DriveFile, unshift = false) {
 	}
 }
 
-function removeFolder(folderToRemove: Misskey.entities.DriveFolder | string) {
+function removeFolder(folderToRemove: Pleaides.entities.DriveFolder | string) {
 	const folderIdToRemove = typeof folderToRemove === 'object' ? folderToRemove.id : folderToRemove;
 	folders.value = folders.value.filter(f => f.id !== folderIdToRemove);
 }
 
-function removeFile(file: Misskey.entities.DriveFile | string) {
+function removeFile(file: Pleaides.entities.DriveFile | string) {
 	const fileId = typeof file === 'object' ? file.id : file;
 	files.value = files.value.filter(f => f.id !== fileId);
 }
 
-function appendFile(file: Misskey.entities.DriveFile) {
+function appendFile(file: Pleaides.entities.DriveFile) {
 	addFile(file);
 }
 
-function appendFolder(folderToAppend: Misskey.entities.DriveFolder) {
+function appendFolder(folderToAppend: Pleaides.entities.DriveFolder) {
 	addFolder(folderToAppend);
 }
 /*
-function prependFile(file: Misskey.entities.DriveFile) {
+function prependFile(file: Pleaides.entities.DriveFile) {
 	addFile(file, true);
 }
 
-function prependFolder(folderToPrepend: Misskey.entities.DriveFolder) {
+function prependFolder(folderToPrepend: Pleaides.entities.DriveFolder) {
 	addFolder(folderToPrepend, true);
 }
 */
@@ -603,11 +603,11 @@ function getMenu() {
 	}, folder.value ? {
 		text: i18n.ts.renameFolder,
 		icon: 'ti ti-forms',
-		action: () => { renameFolder(folder.value); },
+		action: () => { renameFolder(folder.value as Pleaides.entities.DriveFolder); },
 	} : undefined, folder.value ? {
 		text: i18n.ts.deleteFolder,
 		icon: 'ti ti-trash',
-		action: () => { deleteFolder(folder.value as Misskey.entities.DriveFolder); },
+		action: () => { deleteFolder(folder.value as Pleaides.entities.DriveFolder); },
 	} : undefined, {
 		text: i18n.ts.createFolder,
 		icon: 'ti ti-folder-plus',

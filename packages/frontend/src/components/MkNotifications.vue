@@ -17,13 +17,12 @@
 </template>
 
 <script lang="ts" setup>
-import { defineComponent, markRaw, onUnmounted, onMounted, computed, shallowRef } from 'vue';
-import { notificationTypes } from 'misskey-js';
+import { onUnmounted, onMounted, computed, shallowRef } from 'vue';
+import { notificationTypes } from 'pleaides-lib';
 import MkPagination, { Paging } from '@/components/MkPagination.vue';
 import XNotification from '@/components/MkNotification.vue';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import XNote from '@/components/MkNote.vue';
-import * as os from '@/os';
 import { stream } from '@/stream';
 import { $i } from '@/account';
 import { i18n } from '@/i18n';
@@ -41,13 +40,13 @@ const pagination: Paging = {
 	limit: 10,
 	params: computed(() => ({
 		includeTypes: props.includeTypes ?? undefined,
-		excludeTypes: props.includeTypes ? undefined : $i.mutingNotificationTypes,
+		excludeTypes: props.includeTypes ? undefined : $i ? $i.mutingNotificationTypes : undefined,
 		unreadOnly: props.unreadOnly,
 	})),
 };
 
 const onNotification = (notification) => {
-	const isMuted = props.includeTypes ? !props.includeTypes.includes(notification.type) : $i.mutingNotificationTypes.includes(notification.type);
+	const isMuted = props.includeTypes ? !props.includeTypes.includes(notification.type) : $i ? $i.mutingNotificationTypes.includes(notification.type) : false;
 	if (isMuted || document.visibilityState === 'visible') {
 		stream.send('readNotification', {
 			id: notification.id,

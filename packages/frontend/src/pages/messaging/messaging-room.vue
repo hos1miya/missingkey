@@ -55,8 +55,8 @@
 
 <script lang="ts" setup>
 import { computed, watch, onMounted, nextTick, onBeforeUnmount } from 'vue';
-import * as Misskey from 'misskey-js';
-import * as Acct from 'misskey-js/built/acct';
+import * as Pleaides from 'pleaides-lib';
+import * as Acct from 'pleaides-lib/built/acct';
 import XMessage from './messaging-room.message.vue';
 import XForm from './messaging-room.form.vue';
 import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
@@ -81,10 +81,10 @@ let formEl = $shallowRef<InstanceType<typeof XForm>>();
 let pagingComponent = $shallowRef<InstanceType<typeof MkPagination>>();
 
 let fetching = $ref(true);
-let user: Misskey.entities.UserDetailed | null = $ref(null);
-let group: Misskey.entities.UserGroup | null = $ref(null);
-let typers: Misskey.entities.User[] = $ref([]);
-let connection: Misskey.ChannelConnection<Misskey.Channels['messaging']> | null = $ref(null);
+let user: Pleaides.entities.UserDetailed | null = $ref(null);
+let group: Pleaides.entities.UserGroup | null = $ref(null);
+let typers: Pleaides.entities.User[] = $ref([]);
+let connection: Pleaides.ChannelConnection<Pleaides.Channels['messaging']> | null = $ref(null);
 let showIndicator = $ref(false);
 const {
 	animation,
@@ -102,7 +102,7 @@ async function fetch() {
 
 	if (props.userAcct) {
 		const acct = Acct.parse(props.userAcct);
-		user = await os.api('users/show', { username: acct.username, host: acct.host || undefined });
+		user = await os.api('users/show', { username: acct.username, host: acct.host || undefined }) as unknown as Pleaides.entities.UserDetailed;
 		group = null;
 		
 		pagination = {
@@ -305,8 +305,9 @@ onBeforeUnmount(() => {
 definePageMetadata(computed(() => !fetching ? user ? {
 	userName: user,
 	avatar: user,
+	title: '',
 } : {
-	title: group?.name,
+	title: group?.name ?? '',
 	icon: 'ti ti-users',
 } : null));
 </script>

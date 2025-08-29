@@ -143,7 +143,7 @@
 <script lang="ts" setup>
 import { computed, inject, onMounted, ref, shallowRef, Ref, defineAsyncComponent } from 'vue';
 import * as mfm from 'mfm-js';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkNoteSub from '@/components/MkNoteSub.vue';
 import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
@@ -174,7 +174,7 @@ import { shownNoteIds } from '@/os';
 import { MenuItem } from '@/types/menu';
 
 const props = defineProps<{
-	note: misskey.entities.Note;
+	note: pleaides.entities.Note;
 	pinned?: boolean;
 }>();
 
@@ -204,7 +204,7 @@ const renoteButton = shallowRef<HTMLElement>();
 const renoteTime = shallowRef<HTMLElement>();
 const reactButton = shallowRef<HTMLElement>();
 const showOnRemoteButton = shallowRef<HTMLElement>();
-let appearNote = $computed(() => isRenote ? note.renote as misskey.entities.Note : note);
+let appearNote = $computed(() => isRenote ? note.renote as pleaides.entities.Note : note);
 const isMyRenote = $i && ($i.id === note.userId);
 const showContent = ref(false);
 const urls = appearNote.text ? extractUrlFromMfm(mfm.parse(appearNote.text)) : null;
@@ -302,7 +302,7 @@ function reply(viaKeyboard = false) : void {
 }
 
 function react(viaKeyboard = false) : void {
-	if (appearNote.isDeleted) return;
+	if (appearNote.isDeleted || !reactButton.value) return;
 	pleaseLogin();
 	blur();
 	reactionPicker.show(reactButton.value, reaction => {
@@ -331,7 +331,7 @@ function openRemote(note) : void {
 	window.open(note.uri, '_blank');
 }
 
-const currentClipPage = inject<Ref<misskey.entities.Clip> | null>('currentClipPage', null);
+const currentClipPage = inject<Ref<pleaides.entities.Clip> | null>('currentClipPage', null);
 
 function onContextmenu(ev: MouseEvent) : void {
 	const isLink = (el: HTMLElement) : void | boolean => {

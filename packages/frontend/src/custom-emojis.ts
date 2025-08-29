@@ -1,11 +1,11 @@
 import { shallowRef, computed, markRaw } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import { api, apiGet } from './os';
 import { miLocalStorage } from './local-storage';
 import { stream } from '@/stream';
 
 const storageCache = miLocalStorage.getItem('emojis');
-export const customEmojis = shallowRef<Misskey.entities.CustomEmoji[]>(storageCache ? JSON.parse(storageCache) : []);
+export const customEmojis = shallowRef<Pleaides.entities.CustomEmoji[]>(storageCache ? JSON.parse(storageCache) : []);
 export const customEmojiCategories = computed<[ ...string[], null ]>(() => {
 	const categories = new Set<string>();
 	for (const emoji of customEmojis.value) {
@@ -21,7 +21,7 @@ stream.on('emojiAdded', emojiData => {
 });
 
 stream.on('emojiUpdated', emojiData => {
-	customEmojis.value = customEmojis.value.map(item => emojiData.emojis.find(search => search.name === item.name) as Misskey.entities.CustomEmoji ?? item);
+	customEmojis.value = customEmojis.value.map(item => emojiData.emojis.find(search => search.name === item.name) as Pleaides.entities.CustomEmoji ?? item);
 });
 
 stream.on('emojiDeleted', emojiData => {

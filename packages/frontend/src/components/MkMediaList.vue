@@ -14,26 +14,22 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import PhotoSwipe from 'photoswipe';
 import 'photoswipe/style.css';
 import XBanner from '@/components/MkMediaBanner.vue';
 import XImage from '@/components/MkMediaImage.vue';
 import XVideo from '@/components/MkMediaVideo.vue';
-import * as os from '@/os';
 import { FILE_TYPE_BROWSERSAFE } from '@/const';
-import { defaultStore } from '@/store';
-import { miLocalStorage } from '@/local-storage';
 
 const props = defineProps<{
-	mediaList: misskey.entities.DriveFile[];
-	mediaUser: misskey.entities.User[];
+	mediaList: pleaides.entities.DriveFile[];
+	mediaUser: pleaides.entities.UserLite[];
 	raw?: boolean;
 }>();
 
 const gallery = ref(null);
-const pswpZIndex = os.claimZIndex('middle');
 const count = $computed(() => props.mediaList.filter(media => previewable(media)).length);
 
 onMounted(() => {
@@ -56,7 +52,7 @@ onMounted(() => {
 				}
 				return item;
 			}),
-		gallery: gallery.value,
+		gallery: gallery.value ?? undefined,
 		children: '.image',
 		thumbSelector: '.image',
 		loop: false,
@@ -83,25 +79,25 @@ onMounted(() => {
 		// element is children
 		const { element } = itemData;
 
-		const id = element.dataset.id;
+		const id = element!.dataset.id;
 		const file = props.mediaList.find(media => media.id === id);
 
-		const lastDotIndex = file.name.lastIndexOf('.');
+		const lastDotIndex = file!.name.lastIndexOf('.');
 
-		itemData.src = file.url;
-		itemData.w = Number(file.properties.width);
-		itemData.h = Number(file.properties.height);
-		if (file.properties.orientation != null && file.properties.orientation >= 5) {
+		itemData.src = file!.url;
+		itemData.w = Number(file!.properties.width);
+		itemData.h = Number(file!.properties.height);
+		if (file!.properties.orientation != null && file!.properties.orientation >= 5) {
 			[itemData.w, itemData.h] = [itemData.h, itemData.w];
 		}
-		itemData.msrc = file.thumbnailUrl;
-		itemData.alt = file.comment || file.name;
-		itemData.comment = file.comment || file.name;
-		itemData.userId = props.mediaUser.username;
-		itemData.host = props.mediaUser.host || window.location.hostname;
-		itemData.fileId = file.id;
+		itemData.msrc = file!.thumbnailUrl;
+		itemData.alt = file!.comment || file!.name;
+		itemData.comment = file!.comment || file!.name;
+		itemData.userId = props.mediaUser[0].username;
+		itemData.host = props.mediaUser[0].host || window.location.hostname;
+		itemData.fileId = file!.id;
 		if (lastDotIndex !== -1) {
-			itemData.extension = "." + file.name.substring(lastDotIndex + 1).toLowerCase();
+			itemData.extension = "." + file!.name.substring(lastDotIndex + 1).toLowerCase();
 		} else {
 			itemData.extension = "";
 		}
@@ -114,13 +110,13 @@ onMounted(() => {
 			name: 'altText',
 			className: 'pswp__alt-text-container',
 			appendTo: 'wrapper',
-			onInit: (el, pwsp) => {
+			onInit: (el, pswp) => {
 				let textBox = document.createElement('p');
 				textBox.className = 'pwsp__alt-text _acrylic';
 				el.appendChild(textBox);
 
-				pwsp.on('change', (a) => {
-					textBox.textContent = pwsp.currSlide.data.comment;
+				pswp.on('change', (a) => {
+					textBox.textContent = pswp.currSlide.data.comment;
 				});
 			},
 		});
@@ -185,7 +181,7 @@ onMounted(() => {
 	});
 });
 
-const previewable = (file: misskey.entities.DriveFile): boolean => {
+const previewable = (file: pleaides.entities.DriveFile): boolean => {
 	if (file.type === 'image/svg+xml') return true; // svgのwebpublic/thumbnailはpngなのでtrue
 	// FILE_TYPE_BROWSERSAFEに適合しないものはブラウザで表示するのに不適切
 	return (file.type.startsWith('video') || file.type.startsWith('image')) && FILE_TYPE_BROWSERSAFE.includes(file.type);

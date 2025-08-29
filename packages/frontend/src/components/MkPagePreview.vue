@@ -16,12 +16,11 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import { userName } from '@/filters/user';
-import * as os from '@/os';
 
 const props = defineProps<{
-	page: misskey.entities.Page;
+	page: pleaides.entities.Page;
 }>();
 </script>
 

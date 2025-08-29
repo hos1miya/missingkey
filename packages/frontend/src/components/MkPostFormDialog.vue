@@ -6,21 +6,21 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkModal from '@/components/MkModal.vue';
 import MkPostForm from '@/components/MkPostForm.vue';
 
 const props = defineProps<{
-	reply?: misskey.entities.Note;
-	renote?: misskey.entities.Note;
-	mention?: misskey.entities.User;
-	specified?: misskey.entities.User;
+	reply?: pleaides.entities.Note;
+	renote?: pleaides.entities.Note;
+	mention?: pleaides.entities.User;
+	specified?: pleaides.entities.User;
 	initialText?: string;
-	initialVisibility?: typeof misskey.noteVisibilities;
-	initialFiles?: misskey.entities.DriveFile[];
+	initialVisibility?: typeof pleaides.noteVisibilities;
+	initialFiles?: pleaides.entities.DriveFile[];
 	initialLocalOnly?: boolean;
-	initialVisibleUsers?: misskey.entities.User[];
-	initialNote?: misskey.entities.Note;
+	initialVisibleUsers?: pleaides.entities.User[];
+	initialNote?: pleaides.entities.Note;
 	instant?: boolean;
 	fixed?: boolean;
 	autofocus?: boolean;

@@ -4,13 +4,13 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import * as os from '@/os';
 
-const meta = ref<Misskey.entities.DetailedInstanceMetadata>();
+const meta = ref<Pleaides.entities.DetailedInstanceMetadata>();
 
 os.api('meta', { detail: true }).then(gotMeta => {
-	meta.value = gotMeta;
+	meta.value = gotMeta as unknown as Pleaides.entities.DetailedInstanceMetadata;
 });
 </script>
 

@@ -147,7 +147,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref, shallowRef } from 'vue';
 import * as mfm from 'mfm-js';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkNoteSub from '@/components/MkNoteSub.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import MkReactionsViewer from '@/components/MkReactionsViewer.vue';
@@ -175,7 +175,7 @@ import { claimAchievement } from '@/scripts/achievements';
 import { MenuItem } from '@/types/menu';
 
 const props = defineProps<{
-	note: misskey.entities.Note;
+	note: pleaides.entities.Note;
 	pinned?: boolean;
 }>();
 
@@ -204,7 +204,7 @@ const menuButton = shallowRef<HTMLElement>();
 const renoteButton = shallowRef<HTMLElement>();
 const renoteTime = shallowRef<HTMLElement>();
 const reactButton = shallowRef<HTMLElement>();
-let appearNote = $computed(() => isRenote ? note.renote as misskey.entities.Note : note);
+let appearNote = $computed(() => isRenote ? note.renote as pleaides.entities.Note : note);
 const isMyRenote = $i && ($i.id === note.userId);
 const showContent = ref(false);
 const isDeleted = ref(note.isDeleted);
@@ -214,8 +214,8 @@ const translation = ref(null);
 const translating = ref(false);
 const urls = appearNote.text ? extractUrlFromMfm(mfm.parse(appearNote.text)) : null;
 const showTicker = (defaultStore.state.instanceTicker === 'always') || (defaultStore.state.instanceTicker === 'remote' && appearNote.user.instance);
-const conversation = ref<misskey.entities.Note[]>([]);
-const replies = ref<misskey.entities.Note[]>([]);
+const conversation = ref<pleaides.entities.Note[]>([]);
+const replies = ref<pleaides.entities.Note[]>([]);
 const canRenote = computed(() => ['public', 'home'].includes(appearNote.visibility) || appearNote.userId === $i.id);
 
 const keymap = {
@@ -292,7 +292,7 @@ function reply(viaKeyboard = false): void {
 }
 
 function react(viaKeyboard = false): void {
-	if (appearNote.isDeleted) return;
+	if (appearNote.isDeleted || !reactButton.value) return;
 	pleaseLogin();
 	blur();
 	reactionPicker.show(reactButton.value, reaction => {

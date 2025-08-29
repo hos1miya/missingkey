@@ -19,7 +19,7 @@ import { defineAsyncComponent } from 'vue';
 import MkDriveFileThumbnail from '@/components/MkDriveFileThumbnail.vue';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
-import { DriveFile } from 'misskey-js/built/entities';
+import { DriveFile } from 'pleaides-lib/built/entities';
 
 const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 

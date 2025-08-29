@@ -9,17 +9,14 @@
 </template>
 
 <script lang="ts" setup>
-import { markRaw, version as vueVersion, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { onMounted } from 'vue';
 import { Chart, ChartDataset } from 'chart.js';
-import tinycolor from 'tinycolor2';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import gradient from 'chartjs-plugin-gradient';
-import { satisfies } from 'compare-versions';
 import * as os from '@/os';
 import { defaultStore } from '@/store';
 import { useChartTooltip } from '@/scripts/use-chart-tooltip';
 import { chartVLine } from '@/scripts/chart-vline';
-import { alpha } from '@/scripts/color';
 import { initChart } from '@/scripts/init-chart';
 import { chartLegend } from '@/scripts/chart-legend';
 import MkChartLegend from '@/components/MkChartLegend.vue';
@@ -27,13 +24,13 @@ import MkChartLegend from '@/components/MkChartLegend.vue';
 initChart();
 
 const props = defineProps<{
-	user: misskey.entities.User;
+	user: pleaides.entities.User;
 }>();
 
 const chartEl = $shallowRef<HTMLCanvasElement>(null);
 let legendEl = $shallowRef<InstanceType<typeof MkChartLegend>>();
 const now = new Date();
-let chartInstance: Chart = null;
+let chartInstance: Chart;
 const chartLimit = 30;
 let fetching = $ref(true);
 
@@ -87,10 +84,10 @@ async function renderChart() {
 		type: 'bar',
 		data: {
 			datasets: [
-				makeDataset('Follow (local)', format(raw.local.followings.inc).slice().reverse(), { backgroundColor: colorFollowLocal, stack: 'follow' }),
-				makeDataset('Follow (remote)', format(raw.remote.followings.inc).slice().reverse(), { backgroundColor: colorFollowRemote, stack: 'follow' }),
-				makeDataset('Followed (local)', format(raw.local.followers.inc).slice().reverse(), { backgroundColor: colorFollowedLocal, stack: 'followed' }),
-				makeDataset('Followed (remote)', format(raw.remote.followers.inc).slice().reverse(), { backgroundColor: colorFollowedRemote, stack: 'followed' }),
+				makeDataset('Follow (local)', format(raw!.local.followings.inc).slice().reverse(), { backgroundColor: colorFollowLocal, stack: 'follow' }),
+				makeDataset('Follow (remote)', format(raw!.remote.followings.inc).slice().reverse(), { backgroundColor: colorFollowRemote, stack: 'follow' }),
+				makeDataset('Followed (local)', format(raw!.local.followers.inc).slice().reverse(), { backgroundColor: colorFollowedLocal, stack: 'followed' }),
+				makeDataset('Followed (remote)', format(raw!.remote.followers.inc).slice().reverse(), { backgroundColor: colorFollowedRemote, stack: 'followed' }),
 			],
 		},
 		options: {

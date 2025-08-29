@@ -6,11 +6,11 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import XNotification from '@/components/MkNotification.vue';
 
 defineProps<{
-	notification: misskey.entities.Notification;
+	notification: pleaides.entities.Notification;
 }>();
 </script>
 

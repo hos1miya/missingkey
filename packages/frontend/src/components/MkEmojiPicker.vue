@@ -89,14 +89,13 @@
 
 <script lang="ts" setup>
 import { ref, shallowRef, computed, watch, onMounted } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import XSection from '@/components/MkEmojiPicker.section.vue';
 import { emojilist, emojiCharByCategory, UnicodeEmojiDef, unicodeEmojiCategories as categories } from '@/scripts/emojilist';
 import MkRippleEffect from '@/components/MkRippleEffect.vue';
 import * as os from '@/os';
 import { isTouchUsing } from '@/scripts/touch';
 import { deviceKind } from '@/scripts/device-kind';
-import { instance } from '@/instance';
 import { i18n } from '@/i18n';
 import { defaultStore } from '@/store';
 import { customEmojiCategories, customEmojis } from '@/custom-emojis';
@@ -131,7 +130,7 @@ const size = computed(() => props.asReactionPicker ? reactionPickerSize.value : 
 const width = computed(() => props.asReactionPicker ? reactionPickerWidth.value : 3);
 const height = computed(() => props.asReactionPicker ? reactionPickerHeight.value : 2);
 const q = ref<string>('');
-const searchResultCustom = ref<Misskey.entities.CustomEmoji[]>([]);
+const searchResultCustom = ref<Pleaides.entities.CustomEmoji[]>([]);
 const searchResultUnicode = ref<UnicodeEmojiDef[]>([]);
 const tab = ref<'index' | 'custom' | 'unicode' | 'tags'>('index');
 
@@ -149,7 +148,7 @@ watch(q, () => {
 	const searchCustom = () => {
 		const max = 8;
 		const emojis = customEmojis.value;
-		const matches = new Set<Misskey.entities.CustomEmoji>();
+		const matches = new Set<Pleaides.entities.CustomEmoji>();
 
 		const exactMatch = emojis.find(emoji => emoji.name === newQ);
 		if (exactMatch) matches.add(exactMatch);
@@ -289,7 +288,7 @@ function reset() {
 	q.value = '';
 }
 
-function getKey(emoji: string | Misskey.entities.CustomEmoji | UnicodeEmojiDef): string {
+function getKey(emoji: string | Pleaides.entities.CustomEmoji | UnicodeEmojiDef): string {
 	return typeof emoji === 'string' ? emoji : 'char' in emoji ? emoji.char : `:${emoji.name}:`;
 }
 
@@ -359,7 +358,7 @@ function done(query?: string): boolean | void {
 }
 
 async function onContextmenu(emoji: any, ev?: MouseEvent) : Promise<void> {
-	ev.preventDefault();
+	ev?.preventDefault();
 	const confirm = await os.confirm({
 		type: 'info',
 		text: i18n.ts.deleteFromHistory,

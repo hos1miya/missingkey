@@ -13,12 +13,12 @@
 </template>
 
 <script lang="ts" setup>
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import XReaction from '@/components/MkReactionsViewer.reaction.vue';
 import { watch } from 'vue';
 
 const props = withDefaults(defineProps<{
-    note: misskey.entities.Note;
+    note: pleaides.entities.Note;
     maxNumber?: number;
 }>(), {
     maxNumber: Infinity,

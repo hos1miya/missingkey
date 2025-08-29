@@ -1,11 +1,11 @@
 import { onUnmounted, Ref } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import { stream } from '@/stream';
 import { $i } from '@/account';
 
 export function useNoteCapture(props: {
 	rootEl: Ref<HTMLElement | undefined>;
-	note: Ref<misskey.entities.Note>;
+	note: Ref<pleaides.entities.Note>;
 	isDeletedRef: Ref<boolean>;
 }) {
 	const note = props.note;

@@ -10,14 +10,14 @@
 </template>
 
 <script lang="ts" setup>
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import { onMounted } from 'vue';
 import MkMiniChart from '@/components/MkMiniChart.vue';
 import * as os from '@/os';
 import { acct } from '@/filters/user';
 
 const props = withDefaults(defineProps<{
-	user: misskey.entities.User;
+	user: pleaides.entities.UserDetailed;
 	withChart: boolean;
 }>(), {
 	withChart: true,

@@ -21,7 +21,7 @@
 		</div>
 	</MkFoldableSection>
 	
-	<MkFoldableSection v-for="category in customEmojiCategories" v-once :key="category" class="emojis">
+	<MkFoldableSection v-for="category in customEmojiCategories" v-once :key="category ?? ''" class="emojis">
 		<template #header>{{ category || $ts.other }}</template>
 		<div class="zuvgdzyt">
 			<XEmoji v-for="emoji in customEmojis.filter(e => e.category === category)" :key="emoji.name" class="emoji" :emoji="emoji"/>
@@ -31,21 +31,17 @@
 </template>
 
 <script lang="ts" setup>
-import { defineComponent, computed, watch } from 'vue';
+import { watch } from 'vue';
 import XEmoji from './emojis.emoji.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
-import MkSelect from '@/components/MkSelect.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
-import MkTab from '@/components/MkTab.vue';
-import * as os from '@/os';
-import { customEmojis, customEmojiCategories, getCustomEmojiTags } from '@/custom-emojis';
+import { customEmojis, customEmojiCategories } from '@/custom-emojis';
 import { i18n } from '@/i18n';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 
-const customEmojiTags = getCustomEmojiTags();
 let q = $ref('');
-let searchEmojis = $ref<Misskey.entities.CustomEmoji[]>(null);
+let searchEmojis = $ref<Pleaides.entities.CustomEmoji[]>(null);
 let selectedTags = $ref(new Set());
 
 function search() {
@@ -58,14 +54,6 @@ function search() {
 		searchEmojis = customEmojis.value.filter(emoji => emoji.name.includes(q) || emoji.aliases.includes(q));
 	} else {
 		searchEmojis = customEmojis.value.filter(emoji => (emoji.name.includes(q) || emoji.aliases.includes(q)) && [...selectedTags].every(t => emoji.aliases.includes(t)));
-	}
-}
-
-function toggleTag(tag) {
-	if (selectedTags.has(tag)) {
-		selectedTags.delete(tag);
-	} else {
-		selectedTags.add(tag);
 	}
 }
 

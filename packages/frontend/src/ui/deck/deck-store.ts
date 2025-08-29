@@ -1,8 +1,7 @@
 import { throttle } from 'throttle-debounce';
 import { markRaw } from 'vue';
-import { notificationTypes } from 'misskey-js';
+import { notificationTypes } from 'pleaides-lib';
 import { Storage } from '../../pizzax';
-import { i18n } from '@/i18n';
 import { api } from '@/os';
 import { deepClone } from '@/scripts/clone';
 
@@ -61,7 +60,7 @@ export const loadDeck = async () => {
 			scope: ['client', 'deck', 'profiles'],
 			key: deckStore.state.profile,
 		});
-	} catch (err) {
+	} catch (err: any) {
 		if (err.code === 'NO_SUCH_KEY') {
 			// 後方互換性のため
 			if (deckStore.state.profile === 'default') {
@@ -99,10 +98,11 @@ export async function getProfiles(): Promise<string[]> {
 }
 
 export async function deleteProfile(key: string): Promise<void> {
-	return await api('i/registry/remove', {
+	await api('i/registry/remove', {
 		scope: ['client', 'deck', 'profiles'],
 		key: key,
 	});
+	return;
 }
 
 export function addColumn(column: Column) {

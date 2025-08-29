@@ -33,7 +33,7 @@
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import MkDriveFileThumbnail from '@/components/MkDriveFileThumbnail.vue';
 import bytes from '@/filters/bytes';
 import * as os from '@/os';
@@ -42,7 +42,7 @@ import { $i } from '@/account';
 import { getDriveFileMenu } from '@/scripts/get-drive-file-menu';
 
 const props = withDefaults(defineProps<{
-	file: Misskey.entities.DriveFile;
+	file: Pleaides.entities.DriveFile;
 	isSelected?: boolean;
 	selectMode?: boolean;
 }>(), {
@@ -51,7 +51,7 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-	(ev: 'chosen', r: Misskey.entities.DriveFile): void;
+	(ev: 'chosen', r: Pleaides.entities.DriveFile): void;
 	(ev: 'dragstart'): void;
 	(ev: 'dragend'): void;
 }>();

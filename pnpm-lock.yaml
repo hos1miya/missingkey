@@ -232,9 +232,6 @@ importers:
       mime-types:
         specifier: 3.0.1
         version: 3.0.1
-      misskey-js:
-        specifier: ^2025.4.1
-        version: 2025.4.1
       ms:
         specifier: 2.1.3
         version: 2.1.3
@@ -262,6 +259,9 @@ importers:
       pg:
         specifier: ^8.16.0
         version: 8.16.0
+      pleaides-lib:
+        specifier: github:hos1miya/pleaides-lib#v1.0.5
+        version: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f
       private-ip:
         specifier: 3.0.2
         version: 3.0.2
@@ -660,12 +660,12 @@ importers:
       mfm-js:
         specifier: 0.24.0
         version: 0.24.0
-      misskey-js:
-        specifier: github:hos1miya/misskey-js#v0.0.32
-        version: https://codeload.github.com/hos1miya/misskey-js/tar.gz/10c1d4daa6eb4f3e31ac5e7e68e48c2d6bc3a05b
       photoswipe:
         specifier: 5.4.4
         version: 5.4.4
+      pleaides-lib:
+        specifier: github:hos1miya/pleaides-lib#v1.0.5
+        version: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f
       prismjs:
         specifier: ^1.30.0
         version: 1.30.0
@@ -829,9 +829,9 @@ importers:
       idb-keyval:
         specifier: ^6.2.2
         version: 6.2.2
-      misskey-js:
-        specifier: github:hos1miya/misskey-js#v0.0.32
-        version: https://codeload.github.com/hos1miya/misskey-js/tar.gz/10c1d4daa6eb4f3e31ac5e7e68e48c2d6bc3a05b
+      pleaides-lib:
+        specifier: github:hos1miya/pleaides-lib#v1.0.5
+        version: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f
     devDependencies:
       '@typescript-eslint/parser':
         specifier: ^8.32.1
@@ -1998,9 +1998,6 @@ packages:
 
   '@sideway/pinpoint@2.0.0':
     resolution: {integrity: sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==}
-
-  '@simplewebauthn/types@12.0.0':
-    resolution: {integrity: sha512-q6y8MkoV8V8jB4zzp18Uyj2I7oFp2/ONL8c3j8uT06AOWu3cIChc1au71QYHrP2b+xDapkGTiv+9lX7xkTlAsA==}
 
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
@@ -5517,13 +5514,6 @@ packages:
     resolution: {integrity: sha512-oG62iEk+CYt5Xj2YqI5Xi9xWUeZhDI8jjQmC5oThVH5JGCTgIjr7ciJDzC7MBzYd//WvR1OTmP5Q38Q8ShQtVA==}
     engines: {node: '>= 18'}
 
-  misskey-js@2025.4.1:
-    resolution: {integrity: sha512-ehgQzAlU3cTK9oGRsY0t8JjdT7osKKEwpoRfXcTMMj6aufsM6vhnrD3XQwXYckMiLamA0/M8tI9ZhHhB8EmSew==}
-
-  misskey-js@https://codeload.github.com/hos1miya/misskey-js/tar.gz/10c1d4daa6eb4f3e31ac5e7e68e48c2d6bc3a05b:
-    resolution: {tarball: https://codeload.github.com/hos1miya/misskey-js/tar.gz/10c1d4daa6eb4f3e31ac5e7e68e48c2d6bc3a05b}
-    version: 0.0.32
-
   mkdirp-classic@0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
 
@@ -6037,6 +6027,10 @@ packages:
 
   pkg-types@2.1.0:
     resolution: {integrity: sha512-wmJwA+8ihJixSoHKxZJRBQG1oY8Yr9pGLzRmSsNms0iNWyHHAlZCa7mmKiFR10YPZuz/2k169JiS/inOjBCZ2A==}
+
+  pleaides-lib@https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f:
+    resolution: {tarball: https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f}
+    version: 1.0.5
 
   plimit-lit@1.6.1:
     resolution: {integrity: sha512-B7+VDyb8Tl6oMJT9oSO2CW8XC/T4UcJGrwOVoNGwOQsQYhlpfajmrMj5xeejqaASq3V/EqThyOeATEOMuSEXiA==}
@@ -9027,8 +9021,6 @@ snapshots:
   '@sideway/formula@3.0.1': {}
 
   '@sideway/pinpoint@2.0.0': {}
-
-  '@simplewebauthn/types@12.0.0': {}
 
   '@sinclair/typebox@0.27.8': {}
 
@@ -13352,18 +13344,6 @@ snapshots:
     dependencies:
       minipass: 7.1.2
 
-  misskey-js@2025.4.1:
-    dependencies:
-      '@simplewebauthn/types': 12.0.0
-      eventemitter3: 5.0.1
-      reconnecting-websocket: 4.4.0
-
-  misskey-js@https://codeload.github.com/hos1miya/misskey-js/tar.gz/10c1d4daa6eb4f3e31ac5e7e68e48c2d6bc3a05b:
-    dependencies:
-      autobind-decorator: 2.4.0
-      eventemitter3: 4.0.7
-      reconnecting-websocket: 4.4.0
-
   mkdirp-classic@0.5.3: {}
 
   mkdirp@1.0.4:
@@ -13846,6 +13826,12 @@ snapshots:
       confbox: 0.2.2
       exsolve: 1.0.5
       pathe: 2.0.3
+
+  pleaides-lib@https://codeload.github.com/hos1miya/pleaides-lib/tar.gz/e96f764fd6e78ceef5c77e099f5f5b4931da187f:
+    dependencies:
+      autobind-decorator: 2.4.0
+      eventemitter3: 5.0.1
+      reconnecting-websocket: 4.4.0
 
   plimit-lit@1.6.1:
     dependencies:

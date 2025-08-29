@@ -20,8 +20,8 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, ref, toRef, watch } from 'vue';
-import * as misskey from 'misskey-js';
+import { ref, watch } from 'vue';
+import * as pleaides from 'pleaides-lib';
 import MarqueeText from '@/components/MkMarquee.vue';
 import * as os from '@/os';
 import { useInterval } from '@/scripts/use-interval';
@@ -37,7 +37,7 @@ const props = defineProps<{
 	refreshIntervalSec?: number;
 }>();
 
-const notes = ref<misskey.entities.Note[]>([]);
+const notes = ref<pleaides.entities.Note[]>([]);
 const fetching = ref(true);
 let key = $ref(0);
 
@@ -54,7 +54,7 @@ const tick = () => {
 
 watch(() => props.userListId, tick);
 
-useInterval(tick, Math.max(5000, props.refreshIntervalSec * 1000), {
+useInterval(tick, Math.max(5000, props.refreshIntervalSec ?? 5 * 1000), {
 	immediate: true,
 	afterMounted: true,
 });

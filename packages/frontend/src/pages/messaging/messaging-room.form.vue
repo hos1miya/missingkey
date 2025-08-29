@@ -30,7 +30,7 @@
 
 <script lang="ts" setup>
 import { onMounted, watch } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import autosize from 'autosize';
 //import insertTextAtCursor from 'insert-text-at-cursor';
 import { throttle } from 'throttle-debounce';
@@ -45,15 +45,15 @@ import { uploadFile } from '@/scripts/upload';
 import { miLocalStorage } from '@/local-storage';
 
 const props = defineProps<{
-	user?: Misskey.entities.UserDetailed | null;
-	group?: Misskey.entities.UserGroup | null;
+	user?: Pleaides.entities.UserDetailed | null;
+	group?: Pleaides.entities.UserGroup | null;
 }>();
 
 let textEl = $shallowRef<HTMLTextAreaElement>();
 let fileEl = $shallowRef<HTMLInputElement>();
 
 let text = $ref<string>('');
-let file = $ref<Misskey.entities.DriveFile | null>(null);
+let file = $ref<Pleaides.entities.DriveFile | null>(null);
 let sending = $ref(false);
 const typing = throttle(3000, () => {
 	stream.send('typingOnMessaging', props.user ? { partner: props.user.id } : { group: props.group?.id });
@@ -214,7 +214,7 @@ function deleteDraft() {
 }
 
 async function insertEmoji(ev: MouseEvent) {
-	os.openEmojiPicker({}, textEl, ev.currentTarget ?? ev.target);
+	os.openEmojiPicker({}, textEl, ev.currentTarget ?? ev.target ?? undefined);
 }
 
 onMounted(() => {

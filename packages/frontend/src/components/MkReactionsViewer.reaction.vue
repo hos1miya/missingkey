@@ -13,7 +13,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, shallowRef, watch } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import XDetails from '@/components/MkReactionsViewer.details.vue';
 import MkReactionIcon from '@/components/MkReactionIcon.vue';
 import * as os from '@/os';
@@ -27,7 +27,7 @@ const props = defineProps<{
 	reaction: string;
 	count: number;
 	isInitial: boolean;
-	note: misskey.entities.Note;
+	note: pleaides.entities.Note;
 }>();
 
 const buttonEl = shallowRef<HTMLElement>();

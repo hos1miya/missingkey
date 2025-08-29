@@ -5,15 +5,14 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onDeactivated, onMounted, onUnmounted, ref } from 'vue';
-import * as misskey from 'misskey-js';
+import { onActivated, onDeactivated, onMounted, onUnmounted } from 'vue';
+import * as pleaides from 'pleaides-lib';
 import MkAchievements from '@/components/MkAchievements.vue';
-import { i18n } from '@/i18n';
 import { claimAchievement } from '@/scripts/achievements';
 import { $i } from '@/account';
 
 const props = defineProps<{
-	user: misskey.entities.User;
+	user: pleaides.entities.User;
 }>();
 
 let timer: number | null;

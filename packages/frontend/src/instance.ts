@@ -1,5 +1,5 @@
 import { computed, reactive } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import { api } from './os';
 import { miLocalStorage } from './local-storage';
 import { DEFAULT_INFO_IMAGE_URL, DEFAULT_NOT_FOUND_IMAGE_URL, DEFAULT_SERVER_ERROR_IMAGE_URL, DEFAULT_EMOJI_ERROR_IMAGE_URL } from '@/const';
@@ -10,7 +10,7 @@ const cached = miLocalStorage.getItem('instance');
 
 // TODO: instanceをリアクティブにするかは再考の余地あり
 
-export const instance: Misskey.entities.InstanceMetadata = reactive(cached ? JSON.parse(cached) : {
+export const instance: Pleaides.entities.InstanceMetadata = reactive(cached ? JSON.parse(cached) : {
 	// TODO: set default values
 });
 

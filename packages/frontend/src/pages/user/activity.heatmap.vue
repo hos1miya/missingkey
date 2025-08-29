@@ -8,14 +8,12 @@
 </template>
 
 <script lang="ts" setup>
-import { markRaw, version as vueVersion, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
+import { onMounted, nextTick, watch } from 'vue';
 import { Chart } from 'chart.js';
-import tinycolor from 'tinycolor2';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import * as os from '@/os';
 import { defaultStore } from '@/store';
 import { useChartTooltip } from '@/scripts/use-chart-tooltip';
-import { chartVLine } from '@/scripts/chart-vline';
 import { alpha } from '@/scripts/color';
 import { initChart } from '@/scripts/init-chart';
 
@@ -23,13 +21,13 @@ initChart();
 
 const props = defineProps<{
 	src: string;
-	user: misskey.entities.User;
+	user: pleaides.entities.User;
 }>();
 
 const rootEl = $shallowRef<HTMLDivElement>(null);
 const chartEl = $shallowRef<HTMLCanvasElement>(null);
 const now = new Date();
-let chartInstance: Chart = null;
+let chartInstance: Chart;
 let fetching = $ref(true);
 
 const { handler: externalTooltipHandler } = useChartTooltip({

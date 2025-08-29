@@ -39,7 +39,7 @@
 
 <script lang="ts" setup>
 import { watch } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkA from './MkA.vue';
 import { getStaticImageUrl, getProxiedImageUrl } from '@/scripts/media-proxy';
 import { extractAvgColorFromBlurhash } from '@/scripts/extract-avg-color-from-blurhash';
@@ -52,12 +52,12 @@ const squareAvatars = $ref(defaultStore.state.squareAvatars);
 const useBlurEffect = $ref(defaultStore.state.useBlurEffect);
 
 const props = withDefaults(defineProps<{
-	user: misskey.entities.UserDetailed;
+	user: pleaides.entities.UserLite;
 	target?: string | null;
 	link?: boolean;
 	preview?: boolean;
 	indicator?: boolean;
-	decorations?: Omit<misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>[];
+	decorations?: Omit<pleaides.entities.UserDetailed['avatarDecorations'][number], 'id'>[];
 }>(), {
 	target: null,
 	link: false,
@@ -86,16 +86,16 @@ function onClick(ev: MouseEvent): void {
 	emit('click', ev);
 }
 
-function getDecorationAngle(decoration: Omit<misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) : string | undefined {
+function getDecorationAngle(decoration: Omit<pleaides.entities.UserDetailed['avatarDecorations'][number], 'id'>) : string | undefined {
 	const angle = decoration.angle ?? 0;
 	return angle === 0 ? undefined : `${angle * 360}deg`;
 }
-function getDecorationScale(decoration: Omit<misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) : string | undefined {
+function getDecorationScale(decoration: Omit<pleaides.entities.UserDetailed['avatarDecorations'][number], 'id'>) : string | undefined {
 	const scaleX = decoration.flipH ? -1 : 1;
 	return scaleX === 1 ? undefined : `${scaleX} 1`;
 }
 
-function getDecorationOffset(decoration: Omit<misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) : string | undefined {
+function getDecorationOffset(decoration: Omit<pleaides.entities.UserDetailed['avatarDecorations'][number], 'id'>) : string | undefined {
 	const offsetX = decoration.offsetX ?? 0;
 	const offsetY = decoration.offsetY ?? 0;
 	return offsetX === 0 && offsetY === 0 ? undefined : `${offsetX * 100}% ${offsetY * 100}%`;

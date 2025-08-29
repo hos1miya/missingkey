@@ -1,6 +1,6 @@
 /* eslint-disable indent */
 import { defineAsyncComponent, Ref } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import { claimAchievement } from './achievements';
 import { $i } from '@/account';
 import { i18n } from '@/i18n';
@@ -14,12 +14,12 @@ import { mainRouter } from '@/router';
 import { Router } from '@/nirax';
 
 export function getNoteMenu(props: {
-	note: misskey.entities.Note;
+	note: pleaides.entities.Note;
 	menuButton: Ref<HTMLElement | undefined>;
 	translation: Ref<any>;
 	translating: Ref<boolean>;
 	isHided: Ref<boolean>;
-	currentClipPage?: Ref<misskey.entities.Clip> | null;
+	currentClipPage?: Ref<pleaides.entities.Clip> | null;
 }) : any {
 	const isRenote = (
 		props.note.renote != null &&
@@ -28,7 +28,7 @@ export function getNoteMenu(props: {
 		props.note.poll == null
 	);
 
-	const appearNote = isRenote ? props.note.renote as misskey.entities.Note : props.note;
+	const appearNote = isRenote ? props.note.renote as pleaides.entities.Note : props.note;
 
 	function del() : void {
 		os.confirm({

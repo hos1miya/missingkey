@@ -21,14 +21,14 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import MkModalWindow from '@/components/MkModalWindow.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkDriveFileThumbnail from '@/components/MkDriveFileThumbnail.vue';
 import { i18n } from '@/i18n';
 
 const props = defineProps<{
-	file: Misskey.entities.DriveFile;
+	file: Pleaides.entities.DriveFile;
 	default: string;
 }>();
 

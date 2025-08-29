@@ -38,14 +38,14 @@
 <script lang="ts" setup>
 import { } from 'vue';
 import * as mfm from 'mfm-js';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import { extractUrlFromMfm } from '@/scripts/extract-url-from-mfm';
 import MkUrlPreview from '@/components/MkUrlPreview.vue';
 import * as os from '@/os';
 import { $i } from '@/account';
 
 const props = defineProps<{
-	message: Misskey.entities.MessagingMessage;
+	message: Pleaides.entities.MessagingMessage;
 	isGroup?: boolean;
 }>();
 

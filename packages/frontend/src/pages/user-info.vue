@@ -77,7 +77,7 @@
 
 						<MkButton v-if="user.host != null" @click="updateRemoteUser"><i class="ti ti-refresh"></i> {{ i18n.ts.updateRemoteUser }}</MkButton>
 
-						<MkFolder>
+						<MkFolder :defaultOpen="false" :max-height="null">
 							<template #label>Raw</template>
 
 							<MkObjectView v-if="ap" tall :value="ap">
@@ -92,10 +92,10 @@
 
 				<div>
 					<MkButton v-if="user.host == null && iAmModerator" inline style="margin-right: 8px;" @click="resetPassword"><i class="ti ti-key"></i> {{ i18n.ts.resetPassword }}</MkButton>
-					<MkButton v-if="$i.isAdmin" inline danger @click="deleteAccount">{{ i18n.ts.deleteAccount }}</MkButton>
+					<MkButton v-if="$i!.isAdmin" inline danger @click="deleteAccount">{{ i18n.ts.deleteAccount }}</MkButton>
 				</div>
 
-				<MkFolder>
+				<MkFolder :defaultOpen="false" :max-height="null">
 					<template #icon><i class="ti ti-license"></i></template>
 					<template #label>{{ i18n.ts._role.policies }}</template>
 					<div class="_gaps">
@@ -105,7 +105,7 @@
 					</div>
 				</MkFolder>
 
-				<MkFolder>
+				<MkFolder :defaultOpen="false" :max-height="null">
 					<template #icon><i class="ti ti-badges"></i></template>
 					<template #label>{{ i18n.ts.roles }}</template>
 					<div class="_gaps">
@@ -119,7 +119,7 @@
 					</div>
 				</MkFolder>
 
-				<MkFolder>
+				<MkFolder :defaultOpen="false" :max-height="null">
 					<template #icon><i class="ti ti-password"></i></template>
 					<template #label>IP</template>
 					<MkInfo v-if="!iAmAdmin" warn>{{ i18n.ts.requireAdminForView }}</MkInfo>
@@ -132,7 +132,7 @@
 					</template>
 				</MkFolder>
 
-				<MkFolder>
+				<MkFolder :defaultOpen="false" :max-height="null">
 					<template #icon><i class="ti ti-cloud"></i></template>
 					<template #label>{{ i18n.ts.files }}</template>
 					<MkFileListForAdmin :pagination="filesPagination" view-mode="grid"/>
@@ -160,7 +160,7 @@
 			</div>
 
 			<div v-else-if="tab === 'raw'" class="_gaps_m">
-				<MkObjectView v-if="info && $i.isAdmin" tall :value="info">
+				<MkObjectView v-if="info && $i!.isAdmin" tall :value="info">
 				</MkObjectView>
 
 				<MkObjectView tall :value="user">
@@ -173,7 +173,7 @@
 
 <script lang="ts" setup>
 import { computed, watch } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkChart from '@/components/MkChart.vue';
 import MkObjectView from '@/components/MkObjectView.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
@@ -181,8 +181,6 @@ import MkSwitch from '@/components/MkSwitch.vue';
 import FormLink from '@/components/form/link.vue';
 import FormSection from '@/components/form/section.vue';
 import MkButton from '@/components/MkButton.vue';
-import MkInput from '@/components/MkInput.vue';
-import FormSplit from '@/components/form/split.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import MkSelect from '@/components/MkSelect.vue';
@@ -190,14 +188,11 @@ import FormSuspense from '@/components/form/suspense.vue';
 import MkFileListForAdmin from '@/components/MkFileListForAdmin.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import * as os from '@/os';
-import number from '@/filters/number';
-import bytes from '@/filters/bytes';
 import { url } from '@/config';
 import { userPage, acct } from '@/filters/user';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import { i18n } from '@/i18n';
 import { iAmAdmin, iAmModerator } from '@/account';
-import { instance } from '@/instance';
 import MkRolePreview from '@/components/MkRolePreview.vue';
 
 const props = withDefaults(defineProps<{
@@ -209,7 +204,7 @@ const props = withDefaults(defineProps<{
 
 let tab = $ref(props.initialTab);
 let chartSrc = $ref('per-user-notes');
-let user = $ref<null | misskey.entities.UserDetailed>();
+let user = $ref<null | pleaides.entities.UserDetailed>();
 let init = $ref<ReturnType<typeof createFetcher>>();
 let info = $ref();
 let ips = $ref(null);
@@ -288,25 +283,6 @@ async function toggleSuspend(v) {
 		await os.api(v ? 'admin/suspend-user' : 'admin/unsuspend-user', { userId: user.id });
 		await refreshUser();
 	}
-}
-
-async function deleteAllFiles() {
-	const confirm = await os.confirm({
-		type: 'warning',
-		text: i18n.ts.deleteAllFilesConfirm,
-	});
-	if (confirm.canceled) return;
-	const process = async () => {
-		await os.api('admin/delete-all-files-of-a-user', { userId: user.id });
-		os.success();
-	};
-	await process().catch(err => {
-		os.alert({
-			type: 'error',
-			text: err.toString(),
-		});
-	});
-	await refreshUser();
 }
 
 async function deleteAccount() {

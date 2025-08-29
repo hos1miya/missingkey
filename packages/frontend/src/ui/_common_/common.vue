@@ -30,11 +30,11 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, nextTick } from 'vue';
-import * as misskey from 'misskey-js';
+import { defineAsyncComponent } from 'vue';
+import * as pleaides from 'pleaides-lib';
 import { swInject } from './sw-inject';
 import XNotification from './notification.vue';
-import { popup, popups, pendingApiRequestsCount } from '@/os';
+import { popups, pendingApiRequestsCount } from '@/os';
 import { uploads } from '@/scripts/upload';
 import * as sound from '@/scripts/sound';
 import { $i } from '@/account';
@@ -46,10 +46,10 @@ const XUpload = defineAsyncComponent(() => import('./upload.vue'));
 
 const dev = _DEV_;
 
-let notifications = $ref<misskey.entities.Notification[]>([]);
+let notifications = $ref<pleaides.entities.Notification[]>([]);
 
 function onNotification(notification) {
-	if ($i.mutingNotificationTypes.includes(notification.type)) return;
+	if ($i && $i.mutingNotificationTypes.includes(notification.type)) return;
 
 	if (document.visibilityState === 'visible') {
 		stream.send('readNotification', {

@@ -14,20 +14,20 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
 
 const props = defineProps<{
-	folder?: Misskey.entities.DriveFolder;
-	parentFolder: Misskey.entities.DriveFolder | null;
+	folder?: Pleaides.entities.DriveFolder;
+	parentFolder: Pleaides.entities.DriveFolder | null;
 }>();
 
 const emit = defineEmits<{
-	(ev: 'move', v?: Misskey.entities.DriveFolder): void;
-	(ev: 'upload', file: File, folder?: Misskey.entities.DriveFolder | null): void;
-	(ev: 'removeFile', v: Misskey.entities.DriveFile['id']): void;
-	(ev: 'removeFolder', v: Misskey.entities.DriveFolder['id']): void;
+	(ev: 'move', v?: Pleaides.entities.DriveFolder): void;
+	(ev: 'upload', file: File, folder?: Pleaides.entities.DriveFolder | null): void;
+	(ev: 'removeFile', v: Pleaides.entities.DriveFile['id']): void;
+	(ev: 'removeFolder', v: Pleaides.entities.DriveFolder['id']): void;
 }>();
 
 const hover = ref(false);

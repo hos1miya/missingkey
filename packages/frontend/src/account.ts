@@ -1,5 +1,5 @@
 import { defineAsyncComponent, reactive } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import { showSuspendedDialog } from './scripts/show-suspended-dialog';
 import { i18n } from './i18n';
 import { miLocalStorage } from './local-storage';
@@ -10,7 +10,7 @@ import { unisonReload, reloadChannel } from '@/scripts/unison-reload';
 
 // TODO: 他のタブと永続化されたstateを同期
 
-type Account = misskey.entities.MeDetailed;
+type Account = pleaides.entities.MeDetailed;
 
 const accountData = miLocalStorage.getItem('account');
 
@@ -160,8 +160,8 @@ export async function login(token: Account['token'], redirect?: string) {
 export async function openAccountMenu(opts: {
 	includeCurrentAccount?: boolean;
 	withExtraOperation: boolean;
-	active?: misskey.entities.UserDetailed['id'];
-	onChoose?: (account: misskey.entities.UserDetailed) => void;
+	active?: pleaides.entities.UserDetailed['id'];
+	onChoose?: (account: pleaides.entities.UserDetailed) => void;
 }, ev: MouseEvent) {
 	function showSigninDialog() {
 		popup(defineAsyncComponent(() => import('@/components/MkSigninDialog.vue')), {}, {
@@ -181,7 +181,7 @@ export async function openAccountMenu(opts: {
 		}, 'closed');
 	}
 
-	async function switchAccount(account: misskey.entities.UserDetailed) {
+	async function switchAccount(account: pleaides.entities.UserDetailed) {
 		const storedAccounts = await getAccounts();
 		const token = storedAccounts.find(x => x.id === account.id).token;
 		switchAccountWithToken(token);
@@ -194,7 +194,7 @@ export async function openAccountMenu(opts: {
 	const storedAccounts = await getAccounts().then(accounts => accounts.filter(x => x.id !== $i.id));
 	const accountsPromise = api('users/show', { userIds: storedAccounts.map(x => x.id) });
 
-	function createItem(account: misskey.entities.UserDetailed) {
+	function createItem(account: pleaides.entities.UserDetailed) {
 		return {
 			type: 'user',
 			user: account,

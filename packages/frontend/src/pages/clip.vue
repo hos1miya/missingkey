@@ -5,7 +5,7 @@
 		<div v-if="clip">
 			<div class="okzinsic _panel">
 				<div v-if="clip.description" class="description">
-					<Mfm :text="clip.description" :is-note="false" :i="$i"/>
+					<Mfm :text="clip.description" :is-note="false" :i="$i ?? undefined"/>
 				</div>
 				<div class="user">
 					<MkAvatar :user="clip.user" class="avatar" indicator link preview/> <MkUserName :user="clip.user" :nowrap="false"/>
@@ -20,7 +20,7 @@
 
 <script lang="ts" setup>
 import { computed, watch, provide } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import XNotes from '@/components/MkNotes.vue';
 import { $i } from '@/account';
 import { i18n } from '@/i18n';
@@ -31,7 +31,7 @@ const props = defineProps<{
 	clipId: string,
 }>();
 
-let clip: misskey.entities.Clip = $ref<misskey.entities.Clip>();
+let clip: pleaides.entities.Clip = $ref<pleaides.entities.Clip>();
 const pagination = {
 	endpoint: 'clips/notes' as const,
 	limit: 10,

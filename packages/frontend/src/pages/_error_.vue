@@ -2,7 +2,7 @@
 <MkLoading v-if="!loaded"/>
 <Transition :name="$store.state.animation ? '_transition_zoom' : ''" appear>
 	<div v-show="loaded" class="mjndxjch">
-		<img :src="serverErrorImageUrl" class="_ghost" :class="$style.img"/>
+		<img :src="serverErrorImageUrl" class="_ghost img"/>
 		<p><b><i class="ti ti-alert-triangle"></i> {{ i18n.ts.pageLoadError }}</b></p>
 		<p v-if="meta && (version === meta.version)">{{ i18n.ts.pageLoadErrorDescription }}</p>
 		<p v-else-if="serverIsDead">{{ i18n.ts.serverIsDead }}</p>
@@ -19,7 +19,7 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkButton from '@/components/MkButton.vue';
 import { version } from '@/config';
 import * as os from '@/os';
@@ -36,7 +36,7 @@ const props = withDefaults(defineProps<{
 
 let loaded = $ref(false);
 let serverIsDead = $ref(false);
-let meta = $ref<misskey.entities.LiteInstanceMetadata | null>(null);
+let meta = $ref<pleaides.entities.LiteInstanceMetadata | null>(null);
 
 os.api('meta', {
 	detail: false,
@@ -44,7 +44,7 @@ os.api('meta', {
 	loaded = true;
 	serverIsDead = false;
 	meta = res;
-	miLocalStorage.setItem('v', res.version);
+	miLocalStorage.setItem('v', (res as unknown as pleaides.entities.LiteInstanceMetadata).version);
 }, () => {
 	loaded = true;
 	serverIsDead = true;

@@ -4,10 +4,10 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 
 const props = withDefaults(defineProps<{
-	user: misskey.entities.User;
+	user: pleaides.entities.User;
 	nowrap?: boolean;
 }>(), {
 	nowrap: true,

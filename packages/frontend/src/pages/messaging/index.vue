@@ -11,7 +11,7 @@
 					:key="message.id"
 					v-anim="i"
 					class="message _panel"
-					:class="{ isMe: isMe(message), isRead: message.groupId ? message.reads.includes($i.id) : message.isRead }"
+					:class="{ isMe: isMe(message), isRead: message.groupId ? message.reads.includes($i!.id) : message.isRead }"
 					:to="message.groupId ? `/my/messaging/group/${message.groupId}` : `/my/messaging/${getAcct(isMe(message) ? message.recipient : message.user)}`"
 					:data-index="i"
 				>
@@ -43,10 +43,9 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, defineComponent, inject, markRaw, onMounted, onUnmounted } from 'vue';
-import * as Acct from 'misskey-js/built/acct';
+import { markRaw, onMounted, onUnmounted } from 'vue';
+import * as Acct from 'pleaides-lib/built/acct';
 import MkButton from '@/components/MkButton.vue';
-import { acct } from '@/filters/user';
 import * as os from '@/os';
 import { stream } from '@/stream';
 import { useRouter } from '@/router';
@@ -58,14 +57,13 @@ import { infoImageUrl } from '@/instance';
 const router = useRouter();
 
 let fetching = $ref(true);
-let moreFetching = $ref(false);
 let messages = $ref([]);
 let connection = $ref(null);
 
 const getAcct = Acct.toString;
 
 function isMe(message) {
-	return message.userId === $i.id;
+	return message.userId === $i!.id;
 }
 
 function onMessage(message) {
@@ -88,7 +86,7 @@ function onRead(ids) {
 			if (found.recipientId) {
 				found.isRead = true;
 			} else if (found.groupId) {
-				found.reads.push($i.id);
+				found.reads.push($i!.id);
 			}
 		}
 	}

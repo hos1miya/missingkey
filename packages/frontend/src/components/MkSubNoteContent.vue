@@ -9,7 +9,7 @@
 	</div>
 	<details v-if="note.files.length > 0">
 		<summary>({{ $t('withNFiles', { n: note.files.length }) }})</summary>
-		<MkMediaList :mediaList="note.files" :mediaUser="note.user"/>
+		<MkMediaList :mediaList="note.files" :mediaUser="Array.of(note.user)"/>
 	</details>
 	<details v-if="note.poll">
 		<summary>{{ i18n.ts.poll }}</summary>
@@ -23,13 +23,13 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkMediaList from '@/components/MkMediaList.vue';
 import MkPoll from '@/components/MkPoll.vue';
 import { i18n } from '@/i18n';
 
 const props = defineProps<{
-	note: misskey.entities.Note;
+	note: pleaides.entities.Note;
 }>();
 
 const collapsed = $ref(

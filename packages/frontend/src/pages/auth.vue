@@ -42,7 +42,7 @@ import MkSignin from '@/components/MkSignin.vue';
 import * as os from '@/os';
 import { $i, login } from '@/account';
 import { definePageMetadata } from '@/scripts/page-metadata';
-import { AuthSession } from 'misskey-js/built/entities';
+import { AuthSession } from 'pleaides-lib/built/entities';
 import { i18n } from '@/i18n';
 
 const props = defineProps<{

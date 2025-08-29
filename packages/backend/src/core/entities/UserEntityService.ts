@@ -434,6 +434,7 @@ export class UserEntityService implements OnModuleInit {
 			badgeRoles: user.host == null ? this.roleService.getUserBadgeRoles(user.id).then(rs => rs.map(r => ({
 				name: r.name,
 				iconUrl: r.iconUrl,
+				id: r.id,
 			}))) : undefined,
 
 			...(opts.detail ? {

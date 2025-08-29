@@ -16,11 +16,11 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import ImgWithBlurhash from '@/components/MkImgWithBlurhash.vue';
 
 const props = defineProps<{
-	file: Misskey.entities.DriveFile;
+	file: Pleaides.entities.DriveFile;
 	fit: string;
 }>();
 

@@ -4,7 +4,7 @@
 	<div>
 		<Transition name="fade" mode="out-in">
 			<div v-if="user">
-				<XHome v-if="tab === 'home'" :user="user"/>
+				<XHome v-if="tab === 'home'" :user="user" :disable-notes="false"/>
 				<XTimeline v-else-if="tab === 'notes'" :user="user" />
 				<XActivity v-else-if="tab === 'activity'" :user="user"/>
 				<XAchievements v-else-if="tab === 'achievements'" :user="user"/>
@@ -22,11 +22,10 @@
 
 <script lang="ts" setup>
 import { defineAsyncComponent, computed, watch } from 'vue';
-import * as Acct from 'misskey-js/built/acct';
-import * as misskey from 'misskey-js';
+import * as Acct from 'pleaides-lib/built/acct';
+import * as pleaides from 'pleaides-lib';
 import { acct as getAcct } from '@/filters/user';
 import * as os from '@/os';
-import { useRouter } from '@/router';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import { i18n } from '@/i18n';
 import { $i } from '@/account';
@@ -48,7 +47,7 @@ const props = withDefaults(defineProps<{
 });
 
 let tab = $ref(props.page);
-let user = $ref<null | misskey.entities.UserDetailed>(null);
+let user = $ref<null | pleaides.entities.UserDetailed>(null);
 let error = $ref(null);
 
 function fetchUser(): void {

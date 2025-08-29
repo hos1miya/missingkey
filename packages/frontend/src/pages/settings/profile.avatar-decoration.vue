@@ -4,15 +4,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 <template>
 <div v-if="!loading" class="_gaps">
-	<MkInfo>{{ i18n.t('_profile.avatarDecorationMax', { max: $i.policies.avatarDecorationLimit }) }} ({{ i18n.t('remainingN', { n: $i.policies.avatarDecorationLimit - $i.avatarDecorations.length }) }})</MkInfo>
+	<MkInfo>{{ i18n.t('_profile.avatarDecorationMax', { max: $i!.policies.avatarDecorationLimit }) }} ({{ i18n.t('remainingN', { n: $i!.policies.avatarDecorationLimit - $i!.avatarDecorations.length }) }})</MkInfo>
 
-	<div v-if="$i.avatarDecorations.length > 0" v-panel :class="$style.current" class="_gaps_s">
+	<div v-if="$i!.avatarDecorations.length > 0" v-panel :class="$style.current" class="_gaps_s">
 		<div>{{ i18n.ts.inUse }}</div>
 
 		<div :class="$style.decorations">
 			<XDecoration
-				v-for="(avatarDecoration, i) in $i.avatarDecorations"
-				:decoration="avatarDecorations.find(d => d.id === avatarDecoration.id)"
+				v-for="(avatarDecoration, i) in $i!.avatarDecorations"
+				:decoration="avatarDecorations.find(d => d.id === avatarDecoration.id) as unknown as Pleaides.entities.AvatarDecoration"
 				:angle="avatarDecoration.angle"
 				:flipH="avatarDecoration.flipH"
 				:offsetX="avatarDecoration.offsetX"
@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref, defineAsyncComponent } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import XDecoration from './profile.avatar-decoration.decoration.vue';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
@@ -50,9 +50,9 @@ import { $i } from '@/account.js';
 import MkInfo from '@/components/MkInfo.vue';
 
 const loading = ref(true);
-const avatarDecorations = ref<Misskey.entities.GetAvatarDecorationsResponse>([]);
+const avatarDecorations = ref<Pleaides.entities.GetAvatarDecorationsResponse>([]);
 os.api('get-avatar-decorations').then(_avatarDecorations => {
-	avatarDecorations.value = _avatarDecorations;
+	avatarDecorations.value = _avatarDecorations as unknown as Pleaides.entities.GetAvatarDecorationsResponse;
 	loading.value = false;
 });
 function openDecoration(avatarDecoration, index?: number) {
@@ -63,39 +63,41 @@ function openDecoration(avatarDecoration, index?: number) {
 		'attach': async (payload) => {
 			const decoration = {
 				id: avatarDecoration.id,
+				url: payload.url,
 				angle: payload.angle,
 				flipH: payload.flipH,
 				offsetX: payload.offsetX,
 				offsetY: payload.offsetY,
 			};
-			const update = [...$i.avatarDecorations, decoration];
+			const update = [...$i!.avatarDecorations, decoration];
 			await os.apiWithDialog('i/update', {
 				avatarDecorations: update,
 			});
-			$i.avatarDecorations = update;
+			$i!.avatarDecorations = update;
 		},
 		'update': async (payload) => {
 			const decoration = {
 				id: avatarDecoration.id,
+				url: payload.url,
 				angle: payload.angle,
 				flipH: payload.flipH,
 				offsetX: payload.offsetX,
 				offsetY: payload.offsetY,
 			};
-			const update = [...$i.avatarDecorations];
-			update[index] = decoration;
+			const update = [...$i!.avatarDecorations];
+			update[index ?? 0] = decoration;
 			await os.apiWithDialog('i/update', {
 				avatarDecorations: update,
 			});
-			$i.avatarDecorations = update;
+			$i!.avatarDecorations = update;
 		},
 		'detach': async () => {
-			const update = [...$i.avatarDecorations];
-			update.splice(index, 1);
+			const update = [...$i!.avatarDecorations];
+			update.splice(index ?? 0, 1);
 			await os.apiWithDialog('i/update', {
 				avatarDecorations: update,
 			});
-			$i.avatarDecorations = update;
+			$i!.avatarDecorations = update;
 		},
 	}, 'closed');
 }
@@ -108,7 +110,7 @@ function detachAllDecorations() {
 		await os.apiWithDialog('i/update', {
 			avatarDecorations: [],
 		});
-		$i.avatarDecorations = [];
+		$i!.avatarDecorations = [];
 	});
 }
 </script>

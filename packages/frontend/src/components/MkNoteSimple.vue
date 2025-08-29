@@ -18,13 +18,13 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
 
 const props = defineProps<{
-	note: misskey.entities.Note;
+	note: pleaides.entities.Note;
 	pinned?: boolean;
 }>();
 

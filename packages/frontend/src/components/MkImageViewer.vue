@@ -14,13 +14,13 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import bytes from '@/filters/bytes';
 import number from '@/filters/number';
 import MkModal from '@/components/MkModal.vue';
 
 const props = withDefaults(defineProps<{
-	image: misskey.entities.DriveFile;
+	image: pleaides.entities.DriveFile;
 }>(), {
 });
 

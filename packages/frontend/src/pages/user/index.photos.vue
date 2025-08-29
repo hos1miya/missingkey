@@ -21,7 +21,7 @@
 
 <script lang="ts" setup>
 import { onMounted } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import { getStaticImageUrl } from '@/scripts/media-proxy';
 import { notePage } from '@/filters/note';
 import * as os from '@/os';
@@ -30,16 +30,16 @@ import ImgWithBlurhash from '@/components/MkImgWithBlurhash.vue';
 import { defaultStore } from '@/store';
 
 const props = defineProps<{
-	user: misskey.entities.UserDetailed;
+	user: pleaides.entities.UserDetailed;
 }>();
 
 let fetching = $ref(true);
 let images = $ref<{
-	note: misskey.entities.Note;
-	file: misskey.entities.DriveFile;
+	note: pleaides.entities.Note;
+	file: pleaides.entities.DriveFile;
 }[]>([]);
 
-function thumbnail(image: misskey.entities.DriveFile): string {
+function thumbnail(image: pleaides.entities.DriveFile): string {
 	return defaultStore.state.disableShowingAnimatedImages
 		? getStaticImageUrl(image.thumbnailUrl)
 		: image.thumbnailUrl;

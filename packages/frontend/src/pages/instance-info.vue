@@ -113,7 +113,7 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkChart from '@/components/MkChart.vue';
 import MkObjectView from '@/components/MkObjectView.vue';
 import FormLink from '@/components/form/link.vue';
@@ -125,7 +125,6 @@ import MkSelect from '@/components/MkSelect.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import * as os from '@/os';
 import number from '@/filters/number';
-import bytes from '@/filters/bytes';
 import { iAmModerator } from '@/account';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import { i18n } from '@/i18n';
@@ -140,15 +139,15 @@ const props = defineProps<{
 
 let tab = $ref('overview');
 let chartSrc = $ref('instance-requests');
-let meta = $ref<misskey.entities.DetailedInstanceMetadata | null>(null);
-let instance = $ref<misskey.entities.Instance | null>(null);
+let meta = $ref<pleaides.entities.DetailedInstanceMetadata | null>(null);
+let instance = $ref<pleaides.entities.Instance | null>(null);
 let suspended = $ref(false);
 let hiddenSuspended = $ref(false);
 let isBlocked = $ref(false);
 let faviconUrl = $ref(null);
 
 const usersPagination = {
-	endpoint: iAmModerator ? 'admin/show-users' : 'users' as const,
+	endpoint: iAmModerator ? 'admin/show-users' : 'users' as keyof pleaides.Endpoints,
 	limit: 10,
 	params: {
 		sort: '+updatedAt',

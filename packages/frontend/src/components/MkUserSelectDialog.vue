@@ -3,6 +3,7 @@
 	ref="dialogEl"
 	:with-ok-button="true"
 	:ok-button-disabled="selected == null"
+	:width="400"
 	@click="cancel()"
 	@close="cancel()"
 	@ok="ok()"
@@ -52,8 +53,8 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted } from 'vue';
-import * as misskey from 'misskey-js';
+import { onMounted } from 'vue';
+import * as pleaides from 'pleaides-lib';
 import MkInput from '@/components/MkInput.vue';
 import FormSplit from '@/components/form/split.vue';
 import MkModalWindow from '@/components/MkModalWindow.vue';
@@ -63,7 +64,7 @@ import { i18n } from '@/i18n';
 import { $i } from '@/account';
 
 const emit = defineEmits<{
-	(ev: 'ok', selected: misskey.entities.UserDetailed): void;
+	(ev: 'ok', selected: pleaides.entities.UserDetailed): void;
 	(ev: 'cancel'): void;
 	(ev: 'closed'): void;
 }>();
@@ -74,9 +75,9 @@ const props = defineProps<{
 
 let username = $ref('');
 let host = $ref('');
-let users: misskey.entities.UserDetailed[] = $ref([]);
-let recentUsers: misskey.entities.UserDetailed[] = $ref([]);
-let selected: misskey.entities.UserDetailed | null = $ref(null);
+let users: pleaides.entities.UserDetailed[] = $ref([]);
+let recentUsers: pleaides.entities.UserDetailed[] = $ref([]);
+let selected: pleaides.entities.UserDetailed | null = $ref(null);
 let dialogEl = $ref();
 let opening = false;
 
@@ -129,10 +130,10 @@ onMounted(() => {
 	os.api('users/show', {
 		userIds: defaultStore.state.recentlyUsedUsers,
 	}).then(users => {
-		if (props.includeSelf) {
-			recentUsers = [$i, ...users];
+		if (props.includeSelf && $i) {
+			recentUsers = [$i, ...(users as unknown as pleaides.entities.UserDetailed[])];
 		} else {
-			recentUsers = users;
+			recentUsers = users as unknown as pleaides.entities.UserDetailed[];
 		}
 	});
 });

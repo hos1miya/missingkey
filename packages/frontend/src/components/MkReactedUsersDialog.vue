@@ -29,7 +29,7 @@
 
 <script lang="ts" setup>
 import { onMounted, watch } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkModalWindow from '@/components/MkModalWindow.vue';
 import MkReactionIcon from '@/components/MkReactionIcon.vue';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
@@ -42,12 +42,12 @@ const emit = defineEmits<{
 }>();
 
 const props = defineProps<{
-	noteId: misskey.entities.Note['id'];
+	noteId: pleaides.entities.Note['id'];
 }>();
 
 const dialog = $shallowRef<InstanceType<typeof MkModalWindow>>();
 
-let note = $ref<misskey.entities.Note>();
+let note = $ref<pleaides.entities.Note>();
 let tab = $ref<string>();
 let reactions = $ref<string[]>();
 let users = $ref();

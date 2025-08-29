@@ -11,7 +11,7 @@
 				<p class="username"><MkAcct :user="user"/></p>
 			</div>
 			<div class="description">
-				<Mfm v-if="user.description" :text="user.description" :author="user" :i="$i"/>
+				<Mfm v-if="user.description" :text="user.description" :author="user" :i="$i ?? undefined"/>
 			</div>
 			<div class="status">
 				<div>
@@ -36,8 +36,8 @@
 
 <script lang="ts" setup>
 import { onMounted } from 'vue';
-import * as Acct from 'misskey-js/built/acct';
-import * as misskey from 'misskey-js';
+import * as Acct from 'pleaides-lib/built/acct';
+import * as pleaides from 'pleaides-lib';
 import MkFollowButton from '@/components/MkFollowButton.vue';
 import { userPage } from '@/filters/user';
 import * as os from '@/os';
@@ -56,12 +56,12 @@ const emit = defineEmits<{
 }>();
 
 const zIndex = os.claimZIndex('middle');
-let user = $ref<misskey.entities.UserDetailed | null>(null);
+let user = $ref<pleaides.entities.UserDetailed | null>(null);
 let top = $ref(0);
 let left = $ref(0);
 
 function showMenu(ev: MouseEvent) {
-	os.popupMenu(getUserMenu(user), ev.currentTarget ?? ev.target);
+	os.popupMenu(getUserMenu(user), ev.currentTarget ?? ev.target ?? undefined);
 }
 
 onMounted(() => {
@@ -69,7 +69,7 @@ onMounted(() => {
 		user = props.q;
 	} else {
 		const query = props.q.startsWith('@') ?
-			Acct.parse(props.q.substr(1)) :
+			Acct.parse(props.q.substring(1)) :
 			{ userId: props.q };
 
 		os.api('users/show', query).then(res => {

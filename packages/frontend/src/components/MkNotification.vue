@@ -42,9 +42,9 @@
 				<Mfm :text="getNoteSummary(notification.note)" :plain="true" :nowrap="true" :author="notification.note.user"/>
 				<i class="ti ti-quote" :class="$style.quote"></i>
 			</MkA>
-			<MkA v-else-if="notification.type === 'renote'" :class="$style.text" :to="notePage(notification.note)" :title="getNoteSummary(notification.note.renote)">
+			<MkA v-else-if="notification.type === 'renote'" :class="$style.text" :to="notePage(notification.note)" :title="getNoteSummary(notification.note.renote!)">
 				<i class="ti ti-quote" :class="$style.quote"></i>
-				<Mfm :text="getNoteSummary(notification.note.renote)" :plain="true" :nowrap="true" :author="notification.note.renote.user"/>
+				<Mfm :text="getNoteSummary(notification.note.renote!)" :plain="true" :nowrap="true" :author="notification.note.renote!.user"/>
 				<i class="ti ti-quote" :class="$style.quote"></i>
 			</MkA>
 			<MkA v-else-if="notification.type === 'reply'" :class="$style.text" :to="notePage(notification.note)" :title="getNoteSummary(notification.note)">
@@ -94,7 +94,7 @@
 
 <script lang="ts" setup>
 import { ref, shallowRef, onMounted, onUnmounted, watch } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkReactionIcon from '@/components/MkReactionIcon.vue';
 import MkFollowButton from '@/components/MkFollowButton.vue';
 import XReactionTooltip from '@/components/MkReactionTooltip.vue';
@@ -108,7 +108,7 @@ import { useTooltip } from '@/scripts/use-tooltip';
 import { $i } from '@/account';
 
 const props = withDefaults(defineProps<{
-	notification: misskey.entities.Notification;
+	notification: pleaides.entities.Notification;
 	withTime?: boolean;
 	full?: boolean;
 }>(), {

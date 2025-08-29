@@ -19,7 +19,7 @@ import { } from 'vue';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
-import { AuthSession } from 'misskey-js/built/entities';
+import { AuthSession } from 'pleaides-lib/built/entities';
 
 const props = defineProps<{
 	session: AuthSession;

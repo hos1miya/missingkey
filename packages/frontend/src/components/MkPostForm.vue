@@ -70,11 +70,11 @@
 <script lang="ts" setup>
 import { inject, watch, nextTick, onMounted, defineAsyncComponent } from 'vue';
 import * as mfm from 'mfm-js';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import { length } from 'stringz';
 import { toASCII } from 'punycode/';
-import * as Acct from 'misskey-js/built/acct';
+import * as Acct from 'pleaides-lib/built/acct';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import XNotePreview from '@/components/MkNotePreview.vue';
 import XPostFormAttaches from '@/components/MkPostFormAttaches.vue';
@@ -100,16 +100,16 @@ import { pleaseLogin } from '@/scripts/please-login';
 const modal = inject('modal');
 
 const props = withDefaults(defineProps<{
-	reply?: misskey.entities.Note;
-	renote?: misskey.entities.Note;
-	mention?: misskey.entities.User;
-	specified?: misskey.entities.User;
+	reply?: pleaides.entities.Note;
+	renote?: pleaides.entities.Note;
+	mention?: pleaides.entities.User;
+	specified?: pleaides.entities.User;
 	initialText?: string;
-	initialVisibility?: (typeof misskey.noteVisibilities)[number];
-	initialFiles?: misskey.entities.DriveFile[];
+	initialVisibility?: (typeof pleaides.noteVisibilities)[number];
+	initialFiles?: pleaides.entities.DriveFile[];
 	initialLocalOnly?: boolean;
-	initialVisibleUsers?: misskey.entities.User[];
-	initialNote?: misskey.entities.Note;
+	initialVisibleUsers?: pleaides.entities.User[];
+	initialNote?: pleaides.entities.Note;
 	instant?: boolean;
 	fixed?: boolean;
 	autofocus?: boolean;
@@ -144,7 +144,7 @@ let useCw = $ref(false);
 let showPreview = $ref(false);
 let cw = $ref<string | null>(null);
 let localOnly = $ref<boolean>(props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility ? defaultStore.state.localOnly : defaultStore.state.defaultNoteLocalOnly);
-let visibility = $ref(props.initialVisibility ?? (defaultStore.state.rememberNoteVisibility ? defaultStore.state.visibility : defaultStore.state.defaultNoteVisibility) as typeof misskey.noteVisibilities[number]);
+let visibility = $ref(props.initialVisibility ?? (defaultStore.state.rememberNoteVisibility ? defaultStore.state.visibility : defaultStore.state.defaultNoteVisibility) as typeof pleaides.noteVisibilities[number]);
 let visibleUsers = $ref([]);
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
@@ -692,7 +692,7 @@ function cancel() {
 
 function insertMention() {
 	os.selectUser().then(user => {
-		insertTextAtCursor(textareaEl, '@' + Acct.toString(user as misskey.entities.UserDetailed) + ' ');
+		insertTextAtCursor(textareaEl, '@' + Acct.toString(user as pleaides.entities.UserDetailed) + ' ');
 	});
 }
 
@@ -713,7 +713,7 @@ function showActions(ev) {
 	})), ev.currentTarget ?? ev.target);
 }
 
-let postAccount = $ref<misskey.entities.UserDetailed | null>(null);
+let postAccount = $ref<pleaides.entities.UserDetailed | null>(null);
 
 function openAccountMenu(ev: MouseEvent) {
 	if (!$i) return;

@@ -45,8 +45,8 @@
 						</span>
 					</div>
 					<div class="description">
-						<MkOmit>
-							<Mfm v-if="user.description" :text="user.description" :is-note="false" :author="user" :i="$i"/>
+						<MkOmit :max-height="200">
+							<Mfm v-if="user.description" :text="user.description" :is-note="false" :author="user" :i="$i ?? undefined"/>
 							<p v-else class="empty">{{ i18n.ts.noAccountDescription }}</p>
 						</MkOmit>
 					</div>
@@ -71,7 +71,7 @@
 								<Mfm :text="field.name" :plain="true" :colored="false"/>
 							</dt>
 							<dd class="value">
-								<Mfm :text="field.value" :author="user" :i="$i" :colored="false"/>
+								<Mfm :text="field.value" :author="user" :i="$i ?? undefined" :colored="false"/>
 							</dd>
 						</dl>
 					</div>
@@ -113,21 +113,18 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, computed, inject, onMounted, onUnmounted, watch } from 'vue';
+import { defineAsyncComponent, computed, onMounted, onUnmounted } from 'vue';
 import calcAge from 's-age';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import XNote from '@/components/MkNote.vue';
 import MkFollowButton from '@/components/MkFollowButton.vue';
-import MkContainer from '@/components/MkContainer.vue';
-import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import MkRemoteCaution from '@/components/MkRemoteCaution.vue';
-import MkTab from '@/components/MkTab.vue';
 import MkOmit from '@/components/MkOmit.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import { getScrollPosition } from '@/scripts/scroll';
 import { getUserMenu } from '@/scripts/get-user-menu';
 import number from '@/filters/number';
-import { userPage, acct as getAcct } from '@/filters/user';
+import { userPage } from '@/filters/user';
 import * as os from '@/os';
 import { useRouter } from '@/router';
 import { i18n } from '@/i18n';
@@ -140,7 +137,7 @@ const XPhotos = defineAsyncComponent(() => import('./index.photos.vue'));
 const XActivity = defineAsyncComponent(() => import('./index.activity.vue'));
 
 const props = withDefaults(defineProps<{
-	user: misskey.entities.UserDetailed;
+	user: pleaides.entities.UserDetailed;
 	/** Test only; MkNotes currently causes problems in vitest */
 	disableNotes: boolean;
 }>(), {
@@ -409,9 +406,6 @@ onUnmounted(() => {
 							text-overflow: ellipsis;
 							margin: 0;
 						}
-					}
-
-					&.system > .field > .name {
 					}
 				}
 

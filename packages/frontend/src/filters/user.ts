@@ -1,15 +1,15 @@
-import * as misskey from 'misskey-js';
-import * as Acct from 'misskey-js/built/acct';
+import * as pleaides from 'pleaides-lib';
+import * as Acct from 'pleaides-lib/built/acct';
 import { url } from '@/config';
 
-export const acct = (user: misskey.Acct) => {
+export const acct = (user: pleaides.Acct) => {
 	return Acct.toString(user);
 };
 
-export const userName = (user: misskey.entities.User) => {
+export const userName = (user: pleaides.entities.User) => {
 	return user.name || user.username;
 };
 
-export const userPage = (user: misskey.Acct, path?, absolute = false) => {
+export const userPage = (user: pleaides.Acct, path?, absolute = false) => {
 	return `${absolute ? url : ''}/@${acct(user)}${(path ? `/${path}` : '')}`;
 };

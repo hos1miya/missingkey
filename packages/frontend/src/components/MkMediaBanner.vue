@@ -29,13 +29,13 @@
 
 <script lang="ts" setup>
 import { onMounted } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import VuePlyr from '@skjnldsv/vue-plyr';
 import { ColdDeviceStorage } from '@/store';
 import '@skjnldsv/vue-plyr/dist/vue-plyr.css';
 
 const props = withDefaults(defineProps<{
-	media: misskey.entities.DriveFile;
+	media: pleaides.entities.DriveFile;
 }>(), {
 });
 

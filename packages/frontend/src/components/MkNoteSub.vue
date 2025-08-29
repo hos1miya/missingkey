@@ -26,7 +26,7 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
@@ -35,7 +35,7 @@ import * as os from '@/os';
 import { i18n } from '@/i18n';
 
 const props = withDefaults(defineProps<{
-	note: misskey.entities.Note;
+	note: pleaides.entities.Note;
 	detail?: boolean;
 
 	// how many notes are in between this one and the note being viewed in detail
@@ -45,7 +45,7 @@ const props = withDefaults(defineProps<{
 });
 
 let showContent = $ref(false);
-let replies: misskey.entities.Note[] = $ref([]);
+let replies: pleaides.entities.Note[] = $ref([]);
 
 if (props.detail) {
 	os.api('notes/children', {

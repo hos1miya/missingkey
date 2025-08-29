@@ -8,13 +8,13 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { length } from 'stringz';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import { concat } from '@/scripts/array';
 import { i18n } from '@/i18n';
 
 const props = defineProps<{
 	modelValue: boolean;
-	note: misskey.entities.Note;
+	note: pleaides.entities.Note;
 }>();
 
 const emit = defineEmits<{

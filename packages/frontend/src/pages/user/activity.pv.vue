@@ -9,16 +9,14 @@
 </template>
 
 <script lang="ts" setup>
-import { markRaw, version as vueVersion, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { onMounted } from 'vue';
 import { Chart, ChartDataset } from 'chart.js';
-import tinycolor from 'tinycolor2';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import gradient from 'chartjs-plugin-gradient';
 import * as os from '@/os';
 import { defaultStore } from '@/store';
 import { useChartTooltip } from '@/scripts/use-chart-tooltip';
 import { chartVLine } from '@/scripts/chart-vline';
-import { alpha } from '@/scripts/color';
 import { initChart } from '@/scripts/init-chart';
 import { chartLegend } from '@/scripts/chart-legend';
 import MkChartLegend from '@/components/MkChartLegend.vue';
@@ -26,13 +24,13 @@ import MkChartLegend from '@/components/MkChartLegend.vue';
 initChart();
 
 const props = defineProps<{
-	user: misskey.entities.User;
+	user: pleaides.entities.User;
 }>();
 
 const chartEl = $shallowRef<HTMLCanvasElement>(null);
 let legendEl = $shallowRef<InstanceType<typeof MkChartLegend>>();
 const now = new Date();
-let chartInstance: Chart = null;
+let chartInstance: Chart;
 const chartLimit = 30;
 let fetching = $ref(true);
 
@@ -86,10 +84,10 @@ async function renderChart() {
 		type: 'bar',
 		data: {
 			datasets: [
-				makeDataset('UPV (user)', format(raw.upv.user).slice().reverse(), { backgroundColor: colorUser, stack: 'u' }),
-				makeDataset('UPV (visitor)', format(raw.upv.visitor).slice().reverse(), { backgroundColor: colorVisitor, stack: 'u' }),
-				makeDataset('NPV (user)', format(raw.pv.user).slice().reverse(), { backgroundColor: colorUser2, stack: 'n' }),
-				makeDataset('NPV (visitor)', format(raw.pv.visitor).slice().reverse(), { backgroundColor: colorVisitor2, stack: 'n' }),
+				makeDataset('UPV (user)', format(raw!.upv.user).slice().reverse(), { backgroundColor: colorUser, stack: 'u' }),
+				makeDataset('UPV (visitor)', format(raw!.upv.visitor).slice().reverse(), { backgroundColor: colorVisitor, stack: 'u' }),
+				makeDataset('NPV (user)', format(raw!.pv.user).slice().reverse(), { backgroundColor: colorUser2, stack: 'n' }),
+				makeDataset('NPV (visitor)', format(raw!.pv.visitor).slice().reverse(), { backgroundColor: colorVisitor2, stack: 'n' }),
 			],
 		},
 		options: {

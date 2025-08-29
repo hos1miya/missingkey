@@ -31,7 +31,7 @@
 
 <script lang="ts" setup>
 import { onBeforeUnmount, onMounted } from 'vue';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import * as os from '@/os';
 import { stream } from '@/stream';
 import { i18n } from '@/i18n';
@@ -39,7 +39,7 @@ import { claimAchievement } from '@/scripts/achievements';
 import { $i } from '@/account';
 
 const props = withDefaults(defineProps<{
-	user: Misskey.entities.UserDetailed,
+	user: Pleaides.entities.UserDetailed,
 	full?: boolean,
 	large?: boolean,
 }>(), {
@@ -56,10 +56,10 @@ if (props.user.isFollowing == null) {
 	os.api('users/show', {
 		userId: props.user.id,
 	})
-		.then(onFollowChange);
+	.then(onFollowChange);
 }
 
-function onFollowChange(user: Misskey.entities.UserDetailed) {
+function onFollowChange(user: Pleaides.entities.UserDetailed) {
 	if (user.id === props.user.id) {
 		isFollowing = user.isFollowing;
 		hasPendingFollowRequestFromYou = user.hasPendingFollowRequestFromYou;
@@ -95,16 +95,16 @@ async function onClick() {
 
 				claimAchievement('following1');
 
-				if ($i.followingCount >= 10) {
+				if ($i && $i.followingCount >= 10) {
 					claimAchievement('following10');
 				}
-				if ($i.followingCount >= 50) {
+				if ($i && $i.followingCount >= 50) {
 					claimAchievement('following50');
 				}
-				if ($i.followingCount >= 100) {
+				if ($i && $i.followingCount >= 100) {
 					claimAchievement('following100');
 				}
-				if ($i.followingCount >= 300) {
+				if ($i && $i.followingCount >= 300) {
 					claimAchievement('following300');
 				}
 			}

@@ -14,9 +14,9 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, computed, inject, onMounted, onUnmounted, watch } from 'vue';
-import * as Acct from 'misskey-js/built/acct';
-import * as misskey from 'misskey-js';
+import { computed, watch } from 'vue';
+import * as Acct from 'pleaides-lib/built/acct';
+import * as pleaides from 'pleaides-lib';
 import XFollowList from './follow-list.vue';
 import * as os from '@/os';
 import { definePageMetadata } from '@/scripts/page-metadata';
@@ -27,7 +27,7 @@ const props = withDefaults(defineProps<{
 }>(), {
 });
 
-let user = $ref<null | misskey.entities.UserDetailed>(null);
+let user = $ref<null | pleaides.entities.UserDetailed>(null);
 let error = $ref(null);
 
 function fetchUser(): void {

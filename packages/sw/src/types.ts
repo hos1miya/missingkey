@@ -1,4 +1,4 @@
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 
 export type swMessageOrderType = 'post' | 'push';
 
@@ -12,11 +12,11 @@ export type SwMessage = {
 
 // Defined also @/core/PushNotificationService.ts#L12
 type pushNotificationDataSourceMap = {
-	notification: Misskey.entities.Notification;
-	unreadMessagingMessage: Misskey.entities.MessagingMessage;
+	notification: Pleaides.entities.Notification;
+	unreadMessagingMessage: Pleaides.entities.MessagingMessage;
 	unreadAntennaNote: {
 		antenna: { id: string, name: string };
-		note: Misskey.entities.Note;
+		note: Pleaides.entities.Note;
 	};
 	readNotifications: { notificationIds: string[] };
 	readAllNotifications: undefined;

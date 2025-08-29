@@ -9,7 +9,7 @@
 	<span v-if="$i && $i.id !== user.id && user.isFollowed" class="followed">{{ $ts.followsYou }}</span>
 	<div class="description">
 		<div v-if="user.description" class="mfm">
-			<Mfm :text="user.description" :author="user" :i="$i"/>
+			<Mfm :text="user.description" :author="user" :i="$i ?? undefined"/>
 		</div>
 		<span v-else style="opacity: 0.7;">{{ i18n.ts.noAccountDescription }}</span>
 	</div>
@@ -29,13 +29,13 @@
 </template>
 
 <script lang="ts" setup>
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import MkFollowButton from '@/components/MkFollowButton.vue';
 import { userPage } from '@/filters/user';
 import { i18n } from '@/i18n';
 
 defineProps<{
-	user: misskey.entities.UserDetailed;
+	user: pleaides.entities.UserDetailed;
 }>();
 </script>
 
@@ -101,6 +101,7 @@ defineProps<{
 
 		> .mfm {
 			display: -webkit-box;
+			line-clamp: 3;
 			-webkit-line-clamp: 3;
 			-webkit-box-orient: vertical;  
 			overflow: hidden;

@@ -41,9 +41,8 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineComponent, watch } from 'vue';
-import * as misskey from 'misskey-js';
-import XNote from '@/components/MkNote.vue';
+import { computed, watch } from 'vue';
+import * as pleaides from 'pleaides-lib';
 import XNoteDetailed from '@/components/MkNoteDetailed.vue';
 import XNotes from '@/components/MkNotes.vue';
 import MkRemoteCaution from '@/components/MkRemoteCaution.vue';
@@ -57,7 +56,7 @@ const props = defineProps<{
 	noteId: string;
 }>();
 
-let note = $ref<null | misskey.entities.Note>();
+let note = $ref<null | pleaides.entities.Note>();
 let clips = $ref();
 let showPrev = $ref(false);
 let showNext = $ref(false);

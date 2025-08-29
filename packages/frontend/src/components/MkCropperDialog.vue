@@ -27,7 +27,7 @@
 
 <script lang="ts" setup>
 import { nextTick, onMounted } from 'vue';
-import * as misskey from 'misskey-js';
+import * as pleaides from 'pleaides-lib';
 import Cropper from 'cropperjs';
 import tinycolor from 'tinycolor2';
 import MkModalWindow from '@/components/MkModalWindow.vue';
@@ -39,13 +39,13 @@ import { i18n } from '@/i18n';
 import { getProxiedImageUrl } from '@/scripts/media-proxy';
 
 const emit = defineEmits<{
-	(ev: 'ok', cropped: misskey.entities.DriveFile): void;
+	(ev: 'ok', cropped: pleaides.entities.DriveFile): void;
 	(ev: 'cancel'): void;
 	(ev: 'closed'): void;
 }>();
 
 const props = defineProps<{
-	file: misskey.entities.DriveFile;
+	file: pleaides.entities.DriveFile;
 	aspectRatio: number;
 }>();
 
@@ -56,12 +56,12 @@ let cropper: Cropper | null = null;
 let loading = $ref(true);
 
 const ok = async () => {
-	const promise = new Promise<misskey.entities.DriveFile>(async (res) => {
+	const promise = new Promise<pleaides.entities.DriveFile>(async (res) => {
 		const croppedCanvas = await cropper?.getCropperSelection()?.$toCanvas();
 		croppedCanvas.toBlob(blob => {
 			const formData = new FormData();
 			formData.append('file', blob);
-			formData.append('i', $i.token);
+			formData.append('i', $i!.token);
 			if (defaultStore.state.uploadFolder) {
 				formData.append('folderId', defaultStore.state.uploadFolder);
 			}

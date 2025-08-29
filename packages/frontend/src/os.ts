@@ -5,7 +5,7 @@ export { pendingApiRequestsCount, api, apiGet };
 import { Component, markRaw, Ref, ref, defineAsyncComponent } from 'vue';
 import { EventEmitter } from 'eventemitter3';
 import insertTextAtCursor from 'insert-text-at-cursor';
-import * as Misskey from 'misskey-js';
+import * as Pleaides from 'pleaides-lib';
 import { i18n } from './i18n';
 import MkPostFormDialog from '@/components/MkPostFormDialog.vue';
 import MkWaitingDialog from '@/components/MkWaitingDialog.vue';
@@ -26,7 +26,7 @@ export const apiWithDialog = ((
 	data: Record<string, any> = {},
 	token?: string | null | undefined,
 ) => {
-	const promise = api(endpoint, data, token);
+	const promise = api(endpoint as keyof Pleaides.Endpoints, data, token);
 	promiseDialog(promise, null, async (err: any) => {
 		let title = null;
 		let text = err.message + '\n' + (err as any).id;
@@ -407,7 +407,7 @@ export function form(title, form): Promise<{ canceled: boolean | null, result: a
 	});
 }
 
-export async function selectUser(opts: { includeSelf?: boolean } = {}) {
+export async function selectUser(opts: { includeSelf?: boolean } = {}): Promise<Pleaides.entities.UserDetailed> {
 	return new Promise((resolve) => {
 		popup(defineAsyncComponent(() => import('@/components/MkUserSelectDialog.vue')), {
 			includeSelf: opts.includeSelf,
@@ -462,9 +462,9 @@ export async function pickEmoji(src: HTMLElement | null, opts) {
 	});
 }
 
-export async function cropImage(image: Misskey.entities.DriveFile, options: {
+export async function cropImage(image: Pleaides.entities.DriveFile, options: {
 	aspectRatio: number;
-}): Promise<Misskey.entities.DriveFile> {
+}): Promise<Pleaides.entities.DriveFile> {
 	return new Promise((resolve) => {
 		popup(defineAsyncComponent(() => import('@/components/MkCropperDialog.vue')), {
 			file: image,
