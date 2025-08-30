@@ -7,15 +7,15 @@
 		"lint": "tsc --noEmit && eslint --quiet src/**/*.ts"
 	},
 	"dependencies": {
-		"esbuild": "^0.25.4",
+		"esbuild": "^0.25.9",
 		"idb-keyval": "^6.2.2",
-		"pleaides-lib": "github:hos1miya/pleaides-lib#v1.0.10"
+		"pleaides-lib": "github:hos1miya/pleaides-lib#v1.0.11"
 	},
 	"devDependencies": {
-		"@typescript-eslint/parser": "^8.32.1",
-		"@typescript/lib-webworker": "npm:@types/serviceworker@0.0.136",
-		"eslint": "^9.27.0",
-		"eslint-plugin-import": "^2.31.0",
-		"typescript": "^5.8.3"
+		"@typescript-eslint/parser": "^8.41.0",
+		"@typescript/lib-webworker": "npm:@types/serviceworker@0.0.152",
+		"eslint": "^9.34.0",
+		"eslint-plugin-import": "^2.32.0",
+		"typescript": "^5.9.2"
 	}
 }

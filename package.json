@@ -1,24 +1,42 @@
 {
 	"name": "missingkey",
-	"version": "1.4.0-missingkey.develop.250830.9",
+	"version": "1.4.0-missingkey.develop.250830.10",
 	"codename": "isle",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/hos1miya/missingkey.git"
 	},
-	"packageManager": "pnpm@10.11.0",
+	"packageManager": "pnpm@10.15.0",
 	"workspaces": [
 		"packages/frontend",
 		"packages/backend",
 		"packages/sw"
 	],
-  "pnpm": {
-    "overrides": {
+	"pnpm": {
+		"overrides": {
 			"nsfwjs": "4.2.0",
-      "sharp": "0.31.3",
-			"redis-lock": "0.1.4"
-    }
-  },
+			"sharp": "0.31.3",
+			"redis-lock": "0.1.4",
+			"cross-env": "7.0.3"
+		},
+		"onlyBuiltDependencies": [
+			"@nestjs/core",
+			"@parcel/watcher",
+			"@swc/core",
+			"@tensorflow/tfjs-node",
+			"aws-sdk",
+			"bufferutil",
+			"core-js",
+			"cypress",
+			"es5-ext",
+			"esbuild",
+			"msgpackr-extract",
+			"re2",
+			"sharp",
+			"unrs-resolver",
+			"utf-8-validate"
+		]
+	},
 	"private": true,
 	"scripts": {
 		"build-pre": "node ./scripts/build-pre.js",
