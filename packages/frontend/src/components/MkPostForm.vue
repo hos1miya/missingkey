@@ -2,14 +2,12 @@
 <div
 	:class="[$style.root, { [$style.modal]: modal, _popup: modal }]"
 	@dragover.stop="onDragover"
-	@dragenter="onDragenter"
-	@dragleave="onDragleave"
 	@drop.stop="onDrop"
 >
 	<header :class="$style.header">
 		<button v-if="!fixed" :class="$style.cancel" class="_button" @click="cancel"><i class="ti ti-x"></i></button>
 		<button v-click-anime v-tooltip="i18n.ts.switchAccount" :class="$style.account" class="_button" @click="openAccountMenu">
-			<MkAvatar :user="postAccount ?? $i" :class="$style.avatar"/>
+			<MkAvatar :user="postAccount ?? $i!" :class="$style.avatar"/>
 		</button>
 		<div :class="$style.headerRight">
 			<span :class="$style.textCount">{{ maxTextLength - textLength }}</span>
@@ -34,11 +32,11 @@
 	<div>
 		<MkNoteSimple v-if="reply" :class="$style.targetNote" :note="reply"/>
 		<MkNoteSimple v-if="renote" :class="$style.targetNote" :note="renote"/>
-		<div v-if="quoteId" :class="$style.withQuote"><i class="ti ti-quote"></i> {{ i18n.ts.quoteAttached }}<button @click="quoteId = null"><i class="ti ti-x"></i></button></div>
+		<div v-if="quoteId" :class="$style.withQuote"><i class="ti ti-quote"></i> {{ i18n.ts.quoteAttached }}<button @click="quoteId = undefined"><i class="ti ti-x"></i></button></div>
 		<div v-if="visibility === 'specified'" :class="$style.toSpecified">
 			<span style="margin-right: 8px;">{{ i18n.ts.recipient }}</span>
 			<div :class="$style.visibleUsers">
-				<span v-for="u in visibleUsers" :key="u.id" :class="$style.visibleUser">
+				<span v-if="visibleUsers && visibleUsers.length > 0" v-for="u in visibleUsers" :key="u.id" :class="$style.visibleUser">
 					<MkAcct :user="u"/>
 					<button class="_button" style="padding: 4px 8px;" @click="removeVisibleUser(u)"><i class="ti ti-x"></i></button>
 				</span>
@@ -125,10 +123,10 @@ const emit = defineEmits<{
 	(ev: 'esc'): void;
 }>();
 
-const textareaEl = $shallowRef<HTMLTextAreaElement | null>(null);
-const cwInputEl = $shallowRef<HTMLInputElement | null>(null);
-const hashtagsInputEl = $shallowRef<HTMLInputElement | null>(null);
-const visibilityButton = $shallowRef<HTMLElement | null>(null);
+const textareaEl = $shallowRef<HTMLTextAreaElement>();
+const cwInputEl = $shallowRef<HTMLInputElement>();
+const hashtagsInputEl = $shallowRef<HTMLInputElement>();
+const visibilityButton = $shallowRef<HTMLElement>();
 
 let posting = $ref(false);
 let posted = $ref(false);
@@ -142,15 +140,14 @@ let poll = $ref<{
 } | null>(null);
 let useCw = $ref(false);
 let showPreview = $ref(false);
-let cw = $ref<string | null>(null);
+let cw = $ref<string>('');
 let localOnly = $ref<boolean>(props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility ? defaultStore.state.localOnly : defaultStore.state.defaultNoteLocalOnly);
 let visibility = $ref(props.initialVisibility ?? (defaultStore.state.rememberNoteVisibility ? defaultStore.state.visibility : defaultStore.state.defaultNoteVisibility) as typeof pleaides.noteVisibilities[number]);
-let visibleUsers = $ref([]);
+let visibleUsers = $ref<pleaides.entities.UserDetailed[]>();
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }
-let draghover = $ref(false);
-let quoteId = $ref(null);
+let quoteId = $ref<string | null>();
 let recentHashtags = $ref(JSON.parse(miLocalStorage.getItem('hashtags') || '[]'));
 let imeText = $ref('');
 
@@ -210,8 +207,14 @@ const canPost = $computed((): boolean => {
 		(!poll || poll.choices.length >= 2);
 });
 
-const withHashtags = $computed(defaultStore.makeGetterSetter('postFormWithHashtags'));
-const hashtags = $computed(defaultStore.makeGetterSetter('postFormHashtags'));
+const withHashtags = $computed({
+  get: () => defaultStore.makeGetterSetter('postFormWithHashtags').get(),
+  set: (v: boolean) => defaultStore.makeGetterSetter('postFormWithHashtags').set(v),
+});
+const hashtags = $computed({
+  get: () => defaultStore.makeGetterSetter('postFormHashtags').get(),
+  set: (v: string) => defaultStore.makeGetterSetter('postFormHashtags').set(v),
+});
 
 watch($$(text), () => {
 	checkMissingMention();
@@ -308,7 +311,7 @@ function checkMissingMention() {
 		const ast = mfm.parse(text);
 
 		for (const x of extractMentions(ast)) {
-			if (!visibleUsers.some(u => (u.username === x.username) && (u.host === x.host))) {
+			if (!visibleUsers || !visibleUsers.some(u => (u.username === x.username) && (u.host === x.host))) {
 				os.api('users/show', { username: x.username, host: x.host ?? undefined }).then(user => {
 					pushVisibleUser(user);
 				});
@@ -400,9 +403,7 @@ function setVisibility() {
 }
 
 function pushVisibleUser(user) {
-	if (!visibleUsers.some(u => u.username === user.username && u.host === user.host)) {
-		visibleUsers.push(user);
-	}
+	visibleUsers!.push(user);
 }
 
 function addVisibleUser() {
@@ -412,14 +413,14 @@ function addVisibleUser() {
 }
 
 function removeVisibleUser(user) {
-	visibleUsers = erase(user, visibleUsers);
+	visibleUsers = erase(user, visibleUsers!);
 }
 
 function clear() {
 	text = '';
 	files = [];
 	poll = null;
-	quoteId = null;
+	quoteId = undefined;
 }
 
 function onKeydown(ev: KeyboardEvent) {
@@ -460,7 +461,7 @@ async function onPaste(ev: ClipboardEvent) {
 				return;
 			}
 
-			quoteId = paste.replace(url, '').match(/^\/notes\/(.+?)\/?$/)?.[1];
+			quoteId = paste.replace(url, '').match(/^\/notes\/(.+?)\/?$/)?.[1]!;
 		});
 	}
 }
@@ -471,7 +472,6 @@ function onDragover(ev) {
 	const isDriveFile = ev.dataTransfer.types[0] === _DATA_TRANSFER_DRIVE_FILE_;
 	if (isFile || isDriveFile) {
 		ev.preventDefault();
-		draghover = true;
 		switch (ev.dataTransfer.effectAllowed) {
 			case 'all':
 			case 'uninitialized':
@@ -491,17 +491,7 @@ function onDragover(ev) {
 	}
 }
 
-function onDragenter(ev) {
-	draghover = true;
-}
-
-function onDragleave(ev) {
-	draghover = false;
-}
-
 function onDrop(ev): void {
-	draghover = false;
-
 	// ファイルだったら
 	if (ev.dataTransfer.files.length > 0) {
 		ev.preventDefault();
@@ -552,7 +542,7 @@ async function post(ev?: MouseEvent) {
 	if (!$i) pleaseLogin();
 	
 	if (ev) {
-		const el = ev.currentTarget ?? ev.target;
+		const el = (ev.currentTarget ?? ev.target) as HTMLElement;
 		const rect = el.getBoundingClientRect();
 		const x = rect.left + (el.offsetWidth / 2);
 		const y = rect.top + (el.offsetHeight / 2);
@@ -608,12 +598,12 @@ async function post(ev?: MouseEvent) {
 		cw: useCw ? cw ?? '' : undefined,
 		localOnly: localOnly,
 		visibility: visibility,
-		visibleUserIds: visibility === 'specified' ? visibleUsers.map(u => u.id) : undefined,
+		visibleUserIds: (visibility === 'specified' && visibleUsers) ? visibleUsers.map(u => u.id) : undefined,
 		via: 'MissingKey Web App',
 	};
 
-	if (withHashtags && hashtags && hashtags.trim() !== '') {
-		const hashtags_ = hashtags.trim().split(' ').map(x => x.startsWith('#') ? x : '#' + x).join(' ');
+	if (withHashtags && hashtags && (hashtags as string).trim() !== '') {
+		const hashtags_ = (hashtags as string).trim().split(' ').map(x => x.startsWith('#') ? x : '#' + x).join(' ');
 		postData.text = postData.text ? `${postData.text} ${hashtags_}` : hashtags_;
 	}
 
@@ -628,7 +618,7 @@ async function post(ev?: MouseEvent) {
 
 	if (postAccount) {
 		const storedAccounts = await getAccounts();
-		token = storedAccounts.find(x => x.id === postAccount.id)?.token;
+		token = storedAccounts.find(x => x.id === postAccount!.id)?.token;
 	}
 
 	posting = true;
@@ -697,7 +687,7 @@ function insertMention() {
 }
 
 async function insertEmoji(ev: MouseEvent) {
-	os.openEmojiPicker({}, textareaEl, ev.currentTarget ?? ev.target ?? undefined);
+	os.openEmojiPicker({}, textareaEl!, ev.currentTarget ?? ev.target ?? undefined);
 }
 
 function showActions(ev) {
@@ -707,7 +697,7 @@ function showActions(ev) {
 			action.handler({
 				text: text,
 			}, (key, value) => {
-				if (key === 'text') { text = value; }
+				if (key === 'text') { text = value as string; }
 			});
 		},
 	})), ev.currentTarget ?? ev.target);
@@ -732,6 +722,7 @@ function openAccountMenu(ev: MouseEvent) {
 }
 
 onMounted(() => {
+	if (!$i) pleaseLogin();
 	if (props.autofocus) {
 		focus();
 
@@ -741,9 +732,9 @@ onMounted(() => {
 	}
 
 	// TODO: detach when unmount
-	new Autocomplete(textareaEl, $$(text));
-	new Autocomplete(cwInputEl, $$(cw));
-	new Autocomplete(hashtagsInputEl, $$(hashtags));
+	if (textareaEl) new Autocomplete(textareaEl, $$(text));
+	if (cwInputEl) new Autocomplete(cwInputEl, $$(cw));
+	if (hashtagsInputEl) new Autocomplete(hashtagsInputEl, $$(hashtags));
 
 	nextTick(() => {
 		// 書きかけの投稿を復元
@@ -767,8 +758,8 @@ onMounted(() => {
 			const init = props.initialNote;
 			text = init.text ? init.text : '';
 			files = init.files;
-			cw = init.cw;
-			useCw = init.cw != null;
+			cw = init.cw ?? '';
+			useCw = init.cw ? true : false;
 			if (init.poll) {
 				poll = {
 					choices: init.poll.choices.map(x => x.text),
@@ -778,7 +769,7 @@ onMounted(() => {
 				};
 			}
 			visibility = init.visibility;
-			localOnly = init.localOnly;
+			localOnly = init.localOnly ?? false;
 			quoteId = init.renote ? init.renote.id : null;
 			saveDraft();
 		}

@@ -5,7 +5,7 @@
 		<div ref="gallery" :class="[$style.medias, count <= 4 ? $style['n' + count] : $style.nMany]">
 			<template v-for="media in mediaList.filter(media => previewable(media))">
 				<XVideo v-if="media.type.startsWith('video')" :key="media.id" :class="$style.media" :video="media"/>
-				<XImage v-else-if="media.type.startsWith('image')" :key="media.id" :class="$style.media" class="image" :data-id="media.id" :image="media" :raw="raw"/>
+				<XImage v-if="media.type.startsWith('image')" :key="media.id" :class="$style.media" class="image" :data-id="media.id" :image="media" :raw="raw"/>
 			</template>
 		</div>
 	</div>
@@ -25,7 +25,7 @@ import { FILE_TYPE_BROWSERSAFE } from '@/const';
 
 const props = defineProps<{
 	mediaList: pleaides.entities.DriveFile[];
-	mediaUser: pleaides.entities.UserLite[];
+	mediaUser: pleaides.entities.UserLite;
 	raw?: boolean;
 }>();
 
@@ -93,8 +93,8 @@ onMounted(() => {
 		itemData.msrc = file!.thumbnailUrl;
 		itemData.alt = file!.comment || file!.name;
 		itemData.comment = file!.comment || file!.name;
-		itemData.userId = props.mediaUser[0].username;
-		itemData.host = props.mediaUser[0].host || window.location.hostname;
+		itemData.userId = props.mediaUser.username;
+		itemData.host = props.mediaUser.host || window.location.hostname;
 		itemData.fileId = file!.id;
 		if (lastDotIndex !== -1) {
 			itemData.extension = "." + file!.name.substring(lastDotIndex + 1).toLowerCase();
@@ -106,7 +106,7 @@ onMounted(() => {
 
 	lightbox.on('uiRegister', () => {
 		let downloadTitle, downloadUrl;
-		lightbox.pswp.ui.registerElement({
+		lightbox.pswp!.ui!.registerElement({
 			name: 'altText',
 			className: 'pswp__alt-text-container',
 			appendTo: 'wrapper',
@@ -116,11 +116,11 @@ onMounted(() => {
 				el.appendChild(textBox);
 
 				pswp.on('change', (a) => {
-					textBox.textContent = pswp.currSlide.data.comment;
+					textBox.textContent = pswp.currSlide!.data.comment;
 				});
 			},
 		});
-		lightbox.pswp.ui.registerElement({
+		lightbox.pswp!.ui!.registerElement({
 			name: 'download-button',
 			order: 9,
 			isButton: true,
@@ -140,10 +140,9 @@ onMounted(() => {
 				//el.setAttribute('rel', 'noopener');
 
 				pswp.on('change', () => {
-					el.title = pswp.currSlide.data.userId + "." + pswp.currSlide.data.host + "_" + pswp.currSlide.data.fileId + pswp.currSlide.data.extension;
-					el.value = pswp.currSlide.data.src;
+					el.title = pswp.currSlide!.data.userId + "." + pswp.currSlide!.data.host + "_" + pswp.currSlide!.data.fileId + pswp.currSlide!.data.extension;
 					downloadTitle = el.title;
-					downloadUrl = el.value;
+					downloadUrl = pswp.currSlide!.data.src;
 				});
 			},
 						

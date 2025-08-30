@@ -8,7 +8,7 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted } from 'vue';
+import { onMounted } from 'vue';
 
 const props = withDefaults(defineProps<{
 	maxHeight: number;
@@ -22,14 +22,14 @@ let ignoreOmit = $ref(false);
 
 onMounted(() => {
 	const calcOmit = () => {
-		if (omitted || ignoreOmit) return;
+		if (omitted || ignoreOmit || !content) return;
 		omitted = content.offsetHeight > props.maxHeight;
 	};
 
 	calcOmit();
 	new ResizeObserver((entries, observer) => {
 		calcOmit();
-	}).observe(content);
+	}).observe(content!);
 });
 </script>
 

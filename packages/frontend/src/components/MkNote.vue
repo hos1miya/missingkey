@@ -167,6 +167,7 @@ import { claimAchievement } from '@/scripts/achievements';
 import { getNoteSummary } from '@/scripts/get-note-summary';
 import { shownNoteIds } from '@/os';
 import { MenuItem } from '@/types/menu';
+import { Note } from 'pleaides-lib/built/entities';
 
 const props = defineProps<{
 	note: pleaides.entities.Note;
@@ -180,7 +181,7 @@ if (noteViewInterruptors.length > 0) {
 	onMounted(async () => {
 		let result = deepClone(note);
 		for (const interruptor of noteViewInterruptors) {
-			result = await interruptor.handler(result);
+			result = await interruptor.handler(result) as Note;
 		}
 		note = result;
 	});
@@ -224,7 +225,7 @@ shownNoteIds.add(appearNote.id);
 const keymap = {
 	'r': () => reply(true),
 	'e|a|plus': () => react(true),
-	'q': () => renoteButton.value!.renote(true),
+	'q': () => renote(true),
 	'up|k|shift+tab': focusBefore,
 	'down|j|tab': focusAfter,
 	'esc': blur,
@@ -291,8 +292,6 @@ function reply(viaKeyboard = false) : void {
 	os.post({
 		reply: appearNote,
 		animation: !viaKeyboard,
-	}, () => {
-		focus();
 	});
 }
 
@@ -335,8 +334,8 @@ function onContextmenu(ev: MouseEvent) : void {
 			return isLink(el.parentElement);
 		}
 	};
-	if (isLink(ev.target)) return;
-	if (window.getSelection().toString() !== '') return;
+	if (isLink(ev.target as HTMLElement)) return;
+	if (window.getSelection()?.toString() !== '') return;
 
 	if (defaultStore.state.useReactionPickerForContextMenu) {
 		ev.preventDefault();
@@ -385,14 +384,7 @@ function focusBefore() : void {
 function focusAfter() : void {
 	focusNext(el.value ? el.value : null);
 }
-/*
-function readPromo() : void {
-	os.api('promo/read', {
-		noteId: appearNote.id,
-	});
-	isHided.value = true;
-}
-*/
+
 function showReactions() : void {
 	os.popup(defineAsyncComponent(() => import('@/components/MkReactedUsersDialog.vue')), {
 		noteId: appearNote.id,

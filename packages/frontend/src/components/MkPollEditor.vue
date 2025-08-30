@@ -59,16 +59,16 @@ import { i18n } from '@/i18n';
 
 const props = defineProps<{
 	modelValue: {
-		expiresAt: string;
-		expiredAfter: number;
+		expiresAt: string | null;
+		expiredAfter: string | null;
 		choices: string[];
 		multiple: boolean;
 	};
 }>();
 const emit = defineEmits<{
 	(ev: 'update:modelValue', v: {
-		expiresAt: string;
-		expiredAfter: number;
+		expiresAt: string | null;
+		expiredAfter: string | null;
 		choices: string[];
 		multiple: boolean;
 	}): void;
@@ -85,9 +85,9 @@ const unit = ref('second');
 if (props.modelValue.expiresAt) {
 	expiration.value = 'at';
 	atDate.value = atTime.value = props.modelValue.expiresAt;
-} else if (typeof props.modelValue.expiredAfter === 'number') {
+} else if (props.modelValue.expiredAfter) {
 	expiration.value = 'after';
-	after.value = props.modelValue.expiredAfter / 1000;
+	after.value = (props.modelValue.expiredAfter as unknown as number) / 1000;
 } else {
 	expiration.value = 'infinite';
 }
@@ -114,7 +114,7 @@ function get() {
 	};
 
 	const calcAfter = () => {
-		let base = parseInt(after.value);
+		let base = parseInt(after.value as unknown as string);
 		switch (unit.value) {
 			case 'day': base *= 24;
 				// fallthrough
