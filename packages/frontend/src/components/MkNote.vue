@@ -32,26 +32,26 @@
 			<span v-if="note.localOnly" style="margin-left: 0.5em;" :title="i18n.ts._visibility['localOnly']"><i class="ti ti-world-off"></i></span>
 		</div>
 	</div>
-	<div v-if="renoteCollapsed" :class="$style.collapsedRenoteTarget">
+	<div v-if="renoteCollapsed && !isDeleted" :class="$style.collapsedRenoteTarget">
 		<MkAvatar :class="$style.collapsedRenoteTargetAvatar" :user="appearNote.user" link preview/>
 		<Mfm :text="getNoteSummary(appearNote)" :plain="true" :nowrap="true" :author="appearNote.user" :class="$style.collapsedRenoteTargetText" @click="renoteCollapsed = false"/>
 	</div>
-	<article v-else :class="$style.article" @contextmenu.stop="onContextmenu">
+	<article v-else-if="!isRenote || !isDeleted" :class="$style.article" @contextmenu.stop="onContextmenu">
 		<MkAvatar :class="$style.avatar" :user="appearNote.user" link preview/>
 		<div :class="$style.main">
 			<MkNoteHeader :note="appearNote" :mini="true"/>
 			<MkInstanceTicker v-if="showTicker" :instance="appearNote.user.instance"/>
 			<div style="container-type: inline-size;">
-				<p v-if="appearNote.cw != null" :class="$style.cw">
+				<p v-if="appearNote.cw != null && !isDeleted" :class="$style.cw">
 					<Mfm v-if="appearNote.cw != ''" style="margin-right: 8px;" :text="appearNote.cw" :author="appearNote.user" :i="$i ?? undefined"/>
 					<MkCwButton v-model="showContent" :note="appearNote"/>
 				</p>
-				<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
+				<div v-show="appearNote.cw == null || showContent || isDeleted" :class="[{ [$style.contentCollapsed]: collapsed }]">
 					<div :class="$style.text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 						<MkA v-if="appearNote.replyId" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
 						<Mfm v-if="appearNote.text" v-show="!isDeleted" :text="appearNote.text" :author="appearNote.user" :i="$i ?? undefined" :emoji-urls="appearNote.emojis"/>
-						<Mfm v-if="appearNote.text" v-show="isDeleted" :text="`(Deleted note)`" :author="appearNote.user" :i="$i ?? undefined" :emoji-urls="appearNote.emojis"/>
+						<Mfm v-if="isDeleted" :text="`<small>(Deleted note)</small>`" :author="appearNote.user" :i="$i ?? undefined" :emoji-urls="appearNote.emojis"/>
 						<div v-if="translating || translation" :class="$style.translation">
 							<MkLoading v-if="translating" mini/>
 							<div v-else>
@@ -60,16 +60,16 @@
 							</div>
 						</div>
 					</div>
-					<div v-if="appearNote.files.length > 0">
+					<div v-if="appearNote.files.length > 0 && !isDeleted">
 						<MkMediaList :mediaList="appearNote.files" :mediaUser="appearNote.user"/>
 					</div>
-					<MkPoll v-if="appearNote.poll" :note="appearNote" :class="$style.poll"/>
-					<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="false" :class="$style.urlPreview"/>
-					<div v-if="appearNote.renote" :class="$style.quote"><MkNoteSimple :note="appearNote.renote" :class="$style.quoteNote"/></div>
-					<button v-if="isLong && collapsed" :class="$style.collapsed" class="_button" @click="collapsed = false">
+					<MkPoll v-if="appearNote.poll && !isDeleted" :note="appearNote" :class="$style.poll"/>
+					<MkUrlPreview v-show="!isDeleted" v-for="url in urls" :key="url" :url="url" :compact="true" :detail="false" :class="$style.urlPreview"/>
+					<div v-if="appearNote.renote && !isDeleted" :class="$style.quote"><MkNoteSimple :note="appearNote.renote" :class="$style.quoteNote"/></div>
+					<button v-if="isLong && collapsed && !isDeleted" :class="$style.collapsed" class="_button" @click="collapsed = false">
 						<span :class="$style.collapsedLabel">{{ i18n.ts.showMore }}</span>
 					</button>
-					<button v-else-if="isLong && !collapsed" :class="$style.showLess" class="_button" @click="collapsed = true">
+					<button v-else-if="isLong && !collapsed && !isDeleted" :class="$style.showLess" class="_button" @click="collapsed = true">
 						<span :class="$style.showLessLabel">{{ i18n.ts.showLess }}</span>
 					</button>
 				</div>
