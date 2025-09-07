@@ -1,6 +1,6 @@
 import { Brackets } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import type { UsersRepository, FollowingsRepository, MutingsRepository, UserProfilesRepository, NotificationsRepository } from '@/models/index.js';
+import type { UsersRepository, FollowingsRepository, MutingsRepository, UserProfilesRepository, NotificationsRepository, NotesRepository } from '@/models/index.js';
 import { notificationTypes } from '@/types.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -70,6 +70,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		@Inject(DI.notificationsRepository)
 		private notificationsRepository: NotificationsRepository,
 
+		@Inject(DI.notesRepository)
+		private notesRepository: NotesRepository,
+
 		private notificationEntityService: NotificationEntityService,
 		private notificationService: NotificationService,
 		private queryService: QueryService,
@@ -99,6 +102,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			const suspendedQuery = this.usersRepository.createQueryBuilder('users')
 				.select('users.id')
 				.where('users.isSuspended = TRUE');
+
+			const deletedNoteQuery = this.notesRepository.createQueryBuilder('notes')
+				.select('notes.id')
+				.where('notes.isDeleted = TRUE');
 
 			const query = this.queryService.makePaginationQuery(this.notificationsRepository.createQueryBuilder('notification'), ps.sinceId, ps.untilId)
 				.andWhere('notification.notifieeId = :meId', { meId: me.id })
@@ -136,6 +143,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			query.andWhere(new Brackets(qb => { qb
 				.where(`notification.notifierId NOT IN (${ suspendedQuery.getQuery() })`)
 				.orWhere('notification.notifierId IS NULL');
+			}));
+
+			// deleted notes
+			query.andWhere(new Brackets(qb => { qb
+				.where(`notification.noteId NOT IN (${ deletedNoteQuery.getQuery() })`)
+				.orWhere('notification.noteId IS NULL');
 			}));
 
 			if (ps.following) {
