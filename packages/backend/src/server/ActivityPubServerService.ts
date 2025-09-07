@@ -12,7 +12,7 @@ import { Brackets, In, IsNull, LessThan, Not } from 'typeorm';
 import accepts from 'accepts';
 import vary from 'vary';
 import { DI } from '@/di-symbols.js';
-import type { FollowingsRepository, FollowRequestsRepository, NotesRepository, EmojisRepository, NoteReactionsRepository, UserProfilesRepository, UserNotePiningsRepository, UsersRepository, UserPublickey } from '@/models/index.js';
+import type { FollowingsRepository, FollowRequestsRepository, NotesRepository, EmojisRepository, NoteReactionsRepository, UserProfilesRepository, UserNotePiningsRepository, UsersRepository, UserPublickey, InstancesRepository } from '@/models/index.js';
 import type { CacheableRemoteUser } from '@/models/entities/User.js';
 import * as url from '@/misc/prelude/url.js';
 import type { Config } from '@/config.js';
@@ -25,6 +25,8 @@ import { UserKeypairStoreService } from '@/core/UserKeypairStoreService.js';
 import type { Following } from '@/models/entities/Following.js';
 import { countIf } from '@/misc/prelude/array.js';
 import type { Note } from '@/models/entities/Note.js';
+import { Cache } from '@/misc/cache.js';
+import type { Instance } from '@/models/entities/Instance.js';
 import { QueryService } from '@/core/QueryService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
@@ -40,6 +42,8 @@ const LD_JSON = 'application/ld+json; profile="https://www.w3.org/ns/activitystr
 
 @Injectable()
 export class ActivityPubServerService {
+	private hiddenSuspendedHostsCache: Cache<Instance[]>;
+
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
@@ -68,6 +72,9 @@ export class ActivityPubServerService {
 		@Inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
+		@Inject(DI.instancesRepository)
+		private instancesRepository: InstancesRepository,
+
 		private utilityService: UtilityService,
 		private userEntityService: UserEntityService,
 		private apDbResolverService: ApDbResolverService,
@@ -78,6 +85,7 @@ export class ActivityPubServerService {
 		private queryService: QueryService,
 	) {
 		//this.createServer = this.createServer.bind(this);
+		this.hiddenSuspendedHostsCache = new Cache<Instance[]>(1000 * 60 * 60);
 	}
 
 	@bindThis
@@ -133,6 +141,20 @@ export class ActivityPubServerService {
 		const keyHost = this.utilityService.toPuny(keyId.hostname);
 		if (!await this.utilityService.isFederationAllowedHost(keyHost)) {
 			reply.code(403);
+			return true;
+		}
+
+		let hiddenSuspendedHosts = this.hiddenSuspendedHostsCache.get(null);
+		if (hiddenSuspendedHosts == null) {
+			hiddenSuspendedHosts = await this.instancesRepository.find({
+				where: {
+					hiddenSuspended: true,
+				},
+			});
+			this.hiddenSuspendedHostsCache.set(null, hiddenSuspendedHosts);
+		}
+		if (hiddenSuspendedHosts.map(x => x.host).includes(this.utilityService.toPuny(keyHost))) {
+			reply.code(404);
 			return true;
 		}
 
