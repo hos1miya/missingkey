@@ -1,9 +1,9 @@
 <template>
 <Transition
-	:enter-active-class="$store.state.animation ? $style.transition_fade_enterActive : ''"
-	:leave-active-class="$store.state.animation ? $style.transition_fade_leaveActive : ''"
-	:enter-from-class="$store.state.animation ? $style.transition_fade_enterFrom : ''"
-	:leave-to-class="$store.state.animation ? $style.transition_fade_leaveTo : ''"
+	:enter-active-class="defaultStore.state.animation ? $style.transition_fade_enterActive : ''"
+	:leave-active-class="defaultStore.state.animation ? $style.transition_fade_leaveActive : ''"
+	:enter-from-class="defaultStore.state.animation ? $style.transition_fade_enterFrom : ''"
+	:leave-to-class="defaultStore.state.animation ? $style.transition_fade_leaveTo : ''"
 	mode="out-in"
 >
 	<MkLoading v-if="fetching"/>
@@ -13,7 +13,7 @@
 	<div v-else-if="empty" key="_empty_" class="empty">
 		<slot name="empty">
 			<div class="_fullinfo">
-				<img :src="infoImageUrl" class="_ghost"/>
+				<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
 				<div>{{ i18n.ts.nothing }}</div>
 			</div>
 		</slot>
@@ -21,14 +21,14 @@
 
 	<div v-else ref="rootEl">
 		<div v-show="pagination.reversed && more" key="_more_" class="_margin">
-			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? fetchMoreAhead : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary @click="fetchMoreAhead">
+			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? fetchMoreAhead : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary rounded @click="fetchMoreAhead">
 				{{ i18n.ts.loadMore }}
 			</MkButton>
 			<MkLoading v-else class="loading"/>
 		</div>
 		<slot :items="items" :fetching="fetching || moreFetching"></slot>
 		<div v-show="!pagination.reversed && more" key="_more_" class="_margin">
-			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? fetchMore : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary @click="fetchMore">
+			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? fetchMore : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary rounded @click="fetchMore">
 				{{ i18n.ts.loadMore }}
 			</MkButton>
 			<MkLoading v-else class="loading"/>
@@ -42,11 +42,11 @@ import { computed, ComputedRef, isRef, nextTick, onActivated, onBeforeUnmount, o
 import * as pleaides from 'pleaides-lib';
 import * as os from '@/os';
 import { onScrollTop, isTopVisible, getBodyScrollHeight, getScrollContainer, onScrollBottom, scrollToBottom, scroll, isBottomVisible } from '@/scripts/scroll';
+import { useDocumentVisibility } from '@/scripts/use-document-visibility';
 import MkButton from '@/components/MkButton.vue';
 import { defaultStore } from '@/store';
 import { MisskeyEntity } from '@/types/date-separated-list';
 import { i18n } from '@/i18n';
-import { infoImageUrl } from '@/instance';
 
 const SECOND_FETCH_LIMIT = 30;
 const TOLERANCE = 16;
@@ -105,8 +105,14 @@ const {
 	enableInfiniteScroll,
 } = defaultStore.reactiveState;
 
-const contentEl = $computed(() => props.pagination.pageEl || rootEl);
+const contentEl = $computed(() => props.pagination.pageEl ?? rootEl);
 const scrollableElement = $computed(() => getScrollContainer(contentEl));
+
+const visibility = useDocumentVisibility();
+
+let isPausingUpdate = false;
+let timerForSetPause: number | null = null;
+const BACKGROUND_PAUSE_WAIT_SEC = 10;
 
 // 先頭が表示されているかどうかを検出
 // https://qiita.com/mkataigi/items/0154aefd2223ce23398e
@@ -157,21 +163,22 @@ async function init(): Promise<void> {
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
 	await os.api(props.pagination.endpoint, {
 		...params,
-		limit: props.pagination.noPaging ? (props.pagination.limit || 10) : (props.pagination.limit || 10) + 1,
+		limit: props.pagination.limit ?? 10,
 	}).then(res => {
 		for (let i = 0; i < res.length; i++) {
 			const item = res[i];
 			if (i === 3) item._shouldInsertAd_ = true;
 		}
-		if (!props.pagination.noPaging && (res.length > (props.pagination.limit || 10))) {
-			res.pop();
+
+		if (res.length === 0 || props.pagination.noPaging) {
+			items.value = res;
+			more.value = false;
+		} else {
 			if (props.pagination.reversed) moreFetching.value = true;
 			items.value = res;
 			more.value = true;
-		} else {
-			items.value = res;
-			more.value = false;
 		}
+
 		offset.value = res.length;
 		error.value = false;
 		fetching.value = false;
@@ -192,7 +199,7 @@ const fetchMore = async (): Promise<void> => {
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
 	await os.api(props.pagination.endpoint, {
 		...params,
-		limit: SECOND_FETCH_LIMIT + 1,
+		limit: SECOND_FETCH_LIMIT,
 		...(props.pagination.offsetMode ? {
 			offset: offset.value,
 		} : {
@@ -221,20 +228,7 @@ const fetchMore = async (): Promise<void> => {
 			});
 		};
 
-		if (res.length > SECOND_FETCH_LIMIT) {
-			res.pop();
-
-			if (props.pagination.reversed) {
-				reverseConcat(res).then(() => {
-					more.value = true;
-					moreFetching.value = false;
-				});
-			} else {
-				items.value = items.value.concat(res);
-				more.value = true;
-				moreFetching.value = false;
-			}
-		} else {
+		if (res.length === 0) {
 			if (props.pagination.reversed) {
 				reverseConcat(res).then(() => {
 					more.value = false;
@@ -243,6 +237,17 @@ const fetchMore = async (): Promise<void> => {
 			} else {
 				items.value = items.value.concat(res);
 				more.value = false;
+				moreFetching.value = false;
+			}
+		} else {
+			if (props.pagination.reversed) {
+				reverseConcat(res).then(() => {
+					more.value = true;
+					moreFetching.value = false;
+				});
+			} else {
+				items.value = items.value.concat(res);
+				more.value = true;
 				moreFetching.value = false;
 			}
 		}
@@ -258,20 +263,19 @@ const fetchMoreAhead = async (): Promise<void> => {
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
 	await os.api(props.pagination.endpoint, {
 		...params,
-		limit: SECOND_FETCH_LIMIT + 1,
+		limit: SECOND_FETCH_LIMIT,
 		...(props.pagination.offsetMode ? {
 			offset: offset.value,
 		} : {
 			sinceId: items.value[items.value.length - 1].id,
 		}),
 	}).then(res => {
-		if (res.length > SECOND_FETCH_LIMIT) {
-			res.pop();
-			items.value = items.value.concat(res);
-			more.value = true;
-		} else {
+		if (res.length === 0) {
 			items.value = items.value.concat(res);
 			more.value = false;
+		} else {
+			items.value = items.value.concat(res);
+			more.value = true;
 		}
 		offset.value += res.length;
 		moreFetching.value = false;
@@ -280,6 +284,28 @@ const fetchMoreAhead = async (): Promise<void> => {
 	});
 };
 
+const isTop = (): boolean => isBackTop.value || (props.pagination.reversed ? isBottomVisible : isTopVisible)(contentEl, TOLERANCE);
+
+watch(visibility, () => {
+	if (visibility.value === 'hidden') {
+		timerForSetPause = window.setTimeout(() => {
+			isPausingUpdate = true;
+			timerForSetPause = null;
+		},
+		BACKGROUND_PAUSE_WAIT_SEC * 1000);
+	} else { // 'visible'
+		if (timerForSetPause) {
+			clearTimeout(timerForSetPause);
+			timerForSetPause = null;
+		} else {
+			isPausingUpdate = false;
+			if (isTop()) {
+				executeQueue();
+			}
+		}
+	}
+});
+
 const prepend = (item: MisskeyEntity): void => {
 	// 初回表示時はunshiftだけでOK
 	if (!rootEl) {
@@ -287,9 +313,7 @@ const prepend = (item: MisskeyEntity): void => {
 		return;
 	}
 
-	const isTop = isBackTop.value || (props.pagination.reversed ? isBottomVisible : isTopVisible)(contentEl, TOLERANCE);
-
-	if (isTop) unshiftItems([item]);
+	if (isTop() && !isPausingUpdate) unshiftItems([item]);
 	else prependQueue(item);
 };
 
@@ -358,6 +382,10 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+	if (timerForSetPause) {
+		clearTimeout(timerForSetPause);
+		timerForSetPause = null;
+	}
 	scrollObserver.disconnect();
 });
 
