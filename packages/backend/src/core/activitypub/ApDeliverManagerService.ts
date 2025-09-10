@@ -7,6 +7,7 @@ import type { ILocalUser, IRemoteUser, User } from '@/models/entities/User.js';
 import { QueueService } from '@/core/QueueService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
+import type { IActivity } from './type.js';
 
 interface IRecipe {
 	type: string;
@@ -77,6 +78,25 @@ export class ApDeliverManagerService {
 			activity,
 		);
 		manager.addDirectRecipe(to);
+		await manager.execute();
+	}
+	
+	/**
+	 * Deliver activity to users
+	 * @param actor
+	 * @param activity Activity
+	 * @param targets Target users
+	 */
+	@bindThis
+	public async deliverToUsers(actor: { id: ILocalUser['id']; host: null; }, activity: IActivity, targets: IRemoteUser[]): Promise<void> {
+		const manager = new DeliverManager(
+			this.userEntityService,
+			this.followingsRepository,
+			this.queueService,
+			actor,
+			activity,
+		);
+		for (const to of targets) manager.addDirectRecipe(to);
 		await manager.execute();
 	}
 

@@ -1,4 +1,4 @@
-import { In } from 'typeorm';
+import { Brackets, In, IsNull, Not } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
 import type { User, ILocalUser, IRemoteUser } from '@/models/entities/User.js';
 import type { Note, IMentionedRemoteUsers } from '@/models/entities/Note.js';
@@ -140,12 +140,26 @@ export class NoteDeleteService {
 	}
 
 	@bindThis
+	private async getRenotedOrRepliedRemoteUsers(note: Note) {
+		const query = this.notesRepository.createQueryBuilder('note')
+			.leftJoinAndSelect('note.user', 'user')
+			.where(new Brackets(qb => {
+				qb.orWhere('note.renoteId = :renoteId', { renoteId: note.id });
+				qb.orWhere('note.replyId = :replyId', { replyId: note.id });
+			}))
+			.andWhere({ userHost: Not(IsNull()) });
+		const notes = await query.getMany() as (Note & { user: IRemoteUser })[];
+		const remoteUsers = notes.map(({ user }) => user);
+		return remoteUsers;
+	}
+
+	@bindThis
 	private async deliverToConcerned(user: { id: ILocalUser['id']; host: null; }, note: Note, content: any) {
 		this.apDeliverManagerService.deliverToFollowers(user, content);
 		this.relayService.deliverToRelays(user, content);
-		const remoteUsers = await this.getMentionedRemoteUsers(note);
-		for (const remoteUser of remoteUsers) {
-			this.apDeliverManagerService.deliverToUser(user, content, remoteUser);
-		}
+		this.apDeliverManagerService.deliverToUsers(user, content, [
+			...await this.getMentionedRemoteUsers(note),
+			...await this.getRenotedOrRepliedRemoteUsers(note),
+		]);
 	}
 }
