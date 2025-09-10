@@ -694,6 +694,7 @@ export class ActivityPubServerService {
 				id: request.params.note,
 				visibility: In(['public', 'home']),
 				localOnly: false,
+				isDeleted: false,
 			});
 
 			if (note == null) {
@@ -729,6 +730,7 @@ export class ActivityPubServerService {
 				userHost: IsNull(),
 				visibility: In(['public', 'home']),
 				localOnly: false,
+				isDeleted: false,
 			});
 
 			if (note == null) {
@@ -860,7 +862,7 @@ export class ActivityPubServerService {
 				return;
 			}
 
-			const note = await this.notesRepository.findOneBy({ id: reaction.noteId });
+			const note = await this.notesRepository.findOneBy({ id: reaction.noteId, isDeleted: false, });
 
 			if (note == null) {
 				reply.code(404);

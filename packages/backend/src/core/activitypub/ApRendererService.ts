@@ -312,7 +312,7 @@ export class ApRendererService {
 		let inReplyToNote: Note | null;
 
 		if (note.replyId) {
-			inReplyToNote = await this.notesRepository.findOneBy({ id: note.replyId });
+			inReplyToNote = await this.notesRepository.findOneBy({ id: note.replyId, isDeleted: false, });
 
 			if (inReplyToNote != null) {
 				const inReplyToUser = await this.usersRepository.findOneBy({ id: inReplyToNote.userId });
@@ -336,7 +336,7 @@ export class ApRendererService {
 		let quote;
 
 		if (note.renoteId) {
-			const renote = await this.notesRepository.findOneBy({ id: note.renoteId });
+			const renote = await this.notesRepository.findOneBy({ id: note.renoteId, isDeleted: false, });
 
 			if (renote) {
 				quote = renote.uri ? renote.uri : `${this.config.url}/notes/${renote.id}`;
