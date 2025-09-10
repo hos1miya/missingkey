@@ -93,10 +93,12 @@ export class ApDbResolverService {
 
 			return await this.notesRepository.findOneBy({
 				id: parsed.id,
+				isDeleted: false,
 			});
 		} else {
 			return await this.notesRepository.findOneBy({
 				uri: parsed.uri,
+				isDeleted: false,
 			});
 		}
 	}
