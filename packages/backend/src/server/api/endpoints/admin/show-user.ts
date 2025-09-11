@@ -80,6 +80,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				injectFeaturedNote: profile.injectFeaturedNote,
 				receiveAnnouncementEmail: profile.receiveAnnouncementEmail,
 				mutedWords: profile.mutedWords,
+				mutedEmojis: profile.mutedEmojis,
 				mutedInstances: profile.mutedInstances,
 				mutingNotificationTypes: profile.mutingNotificationTypes,
 				isModerator: isModerator,

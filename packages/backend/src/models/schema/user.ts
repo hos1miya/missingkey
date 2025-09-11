@@ -355,6 +355,14 @@ export const packedMeDetailedOnlySchema = {
 				},
 			},
 		},
+		mutedEmojis: {
+			type: 'array',
+			nullable: true, optional: false,
+			items: {
+				type: 'string',
+				nullable: false, optional: false,
+			},
+		},
 		mutedInstances: {
 			type: 'array',
 			nullable: true, optional: false,

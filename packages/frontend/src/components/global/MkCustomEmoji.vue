@@ -1,6 +1,6 @@
 <template>
 <img v-if="errored" ref="customEmojiRef" :class="[$style.root, { [$style.normal]: normal, [$style.noStyle]: noStyle }]" :src="emojiErrorImageUrl" :alt="alt" :title="alt" decoding="async"/>
-<img v-else ref="customEmojiRef" :class="[$style.root, { [$style.normal]: normal, [$style.noStyle]: noStyle }]" :src="url ?? undefined" :alt="alt" :title="alt" decoding="async" @error="errored = true" @load="errored = false"/>
+<img v-else ref="customEmojiRef" :class="[$style.root, { [$style.normal]: normal, [$style.noStyle]: noStyle }]" :src="url ?? undefined" :alt="alt" :title="alt" decoding="async" @error="errored = true" @load="errored = false" @contextmenu.stop="onContextmenu"/>
 </template>
 
 <script lang="ts" setup>
@@ -8,9 +8,10 @@ import { ref, computed } from 'vue';
 import { getStaticImageUrl } from '@/scripts/media-proxy';
 import { defaultStore } from '@/store';
 import { customEmojis } from '@/custom-emojis';
-import { useTooltip } from '@/scripts/use-tooltip';
 import { emojiErrorImageUrl } from '@/instance';
 import * as os from '@/os';
+import { getEmojiMenu } from '@/scripts/get-emoji-menu';
+import { $i } from '@/account';
 
 const props = defineProps<{
 	name: string;
@@ -23,6 +24,7 @@ const props = defineProps<{
 const customEmojiRef = ref(null);
 
 const customEmojiName = computed(() => (props.name[0] === ':' ? props.name.substr(1, props.name.length - 2) : props.name).replace('@.', ''));
+const customEmojiNameWithHost = computed(() => props.host ? `${customEmojiName.value}@${props.host}` : `${customEmojiName.value}`);
 
 const rawUrl = computed(() => {
 	if (props.url) {
@@ -31,7 +33,7 @@ const rawUrl = computed(() => {
 	if (props.host == null && !customEmojiName.value.includes('@')) {
 		return customEmojis.value.find(x => x.name === customEmojiName.value)?.url ?? null;
 	}
-	return props.host ? `/emoji/${customEmojiName.value}@${props.host}.webp` : `/emoji/${customEmojiName.value}.webp`;
+	return `/emoji/${customEmojiNameWithHost.value}.webp`;
 });
 
 const url = computed(() =>
@@ -41,11 +43,11 @@ const url = computed(() =>
 );
 
 const alt = computed(() => `:${customEmojiName.value}:`);
-let errored = $ref(url.value == null);
+const errored = ref(url.value == null || ($i ? $i.mutedEmojis.indexOf(customEmojiNameWithHost.value) !== -1 : false));
 
-useTooltip(customEmojiRef, () => {
-	os.toastShort(props.host ? `${customEmojiName.value}@${props.host}` : `${customEmojiName.value}`);
-});
+function onContextmenu(ev: MouseEvent): void {
+	os.contextMenu(getEmojiMenu({ emojiName: customEmojiNameWithHost.value, hide: errored }), ev).then(focus);
+}
 </script>
 
 <style lang="scss" module>

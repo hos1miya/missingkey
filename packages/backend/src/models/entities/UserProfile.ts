@@ -202,6 +202,11 @@ export class UserProfile {
 
 	@Column('jsonb', {
 		default: [],
+	})
+	public mutedEmojis: string[];
+
+	@Column('jsonb', {
+		default: [],
 		comment: 'List of instances muted by the user.',
 	})
 	public mutedInstances: string[];

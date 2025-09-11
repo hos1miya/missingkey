@@ -1000,6 +1000,9 @@ deleteFromHistory: "履歴から削除しますか？"
 invalidCustomEmoji: "無効なカスタム絵文字"
 secureMode: "セキュアモード (Authorized Fetch)"
 secureModeDescription: "有効にすると、認証情報のないサーバーからのリクエストを拒否します。"
+emojiMute: "絵文字ミュート"
+muteThisEmoji: "この絵文字をミュート"
+muteAreYouSure: "{name}をミュートしますか？"
 
 _achievements:
   earnedAt: "獲得日時"
@@ -1433,9 +1436,15 @@ _wordMute:
 
 _instanceMute:
   instanceMuteDescription: "ミュートしたインスタンスのユーザーへの返信を含めて、設定したインスタンスの全てのノートとRenoteをミュートします。"
-  instanceMuteDescription2: "改行で区切って設定します"
+  instanceMuteDescription2: "改行で区切って設定します。"
   title: "設定したインスタンスのノートを隠します。"
   heading: "ミュートするインスタンス"
+
+_emojiMute:
+  description: "指定されたショートコードの絵文字を隠します。「絵文字名」(:は不要)で指定します。リモートの絵文字は「絵文字名@サーバー」で指定します。"
+  description2: "改行で区切って設定します。"
+  title: "設定したカスタム絵文字を隠します。"
+  heading: "ミュートするカスタム絵文字"
 
 _theme:
   explore: "テーマを探す"

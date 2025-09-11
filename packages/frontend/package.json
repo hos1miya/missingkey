@@ -45,7 +45,7 @@
 		"json5": "2.2.3",
 		"matter-js": "0.20.0",
 		"mfm-js": "0.25.0",
-		"pleaides-lib": "github:hos1miya/pleaides-lib#v1.0.11",
+		"pleaides-lib": "github:hos1miya/pleaides-lib#v1.1.0",
 		"photoswipe": "5.4.4",
 		"prismjs": "^1.30.0",
 		"punycode": "2.3.1",

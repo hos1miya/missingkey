@@ -9,7 +9,7 @@
 	"dependencies": {
 		"esbuild": "^0.25.9",
 		"idb-keyval": "^6.2.2",
-		"pleaides-lib": "github:hos1miya/pleaides-lib#v1.0.11"
+		"pleaides-lib": "github:hos1miya/pleaides-lib#v1.1.0"
 	},
 	"devDependencies": {
 		"@typescript-eslint/parser": "^8.41.0",

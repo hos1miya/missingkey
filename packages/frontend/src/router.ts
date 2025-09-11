@@ -3,7 +3,6 @@ import { Router } from '@/nirax';
 import { $i, iAmModerator } from '@/account';
 import MkLoading from '@/pages/_loading_.vue';
 import MkError from '@/pages/_error_.vue';
-import { ui } from '@/config';
 
 const page = (loader: AsyncComponentLoader<any>) => defineAsyncComponent({
 	loader: loader,
@@ -134,6 +133,10 @@ export const routes = [{
 		path: '/word-mute/list',
 		name: 'word-mute',
 		component: page(() => import('./pages/settings/word-mute.list.vue')),
+	}, {
+		path: '/emoji-mute',
+		name: 'emoji-mute',
+		component: page(() => import('./pages/settings/emoji-mute.vue')),
 	}, {
 		path: '/api',
 		name: 'api',
@@ -502,7 +505,7 @@ export const routes = [{
 	component: page(() => import('./pages/not-found.vue')),
 }];
 
-export const mainRouter = new Router(routes, location.pathname + location.search + location.hash);
+export const mainRouter = new Router(routes as any, location.pathname + location.search + location.hash);
 
 window.history.replaceState({ key: mainRouter.getCurrentKey() }, '', location.href);
 
