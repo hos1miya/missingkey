@@ -36,7 +36,7 @@
 		<div v-if="visibility === 'specified'" :class="$style.toSpecified">
 			<span style="margin-right: 8px;">{{ i18n.ts.recipient }}</span>
 			<div :class="$style.visibleUsers">
-				<span v-if="visibleUsers && visibleUsers.length > 0" v-for="u in visibleUsers" :key="u.id" :class="$style.visibleUser">
+				<span v-for="u in visibleUsers" :key="u.id" :class="$style.visibleUser">
 					<MkAcct :user="u"/>
 					<button class="_button" style="padding: 4px 8px;" @click="removeVisibleUser(u)"><i class="ti ti-x"></i></button>
 				</span>
@@ -143,7 +143,7 @@ let showPreview = $ref(false);
 let cw = $ref<string>('');
 let localOnly = $ref<boolean>(props.initialLocalOnly ?? defaultStore.state.rememberNoteVisibility ? defaultStore.state.localOnly : defaultStore.state.defaultNoteLocalOnly);
 let visibility = $ref(props.initialVisibility ?? (defaultStore.state.rememberNoteVisibility ? defaultStore.state.visibility : defaultStore.state.defaultNoteVisibility) as typeof pleaides.noteVisibilities[number]);
-let visibleUsers = $ref<pleaides.entities.UserDetailed[]>();
+let visibleUsers = $ref<pleaides.entities.UserDetailed[]>([]);
 if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(pushVisibleUser);
 }
@@ -219,13 +219,13 @@ const hashtags = $computed({
 watch($$(text), () => {
 	checkMissingMention();
 });
-
+/*
 watch($$(visibleUsers), () => {
 	checkMissingMention();
 }, {
 	deep: true,
 });
-
+*/
 if (props.mention) {
 	text = props.mention.host ? `@${props.mention.username}@${toASCII(props.mention.host)}` : `@${props.mention.username}`;
 	text += ' ';
@@ -311,8 +311,8 @@ function checkMissingMention() {
 		const ast = mfm.parse(text);
 
 		for (const x of extractMentions(ast)) {
-			if (!visibleUsers || !visibleUsers.some(u => (u.username === x.username) && (u.host === x.host))) {
-				os.api('users/show', { username: x.username, host: x.host ?? undefined }).then(user => {
+			if ((text.includes(`@${x.username}${x.host ? '@' + x.host : ''} `)) && !visibleUsers.some(u => (u.username === x.username) && (u.host === x.host))) {
+				os.api('users/show', { username: x.username, host: x.host }).then(user => {
 					pushVisibleUser(user);
 				});
 				return;
@@ -403,7 +403,8 @@ function setVisibility() {
 }
 
 function pushVisibleUser(user) {
-	visibleUsers!.push(user);
+	if (visibleUsers.some(v => v.username === user.username && v.host === user.host)) return;
+	visibleUsers.push(user);
 }
 
 function addVisibleUser() {
@@ -413,7 +414,7 @@ function addVisibleUser() {
 }
 
 function removeVisibleUser(user) {
-	visibleUsers = erase(user, visibleUsers!);
+	visibleUsers = erase(user, visibleUsers);
 }
 
 function clear() {
@@ -598,7 +599,7 @@ async function post(ev?: MouseEvent) {
 		cw: useCw ? cw ?? '' : undefined,
 		localOnly: localOnly,
 		visibility: visibility,
-		visibleUserIds: (visibility === 'specified' && visibleUsers) ? visibleUsers.map(u => u.id) : undefined,
+		visibleUserIds: visibility === 'specified' ? visibleUsers.map(u => u.id) : undefined,
 		via: 'MissingKey Web App',
 	};
 
