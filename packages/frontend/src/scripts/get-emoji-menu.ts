@@ -28,7 +28,7 @@ export function getEmojiMenu(props: {
 	}
 
 	let menu;
-	if ($i) {
+	if ($i && !props.hide.value) {
 		menu = [{
 				icon: 'ti ti-abc',
 				text: props.emojiName,

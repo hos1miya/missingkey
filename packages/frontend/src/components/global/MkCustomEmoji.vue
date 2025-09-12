@@ -1,5 +1,5 @@
 <template>
-<img v-if="errored" ref="customEmojiRef" :class="[$style.root, { [$style.normal]: normal, [$style.noStyle]: noStyle }]" :src="emojiErrorImageUrl" :alt="alt" :title="alt" decoding="async"/>
+<img v-if="errored" ref="customEmojiRef" :class="[$style.root, { [$style.normal]: normal, [$style.noStyle]: noStyle }]" :src="emojiErrorImageUrl" :alt="alt" :title="alt" decoding="async" @contextmenu.stop="onContextmenu"/>
 <img v-else ref="customEmojiRef" :class="[$style.root, { [$style.normal]: normal, [$style.noStyle]: noStyle }]" :src="url ?? undefined" :alt="alt" :title="alt" decoding="async" @error="errored = true" @load="errored = false" @contextmenu.stop="onContextmenu"/>
 </template>
 
