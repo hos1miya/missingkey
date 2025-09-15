@@ -93,6 +93,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 					qb.where(`((note.userId IN (${ followingQuery.getQuery() })) OR (note.userId = :meId))`, { meId: me.id })
 						.orWhere('(note.visibility = \'public\') AND (note.userHost IS NULL)');
 				}))
+				.andWhere('note.isDeleted = :isDeleted', { isDeleted: false })
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('user.avatar', 'avatar')
 				.leftJoinAndSelect('user.banner', 'banner')

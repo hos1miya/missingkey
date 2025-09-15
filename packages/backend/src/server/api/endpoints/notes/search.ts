@@ -72,6 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			query
 				.andWhere('note.text ILIKE :q', { q: `%${ sqlLikeEscape(ps.query) }%` })
+				.andWhere('note.isDeleted = :isDeleted', { isDeleted: false })
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('user.avatar', 'avatar')
 				.leftJoinAndSelect('user.banner', 'banner')

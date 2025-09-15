@@ -57,6 +57,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				.andWhere('note.score > 0')
 				.andWhere('note.createdAt > :date', { date: new Date(Date.now() - day) })
 				.andWhere('note.visibility = \'public\'')
+				.andWhere('note.isDeleted = :isDeleted', { isDeleted: false })
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('user.avatar', 'avatar')
 				.leftJoinAndSelect('user.banner', 'banner')
