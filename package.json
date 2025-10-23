@@ -1,6 +1,6 @@
 {
 	"name": "missingkey",
-	"version": "1.4.4-missingkey.develop.251023.1",
+	"version": "1.4.4-missingkey.develop.251023.2",
 	"codename": "isle",
 	"repository": {
 		"type": "git",
@@ -19,7 +19,8 @@
 			"sharp": "0.31.3",
 			"@types/sharp": "0.31.0",
 			"redis-lock": "0.1.4",
-			"@syuilo/aiscript": "0.19.0"
+			"@syuilo/aiscript": "0.19.0",
+			"jsdom": "26.1.0"
 		},
 		"onlyBuiltDependencies": [
 			"@nestjs/core",
