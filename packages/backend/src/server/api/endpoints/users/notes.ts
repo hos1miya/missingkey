@@ -7,6 +7,7 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { GetterService } from '@/server/api/GetterService.js';
 import { ApiError } from '../../error.js';
+import { RoleService } from '@/core/RoleService.js';
 
 export const meta = {
 	tags: ['users', 'notes'],
@@ -62,6 +63,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
 		private getterService: GetterService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup user
@@ -73,7 +75,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			//#region Construct query
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('note.userId = :userId', { userId: user.id })
-				.andWhere('note.isDeleted = :isDeleted', { isDeleted: false })
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('user.avatar', 'avatar')
 				.leftJoinAndSelect('user.banner', 'banner')
@@ -123,6 +124,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 					qb.orWhere('note.fileIds != \'{}\'');
 					qb.orWhere('0 < (SELECT COUNT(*) FROM poll WHERE poll."noteId" = note.id)');
 				}));
+			}
+
+			if (!(me && await this.roleService.isModerator(me))) {
+				query.andWhere('note.isDeleted = :isDeleted', { isDeleted: false });
 			}
 
 			//#endregion

@@ -6,6 +6,7 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import { DI } from '@/di-symbols.js';
 import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
+import { RoleService } from '@/core/RoleService.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -62,6 +63,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId);
@@ -70,9 +72,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				query.andWhere('note.userId = :userId', { userId: ps.userId });
 			}
 
+			if (!(me && await this.roleService.isModerator(me))) {
+				query.andWhere('note.isDeleted = :isDeleted', { isDeleted: false });
+			}
+
 			query
 				.andWhere('note.text ILIKE :q', { q: `%${ sqlLikeEscape(ps.query) }%` })
-				.andWhere('note.isDeleted = :isDeleted', { isDeleted: false })
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('user.avatar', 'avatar')
 				.leftJoinAndSelect('user.banner', 'banner')
