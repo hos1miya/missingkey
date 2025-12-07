@@ -75,7 +75,7 @@ export class ApQuestionService {
 		if (uri.startsWith(this.config.url + '/')) throw new Error('uri points local');
 
 		//#region このサーバーに既に登録されているか
-		const note = await this.notesRepository.findOneBy({ uri });
+		const note = await this.notesRepository.findOneBy({ uri, isDeleted: false });
 		if (note == null) throw new Error('Question is not registed');
 
 		const poll = await this.pollsRepository.findOneBy({ noteId: note.id });

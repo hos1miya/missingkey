@@ -666,6 +666,7 @@ export class ApInboxService {
 		const note = await this.notesRepository.findOneBy({
 			uri,
 			userId: actor.id,
+			isDeleted: false,
 		});
 
 		if (!note) return 'skip: no such Announce';

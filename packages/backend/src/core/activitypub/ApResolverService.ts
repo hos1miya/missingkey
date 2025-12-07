@@ -123,7 +123,7 @@ export class Resolver {
 
 		switch (parsed.type) {
 			case 'notes':
-				return this.notesRepository.findOneByOrFail({ id: parsed.id })
+				return this.notesRepository.findOneByOrFail({ id: parsed.id, isDeleted: false })
 					.then(note => {
 						if (parsed.rest === 'activity') {
 							// this refers to the create activity and not the note itself
@@ -138,7 +138,7 @@ export class Resolver {
 			case 'questions':
 				// Polls are indexed by the note they are attached to.
 				return Promise.all([
-					this.notesRepository.findOneByOrFail({ id: parsed.id }),
+					this.notesRepository.findOneByOrFail({ id: parsed.id, isDeleted: false }),
 					this.pollsRepository.findOneByOrFail({ noteId: parsed.id }),
 				])
 					.then(([note, poll]) => this.apRendererService.renderQuestion({ id: note.userId }, note, poll));

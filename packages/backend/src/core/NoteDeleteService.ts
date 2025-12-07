@@ -63,6 +63,15 @@ export class NoteDeleteService {
 		if (note.replyId) {
 			await this.notesRepository.decrement({ id: note.replyId }, 'repliesCount', 1);
 		}
+		
+		// 物理削除を論理削除に変更
+		await this.notesRepository.update(
+			{ id: note.id, userId: user.id },
+			{
+				isDeleted: true,
+				deletedAt: deletedAt,
+			}
+		);
 
 		if (!quiet) {
 			this.globalEventService.publishNoteStream(note.id, 'deleted', {
@@ -102,15 +111,6 @@ export class NoteDeleteService {
 
 		// ピン止めの解除
 		await this.notePiningSerice.removePinned(user, note.id);
-		
-		// 物理削除を論理削除に変更
-		await this.notesRepository.update(
-			{ id: note.id, userId: user.id },
-			{
-				isDeleted: true,
-				deletedAt: deletedAt,
-			}
-		);
 	}
 
 	@bindThis
