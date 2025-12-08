@@ -55,7 +55,7 @@ let tickId: number;
 function tick() : void {
 	now = (new Date()).getTime();
 	const ago = (now - _time) / 1000/*ms*/;
-	const next = ago < 60 ? 10000 : ago < 3600 ? 60000 : 180000;
+	const next = ago < 60 ? 10000 : ago < 300 ? 60000 : 300000;
 
 	tickId = window.setTimeout(tick, next);
 }
